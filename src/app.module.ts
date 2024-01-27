@@ -1,36 +1,23 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Cat, CatSchema } from './features/cats/cats-schema';
-import { CatsRepository } from './features/cats/catsRepository';
 import { ConfigModule } from '@nestjs/config';
-import { CatsController } from './features/cats/cats.controller';
-import { BlogsController } from './features/blogs/blogs.controller';
-import { BlogsService } from './features/blogs/blogs.service';
-import { BlogsRepository } from './features/blogs/repositories/blogs.repository';
-import { BlogsQueryRepository } from './features/blogs/repositories/blogs.query.repository';
-import { Blog, BlogSchema } from './features/blogs/blogs-schema';
+import { BlogsController } from './features/blogs/controllers/blogs.controller';
+import { Blog, BlogSchema } from './features/blogs/repositories/blogs-schema';
+import { Post, PostSchema } from './features/posts/repositories/post-schema';
+import { PostsController } from './features/posts/controllers/posts.controller';
+import { blogsProviders } from './features/blogs';
+import { postProviders } from './features/posts';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    MongooseModule.forRoot(process.env.MONGO_URL),
+    MongooseModule.forRoot(process.env.MONGO_URL!),
     MongooseModule.forFeature([
-      {
-        name: Cat.name,
-        schema: CatSchema,
-      },
-      {
-        name: Blog.name,
-        schema: BlogSchema,
-      },
+      { name: Blog.name, schema: BlogSchema },
+      { name: Post.name, schema: PostSchema },
     ]),
   ],
-  controllers: [CatsController, BlogsController],
-  providers: [
-    CatsRepository,
-    BlogsService,
-    BlogsRepository,
-    BlogsQueryRepository,
-  ],
+  controllers: [BlogsController, PostsController],
+  providers: [...blogsProviders, ...postProviders],
 })
 export class AppModule {}

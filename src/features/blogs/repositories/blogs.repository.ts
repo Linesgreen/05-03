@@ -1,6 +1,6 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { Injectable } from '@nestjs/common';
-import { Blog, BlogsDocument } from '../blogs-schema';
+import { Blog, BlogsDocument } from './blogs-schema';
 import { Model } from 'mongoose';
 import { BlogsDb } from '../types/output';
 import { BlogUpdateType } from '../types/input';

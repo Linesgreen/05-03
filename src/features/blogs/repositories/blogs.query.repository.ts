@@ -1,8 +1,7 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { Injectable } from '@nestjs/common';
-import { Blog, BlogsDocument } from '../blogs-schema';
+import { Blog, BlogsDocument } from './blogs-schema';
 import { Model } from 'mongoose';
-import { BLogMapper } from './utils/blogMapper';
 import { OutputBlogType } from '../types/output';
 
 @Injectable()
@@ -13,13 +12,14 @@ export class BlogsQueryRepository {
   ) {}
 
   async findAll(): Promise<OutputBlogType[]> {
-    const allBlogs = await this.BlogModel.find().exec();
-    return allBlogs.map(BLogMapper);
+    const allBlogs: BlogsDocument[] = await this.BlogModel.find();
+    return allBlogs.map((blog: BlogsDocument) => blog.toDto());
   }
 
   async findById(id: string): Promise<OutputBlogType | null> {
-    const targetBlog = await this.BlogModel.findById(id).lean();
+    const targetBlog: BlogsDocument | null = await this.BlogModel.findById(id);
     if (!targetBlog) return null;
-    return BLogMapper(targetBlog);
+
+    return targetBlog.toDto();
   }
 }

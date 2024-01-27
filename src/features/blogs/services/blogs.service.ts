@@ -1,21 +1,16 @@
-import { BlogCreateType, BlogUpdateType } from './types/input';
-import { BlogsDb } from './types/output';
-import { BlogsRepository } from './repositories/blogs.repository';
-import { BLogMapper } from './repositories/utils/blogMapper';
+import { BlogCreateType, BlogUpdateType } from '../types/input';
+import { BlogsDb } from '../types/output';
+import { BlogsRepository } from '../repositories/blogs.repository';
 import { Injectable } from '@nestjs/common';
 @Injectable()
 export class BlogsService {
   constructor(protected blogsRepository: BlogsRepository) {}
 
   async createBlog(blogData: BlogCreateType) {
-    const newBlog = new BlogsDb(
-      blogData.name,
-      blogData.description,
-      blogData.websiteUrl,
-    );
+    const newBlog = new BlogsDb(blogData.name, blogData.description, blogData.websiteUrl);
 
     await this.blogsRepository.addBlog(newBlog);
-    return BLogMapper(newBlog);
+    return newBlog.toDto();
   }
 
   async updateBlog(newData: BlogUpdateType, blogId: string) {

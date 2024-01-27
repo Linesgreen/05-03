@@ -13,6 +13,16 @@ export class BlogsDb {
     this.createdAt = new Date().toISOString();
     this.isMembership = false;
   }
+  toDto(): OutputBlogType {
+    return {
+      id: this._id,
+      name: this.name,
+      description: this.description,
+      websiteUrl: this.websiteUrl,
+      createdAt: this.createdAt,
+      isMembership: this.isMembership,
+    };
+  }
 }
 
 export type OutputBlogType = {
