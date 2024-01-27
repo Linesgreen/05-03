@@ -12,14 +12,13 @@ export class BlogsQueryRepository {
   ) {}
 
   async findAll(): Promise<OutputBlogType[]> {
-    const allBlogs: BlogsDocument[] = await this.BlogModel.find();
+    const allBlogs: BlogsDocument[] = await this.BlogModel.find().exec();
     return allBlogs.map((blog: BlogsDocument) => blog.toDto());
   }
 
   async findById(id: string): Promise<OutputBlogType | null> {
     const targetBlog: BlogsDocument | null = await this.BlogModel.findById(id);
     if (!targetBlog) return null;
-
     return targetBlog.toDto();
   }
 }

@@ -9,3 +9,9 @@ export type BlogUpdateType = {
   description: string;
   websiteUrl: string;
 };
+
+export type PostToBlogCreateType = {
+  title: string;
+  shortDescription: string;
+  content: string;
+};
