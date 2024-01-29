@@ -1,5 +1,4 @@
 import { ExtendedLikesInfoDbType, newestLike } from './likes/output';
-import { v4 as uuidv4 } from 'uuid';
 import { LikeStatus } from './likes/input';
 
 export type ExtendedLikesInfoOutputType = {
@@ -21,7 +20,7 @@ export class PostDb {
     public blogId: string,
     public blogName: string,
   ) {
-    this._id = uuidv4();
+    this._id = crypto.randomUUID();
     this.createdAt = new Date().toISOString();
     this.extendedLikesInfo = {
       likesCount: 0,

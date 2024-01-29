@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import { OutputBlogType } from '../types/output';
+import { BlogUpdateType } from '../types/input';
 
 @Schema()
 export class Blog {
@@ -33,6 +34,11 @@ export class Blog {
       createdAt: this.createdAt,
       isMembership: this.isMembership,
     };
+  }
+  updateBlog(params: BlogUpdateType) {
+    this.name = params.name;
+    this.description = params.description;
+    this.websiteUrl = params.websiteUrl;
   }
 }
 

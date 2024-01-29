@@ -3,7 +3,6 @@ import { Injectable } from '@nestjs/common';
 import { Blog, BlogsDocument } from './blogs-schema';
 import { Model } from 'mongoose';
 import { BlogsDb } from '../types/output';
-import { BlogUpdateType } from '../types/input';
 
 @Injectable()
 export class BlogsRepository {
@@ -23,26 +22,26 @@ export class BlogsRepository {
   }
 
   /**
-   * Обновляет блог
-   * @param params - параметры для обновления блога
-   * @param id - id блога
-   * @returns ✅true, если обновление прошло успешно, иначе ❌false
-   */
-  async updateBlog(params: BlogUpdateType, id: string): Promise<boolean> {
-    const updateResult = await this.BlogModel.findByIdAndUpdate(id, {
-      name: params.name,
-      description: params.description,
-      websiteUrl: params.websiteUrl,
-    });
-    return !!updateResult;
-  }
-  /**
-   * delete current blog
    * @param blogId
    * @returns true, false
    */
   async deleteBlog(blogId: string): Promise<boolean> {
     const deleteResult = await this.BlogModel.findByIdAndDelete(blogId);
     return !!deleteResult;
+  }
+  /**
+   * @param blogId
+   * @returns BlogsDocument (smart object) | null
+   */
+  async getBlogById(blogId: string): Promise<BlogsDocument | null> {
+    return this.BlogModel.findById(blogId);
+  }
+  /**
+   * save blog to repo
+   * @param blog : BlogsDocument
+   * @returns void
+   */
+  async saveBlog(blog: BlogsDocument) {
+    await blog.save();
   }
 }

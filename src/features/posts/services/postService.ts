@@ -14,7 +14,7 @@ export class PostService {
   ) {}
   async createPost(postData: PostCreateType): Promise<OutputPostType | null> {
     const targetBlog: OutputBlogType | null = await this.blogsQueryRepository.findById(postData.blogId);
-    //TODO временное решение
+
     if (!targetBlog) return null;
 
     const newPost = new PostDb(
@@ -32,10 +32,8 @@ export class PostService {
   async updatePost(params: PostUpdateType, postId: string) {
     const targetPost: PostsDocument | null = await this.postRepository.getPostbyId(postId);
     if (!targetPost) return null;
-    targetPost.title = params.title;
-    targetPost.shortDescription = params.shortDescription;
-    targetPost.content = params.content;
-    targetPost.blogId = params.blogId;
+
+    targetPost.updatePost(params);
 
     await this.postRepository.savePost(targetPost);
     return true;

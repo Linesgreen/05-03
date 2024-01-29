@@ -15,3 +15,11 @@ export type PostToBlogCreateType = {
   shortDescription: string;
   content: string;
 };
+
+export type BlogSortData = {
+  searchNameTerm?: string;
+  sortBy?: string;
+  sortDirection?: 'asc' | 'desc';
+  pageNumber?: string;
+  pageSize?: string;
+};

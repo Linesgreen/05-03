@@ -1,11 +1,13 @@
-import { Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, Post, Put, Query } from '@nestjs/common';
 import { BlogsQueryRepository } from '../repositories/blogs.query.repository';
-import { BlogCreateType, BlogUpdateType, PostToBlogCreateType } from '../types/input';
+import { BlogCreateType, BlogSortData, BlogUpdateType, PostToBlogCreateType } from '../types/input';
 import { BlogsService } from '../services/blogs.service';
 import { OutputBlogType } from '../types/output';
 import { PostService } from '../../posts/services/postService';
 import { OutputPostType } from '../../posts/types/output';
 import { PostsQueryRepository } from '../../posts/repositories/posts.query.repository';
+import { PaginationWithItems } from '../../common/types/output';
+import { PostSortData } from '../../posts/types/input';
 
 @Controller('blogs')
 export class BlogsController {
@@ -17,8 +19,8 @@ export class BlogsController {
   ) {}
 
   @Get('')
-  async getAllBlogs(): Promise<OutputBlogType[]> {
-    return await this.blogsQueryRepository.findAll();
+  async getAllBlogs(@Query() queryData: BlogSortData): Promise<PaginationWithItems<OutputBlogType>> {
+    return await this.blogsQueryRepository.findAll(queryData);
   }
 
   @Get(':id')
@@ -35,14 +37,16 @@ export class BlogsController {
   }
 
   @Get(':blogId/posts')
-  async getPostForBlog(@Param('blogId') blogId: string): Promise<OutputPostType[]> {
-    const targetPosts: OutputPostType[] | null = await this.postQueryRepository.findByBlogId(blogId);
-    if (!targetPosts) throw new NotFoundException('Post Not Found');
-    return targetPosts;
+  async getPostForBlog(
+    @Query() queryData: PostSortData,
+    @Param('blogId') blogId: string,
+  ): Promise<PaginationWithItems<OutputPostType>> {
+    const targetBlog = await this.blogsQueryRepository.findById(blogId);
+    if (!targetBlog) throw new NotFoundException('Post Not Found');
+    return await this.postQueryRepository.findByBlogId(blogId, queryData);
   }
 
   @Post(':blogId/posts')
-  @HttpCode(204)
   async createPostToBlog(@Param('blogId') blogId: string, @Body() postData: PostToBlogCreateType) {
     const newPost: OutputPostType | null = await this.postService.createPost({ ...postData, blogId });
     if (!newPost) throw new NotFoundException('Blog Not Exist');

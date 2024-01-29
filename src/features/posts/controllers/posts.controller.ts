@@ -1,8 +1,9 @@
-import { Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, Post, Put } from '@nestjs/common';
-import { PostCreateType, PostUpdateType } from '../types/input';
+import { Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, Post, Put, Query } from '@nestjs/common';
+import { PostCreateType, PostSortData, PostUpdateType } from '../types/input';
 import { PostService } from '../services/postService';
 import { OutputPostType } from '../types/output';
 import { PostsQueryRepository } from '../repositories/posts.query.repository';
+import { PaginationWithItems } from '../../common/types/output';
 
 @Controller('posts')
 export class PostsController {
@@ -12,8 +13,8 @@ export class PostsController {
   ) {}
 
   @Get()
-  async getAllPosts(): Promise<OutputPostType[]> {
-    return await this.postQueryRepository.getAll();
+  async getAllPosts(@Query() queryData: PostSortData): Promise<PaginationWithItems<OutputPostType>> {
+    return await this.postQueryRepository.getAll(queryData);
   }
 
   @Get(':postId')

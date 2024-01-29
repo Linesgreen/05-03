@@ -1,16 +1,32 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Post, PostsDocument } from './post-schema';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { OutputPostType } from '../types/output';
+import { PostSortData } from '../types/input';
+import { Blog } from '../../blogs/repositories/blogs-schema';
+import { PaginationWithItems } from '../../common/types/output';
+import { QueryPagination } from '../../common/utils/queryPagination';
 
 @Injectable()
 export class PostsQueryRepository {
-  constructor(@InjectModel(Post.name) private PostModel: Model<PostsDocument>) {}
+  constructor(
+    @InjectModel(Post.name)
+    private PostModel: Model<PostsDocument>,
+  ) {}
 
-  async getAll(): Promise<OutputPostType[]> {
-    const allPosts: PostsDocument[] = await this.PostModel.find().exec();
-    return allPosts.map((post: PostsDocument) => post.toDto());
+  async getAll(sortData: PostSortData): Promise<PaginationWithItems<OutputPostType>> {
+    const formattedSortData = QueryPagination.convertQueryPination(sortData);
+    const sortFilter: FilterQuery<Blog> = { [formattedSortData.sortBy]: formattedSortData.sortDirection };
+
+    const allPosts: PostsDocument[] = await this.PostModel.find()
+      .sort(sortFilter)
+      .skip((+formattedSortData.pageNumber - 1) * +formattedSortData.pageSize)
+      .limit(+formattedSortData.pageSize);
+
+    const allDtoPosts: OutputPostType[] = allPosts.map((post: PostsDocument) => post.toDto());
+    const totalCount: number = await this.PostModel.countDocuments();
+    return new PaginationWithItems(+formattedSortData.pageNumber, +formattedSortData.pageSize, totalCount, allDtoPosts);
   }
 
   async findById(postId: string): Promise<OutputPostType | null> {
@@ -19,9 +35,20 @@ export class PostsQueryRepository {
     return targetPost.toDto();
   }
 
-  async findByBlogId(blogId: string): Promise<OutputPostType[] | null> {
-    const targetPosts: PostsDocument[] | null = await this.PostModel.find({ blogId: blogId }).exec();
-    if (!targetPosts) return null;
-    return targetPosts.map((post: PostsDocument) => post.toDto());
+  async findByBlogId(blogId: string, sortData: PostSortData): Promise<PaginationWithItems<OutputPostType>> {
+    const formattedSortData = QueryPagination.convertQueryPination(sortData);
+
+    const sortFilter: FilterQuery<Blog> = { [formattedSortData.sortBy]: formattedSortData.sortDirection };
+
+    const targetPosts: PostsDocument[] | null = await this.PostModel.find({ blogId: blogId })
+      .sort(sortFilter)
+      .skip((+formattedSortData.pageNumber - 1) * +formattedSortData.pageSize)
+      .limit(+formattedSortData.pageSize);
+
+    const allDtoPosts: OutputPostType[] = targetPosts.map((post: PostsDocument) => post.toDto());
+
+    const totalCount: number = await this.PostModel.countDocuments({ blogId: blogId });
+
+    return new PaginationWithItems(+formattedSortData.pageNumber, +formattedSortData.pageSize, totalCount, allDtoPosts);
   }
 }

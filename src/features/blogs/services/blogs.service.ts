@@ -2,6 +2,7 @@ import { BlogCreateType, BlogUpdateType } from '../types/input';
 import { BlogsDb } from '../types/output';
 import { BlogsRepository } from '../repositories/blogs.repository';
 import { Injectable } from '@nestjs/common';
+import { BlogsDocument } from '../repositories/blogs-schema';
 @Injectable()
 export class BlogsService {
   constructor(protected blogsRepository: BlogsRepository) {}
@@ -14,7 +15,11 @@ export class BlogsService {
   }
 
   async updateBlog(newData: BlogUpdateType, blogId: string) {
-    return await this.blogsRepository.updateBlog(newData, blogId);
+    const targetBlog: BlogsDocument | null = await this.blogsRepository.getBlogById(blogId);
+    if (!targetBlog) return null;
+    targetBlog.updateBlog(newData);
+    await this.blogsRepository.saveBlog(targetBlog);
+    return true;
   }
 
   async deleteBlog(blogId: string) {

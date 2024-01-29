@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import { newestLike } from '../types/likes/output';
 import { OutputPostType } from '../types/output';
+import { PostUpdateType } from '../types/input';
 
 @Schema()
 export class ExtendedLikesInfo {
@@ -19,40 +20,20 @@ export const ExtendedLikesInfoSchema = SchemaFactory.createForClass(ExtendedLike
 
 @Schema()
 export class Post {
-  @Prop({
-    required: true,
-  })
-  _id: string;
+  @Prop({ required: true }) _id: string;
 
-  @Prop({
-    required: true,
-  })
-  title: string;
+  @Prop({ required: true }) title: string;
 
-  @Prop({
-    required: true,
-  })
-  shortDescription: string;
+  @Prop({ required: true }) shortDescription: string;
 
-  @Prop({
-    required: true,
-  })
-  content: string;
+  @Prop({ required: true }) content: string;
 
-  @Prop({
-    required: true,
-  })
-  blogId: string;
+  @Prop({ required: true }) blogId: string;
 
-  @Prop({
-    required: true,
-  })
-  blogName: string;
+  @Prop({ required: true }) blogName: string;
 
-  @Prop({
-    required: true,
-  })
-  createdAt: string;
+  @Prop({ required: true }) createdAt: string;
+
   @Prop({ _id: false, required: true, type: ExtendedLikesInfoSchema })
   extendedLikesInfo: ExtendedLikesInfo;
 
@@ -72,6 +53,13 @@ export class Post {
         newestLikes: this.extendedLikesInfo.newestLikes,
       },
     };
+  }
+
+  updatePost(params: PostUpdateType) {
+    this.title = params.title;
+    this.shortDescription = params.shortDescription;
+    this.content = params.content;
+    this.blogId = params.blogId;
   }
 }
 

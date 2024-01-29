@@ -11,3 +11,10 @@ export type PostUpdateType = {
   content: string;
   blogId: string;
 };
+
+export type PostSortData = {
+  sortBy?: string;
+  sortDirection?: 'asc' | 'desc';
+  pageNumber?: string;
+  pageSize?: string;
+};

@@ -1,5 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
-
 export class BlogsDb {
   public _id: string;
   public createdAt: string;
@@ -9,7 +7,7 @@ export class BlogsDb {
     public description: string,
     public websiteUrl: string,
   ) {
-    this._id = uuidv4();
+    this._id = crypto.randomUUID();
     this.createdAt = new Date().toISOString();
     this.isMembership = false;
   }
