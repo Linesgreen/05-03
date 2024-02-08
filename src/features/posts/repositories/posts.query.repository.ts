@@ -7,7 +7,7 @@ import { PaginationWithItems } from '../../common/types/output';
 import { QueryPagination } from '../../common/utils/queryPagination';
 import { PostSortData } from '../types/input';
 import { OutputPostType } from '../types/output';
-import { Post, PostsDocument } from './post-schema';
+import { Post, PostsDocument } from './post.schema';
 
 @Injectable()
 export class PostsQueryRepository {

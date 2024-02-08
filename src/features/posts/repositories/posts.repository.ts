@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { PostUpdateType } from '../types/input';
-import { Post, PostsDocument } from './post-schema';
+import { Post, PostsDocument } from './post.schema';
 
 @Injectable()
 export class PostsRepository {
@@ -18,7 +18,7 @@ export class PostsRepository {
    */
   async addPost(newPost: Post): Promise<PostsDocument> {
     const newPostToDB: PostsDocument = new this.PostModel(newPost);
-    await newPostToDB.save();
+    await this.savePost(newPostToDB);
     return newPostToDB;
   }
   /**

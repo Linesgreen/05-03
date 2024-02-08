@@ -23,3 +23,7 @@ export type PostSortData = {
   pageNumber?: string;
   pageSize?: string;
 };
+
+export class CommentCreateModel {
+  content: string;
+}

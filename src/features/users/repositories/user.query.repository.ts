@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
 
@@ -34,5 +34,12 @@ export class UserQueryRepository {
     const allDtoUsers: UserOutputType[] = allUsers.map((user) => user.toDto());
     const totalCount: number = await this.UserModel.countDocuments(filter);
     return new PaginationWithItems(+formattedSortData.pageNumber, +formattedSortData.pageSize, totalCount, allDtoUsers);
+  }
+
+  async getUserById(userId: string): Promise<UserOutputType> {
+    const user = await this.UserModel.findById(userId);
+    //TODO узнать про этот экспшн
+    if (!user) throw new NotFoundException();
+    return user.toDto();
   }
 }
