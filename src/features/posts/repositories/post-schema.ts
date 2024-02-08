@@ -1,8 +1,10 @@
+/* eslint-disable no-underscore-dangle */
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+
+import { PostUpdateType } from '../types/input';
 import { newestLike } from '../types/likes/output';
 import { OutputPostType } from '../types/output';
-import { PostUpdateType } from '../types/input';
 
 @Schema()
 export class ExtendedLikesInfo {
@@ -36,7 +38,20 @@ export class Post {
 
   @Prop({ _id: false, required: true, type: ExtendedLikesInfoSchema })
   extendedLikesInfo: ExtendedLikesInfo;
-
+  constructor(title: string, shortDescription: string, content: string, blogId: string, blogName: string) {
+    this._id = crypto.randomUUID();
+    this.title = title;
+    this.shortDescription = shortDescription;
+    this.content = content;
+    this.blogId = blogId;
+    this.blogName = blogName;
+    this.createdAt = new Date().toISOString();
+    this.extendedLikesInfo = {
+      likesCount: 0,
+      dislikesCount: 0,
+      newestLikes: [],
+    };
+  }
   toDto(): OutputPostType {
     return {
       id: this._id.toString(),
@@ -55,7 +70,7 @@ export class Post {
     };
   }
 
-  updatePost(params: PostUpdateType) {
+  updatePost(params: PostUpdateType): void {
     this.title = params.title;
     this.shortDescription = params.shortDescription;
     this.content = params.content;

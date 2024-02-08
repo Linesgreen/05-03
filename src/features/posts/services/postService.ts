@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { PostCreateType, PostUpdateType } from '../types/input';
+
 import { BlogsQueryRepository } from '../../blogs/repositories/blogs.query.repository';
-import { OutputPostType, PostDb } from '../types/output';
-import { PostsRepository } from '../repositories/posts.repository';
-import { PostsDocument } from '../repositories/post-schema';
 import { OutputBlogType } from '../../blogs/types/output';
+import { Post, PostsDocument } from '../repositories/post-schema';
+import { PostsRepository } from '../repositories/posts.repository';
+import { PostCreateModel, PostUpdateType } from '../types/input';
+import { OutputPostType } from '../types/output';
 
 @Injectable()
 export class PostService {
@@ -12,12 +13,12 @@ export class PostService {
     protected postRepository: PostsRepository,
     protected blogsQueryRepository: BlogsQueryRepository,
   ) {}
-  async createPost(postData: PostCreateType): Promise<OutputPostType | null> {
+  async createPost(postData: PostCreateModel): Promise<OutputPostType | null> {
     const targetBlog: OutputBlogType | null = await this.blogsQueryRepository.findById(postData.blogId);
 
     if (!targetBlog) return null;
 
-    const newPost = new PostDb(
+    const newPost = new Post(
       postData.title,
       postData.shortDescription,
       postData.content,
@@ -29,7 +30,7 @@ export class PostService {
     return createdPostInDb.toDto();
   }
 
-  async updatePost(params: PostUpdateType, postId: string) {
+  async updatePost(params: PostUpdateType, postId: string): Promise<boolean | null> {
     const targetPost: PostsDocument | null = await this.postRepository.getPostbyId(postId);
     if (!targetPost) return null;
 
@@ -38,7 +39,7 @@ export class PostService {
     await this.postRepository.savePost(targetPost);
     return true;
   }
-  async deleteBlog(blogId: string) {
-    return await this.postRepository.deleteBlog(blogId);
+  async deleteBlog(blogId: string): Promise<boolean> {
+    return this.postRepository.deleteBlog(blogId);
   }
 }

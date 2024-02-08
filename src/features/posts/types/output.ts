@@ -1,5 +1,5 @@
-import { ExtendedLikesInfoDbType, newestLike } from './likes/output';
 import { LikeStatus } from './likes/input';
+import { newestLike } from './likes/output';
 
 export type ExtendedLikesInfoOutputType = {
   likesCount: number;
@@ -7,44 +7,6 @@ export type ExtendedLikesInfoOutputType = {
   newestLikes: newestLike[];
   myStatus: LikeStatus;
 };
-
-export class PostDb {
-  public _id: string;
-  public createdAt: string;
-  public extendedLikesInfo: ExtendedLikesInfoDbType;
-
-  constructor(
-    public title: string,
-    public shortDescription: string,
-    public content: string,
-    public blogId: string,
-    public blogName: string,
-  ) {
-    this._id = crypto.randomUUID();
-    this.createdAt = new Date().toISOString();
-    this.extendedLikesInfo = {
-      likesCount: 0,
-      dislikesCount: 0,
-      newestLikes: [],
-    };
-  }
-
-  toDto(): OutputPostType {
-    return {
-      id: this._id.toString(),
-      title: this.title,
-      shortDescription: this.shortDescription,
-      content: this.content,
-      blogId: this.blogId,
-      blogName: this.blogName,
-      createdAt: this.createdAt,
-      extendedLikesInfo: {
-        ...this.extendedLikesInfo,
-        myStatus: 'None',
-      },
-    };
-  }
-}
 
 export type OutputPostType = {
   id: string;

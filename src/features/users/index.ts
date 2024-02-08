@@ -1,5 +1,5 @@
-import { UsersRepository } from './repositories/users.repository';
-import { UserService } from './services/userService';
 import { UserQueryRepository } from './repositories/user.query.repository';
+import { UserRepository } from './repositories/userRepository';
+import { UserService } from './services/user.service';
 
-export const userProviders = [UsersRepository, UserQueryRepository, UserService];
+export const userProviders = [UserRepository, UserQueryRepository, UserService];

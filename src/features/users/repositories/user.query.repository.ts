@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { User, UsersDocument } from './users-schema';
 import { FilterQuery, Model } from 'mongoose';
-import { UserSortData } from '../types/input';
-import { QueryPagination } from '../../common/utils/queryPagination';
-import { UserOutputType } from '../types/output';
+
 import { PaginationWithItems } from '../../common/types/output';
+import { QueryPagination } from '../../common/utils/queryPagination';
+import { UserSortData } from '../types/input';
+import { UserOutputType } from '../types/output';
+import { User, UsersDocument } from './users-schema';
 
 @Injectable()
 export class UserQueryRepository {

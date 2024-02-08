@@ -1,11 +1,12 @@
-import { InjectModel } from '@nestjs/mongoose';
 import { Injectable } from '@nestjs/common';
-import { Blog, BlogsDocument } from './blogs-schema';
+import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
-import { OutputBlogType } from '../types/output';
-import { BlogSortData } from '../types/input';
+
 import { PaginationWithItems } from '../../common/types/output';
 import { QueryPagination } from '../../common/utils/queryPagination';
+import { BlogSortData } from '../types/input';
+import { OutputBlogType } from '../types/output';
+import { Blog, BlogsDocument } from './blogs-schema';
 
 @Injectable()
 export class BlogsQueryRepository {

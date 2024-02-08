@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
-import { OutputBlogType } from '../types/output';
+
 import { BlogUpdateType } from '../types/input';
+import { OutputBlogType } from '../types/output';
 
 @Schema()
 export class Blog {
@@ -24,9 +25,19 @@ export class Blog {
     required: true,
   })
   isMembership: boolean;
+  constructor(name: string, description: string, websiteUrl: string) {
+    // eslint-disable-next-line no-underscore-dangle
+    this._id = crypto.randomUUID();
+    this.name = name;
+    this.description = description;
+    this.websiteUrl = websiteUrl;
+    this.createdAt = new Date().toISOString();
+    this.isMembership = false;
+  }
 
   toDto(): OutputBlogType {
     return {
+      // eslint-disable-next-line no-underscore-dangle
       id: this._id,
       name: this.name,
       description: this.description,
@@ -35,7 +46,7 @@ export class Blog {
       isMembership: this.isMembership,
     };
   }
-  updateBlog(params: BlogUpdateType) {
+  updateBlog(params: BlogUpdateType): void {
     this.name = params.name;
     this.description = params.description;
     this.websiteUrl = params.websiteUrl;
