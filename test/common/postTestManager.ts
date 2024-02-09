@@ -10,10 +10,22 @@ export class PostTestManager {
     login: string;
     password: string;
   };
+
+  public basicPostToBlogData: {
+    title: string;
+    shortDescription: string;
+    content: string;
+  };
+
   constructor(protected readonly app: INestApplication) {
     this.adminData = {
       login: 'admin',
       password: 'qwerty',
+    };
+    this.basicPostToBlogData = {
+      title: `titleTest`,
+      shortDescription: `shortDescriptionTest`,
+      content: `contentTest`,
     };
   }
 
@@ -42,16 +54,17 @@ export class PostTestManager {
       .expect(status);
   }
   async createPostToBlog(
-    postData: PostToBlogCreateModel,
+    postData: PostToBlogCreateModel | null,
     blogId: string,
-    status: number,
+    status: number = 201,
     adminData?: { login: string; password: string },
   ) {
     const authData = adminData ?? this.adminData;
+    const postCreateData = postData ?? this.basicPostToBlogData;
     return request(this.app.getHttpServer())
       .post(`/blogs/${blogId}/posts`)
       .auth(authData.login, authData.password)
-      .send(postData)
+      .send(postCreateData)
       .expect(status);
   }
 }

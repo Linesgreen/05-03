@@ -9,14 +9,28 @@ export class BlogTestManager {
     login: string;
     password: string;
   };
+  public basicBlogData: {
+    name: string;
+    description: string;
+    websiteUrl: string;
+  };
   constructor(protected readonly app: INestApplication) {
     this.adminData = {
       login: 'admin',
       password: 'qwerty',
     };
+    this.basicBlogData = {
+      name: 'test',
+      description: 'description_test',
+      websiteUrl: 'https://test.com',
+    };
   }
 
-  async createBlog(blogData: BlogUpdateType, status: number, adminData?: { login: string; password: string }) {
+  async createBlog(
+    blogData: BlogUpdateType = this.basicBlogData,
+    status: number = 201,
+    adminData?: { login: string; password: string },
+  ) {
     const authData = adminData ?? this.adminData;
     return request(this.app.getHttpServer())
       .post('/blogs')

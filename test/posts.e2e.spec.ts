@@ -6,14 +6,21 @@ import request from 'supertest';
 
 import { AppModule } from '../src/app.module';
 import { appSettings } from '../src/settings/aplly-app-setting';
+import { AuthTestManager } from './common/authTestManager';
 import { BlogTestManager } from './common/blogTestManager';
+import { CommentTestManager } from './common/commentTestManager';
 import { PostTestManager } from './common/postTestManager';
+import { UserTestManager } from './common/userTestManager';
 
 describe('Posts e2e', () => {
   let app: INestApplication;
   let httpServer;
   let postTestManager: PostTestManager;
   let blogTetsManager: BlogTestManager;
+  let authTestManager: AuthTestManager;
+  let commentTestManager: CommentTestManager;
+  let userTestManager: UserTestManager;
+
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -25,6 +32,9 @@ describe('Posts e2e', () => {
 
     postTestManager = new PostTestManager(app);
     blogTetsManager = new BlogTestManager(app);
+    authTestManager = new AuthTestManager(app);
+    commentTestManager = new CommentTestManager(app);
+    userTestManager = new UserTestManager(app);
     await request(httpServer).delete('/testing/all-data').expect(204);
   });
 
@@ -94,7 +104,6 @@ describe('Posts e2e', () => {
         return response.body;
       }),
     );
-    console.log(postsInDb);
   });
 
   it('get 9 blogs', async function () {
@@ -237,5 +246,149 @@ describe('Posts e2e', () => {
     expect(postsResponse.body.pageSize).toBe(2);
     expect(postsResponse.body.items[0]).toEqual(postsInDb[2]);
     expect(postsResponse.body.items[1]).toEqual(postsInDb[3]);
+  });
+
+  describe('create comments to post', () => {
+    let userData;
+    let token: string;
+    let blogId: string;
+    let postId: string;
+    beforeAll(async () => {
+      await request(httpServer).delete('/testing/all-data').expect(204);
+    });
+
+    it('create basic user | create post', async () => {
+      userData = userTestManager.userDefaultCreateData;
+      await userTestManager.createUser();
+    });
+
+    it('get token', async () => {
+      const tokenspair = await authTestManager.getTokens(userData.email, userData.password);
+      token = tokenspair.token;
+    });
+
+    it('create blog and post', async () => {
+      const response = await blogTetsManager.createBlog();
+      blogId = response.body.id;
+
+      const postResponse = await postTestManager.createPostToBlog(null, blogId);
+      postId = postResponse.body.id;
+    });
+
+    it('create comment to post', async () => {
+      const response = await request(httpServer)
+        .post(`/posts/${postId}/comments`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ content: 'testtesttesttesttest' })
+        .expect(201);
+
+      expect(response.body.id).toEqual(expect.any(String));
+      expect(response.body.content).toBe('testtesttesttesttest');
+      expect(response.body.createdAt).toEqual(expect.any(String));
+      expect(response.body.commentatorInfo.userLogin).toEqual(userData.login);
+      expect(response.body.likesInfo.likesCount).toEqual(0);
+      expect(response.body.likesInfo.dislikesCount).toEqual(0);
+      expect(response.body.likesInfo.myStatus).toEqual('None');
+    });
+    it('shouldn"t create comment to post', async () => {
+      const response = await request(httpServer)
+        .post(`/posts/${postId}/comments`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ content: 'test' })
+        .expect(400);
+
+      expect(response.body.errorsMessages[0].field).toEqual('content');
+    });
+    it('shouldn"t create comment to post without authorization', async () => {
+      await request(httpServer)
+        .post(`/posts/${postId}/comments`)
+        .set('Authorization', `Bearer 12312123123`)
+        .send({ content: 'test' })
+        .expect(401);
+    });
+  });
+  describe('get comment from post  ', () => {
+    const userData = {
+      login: 'loginTest',
+      password: 'qwerty',
+      email: 'linesreen@mail.ru',
+    };
+    let token: string;
+
+    const userData2 = {
+      login: '2loginTest',
+      password: '2qwerty',
+      email: '2linesreen@mail.ru',
+    };
+    let token2: string;
+
+    let blogId: string;
+    let postId: string;
+    beforeAll(async () => {
+      await request(httpServer).delete('/testing/all-data').expect(204);
+
+      await userTestManager.createUser(201, userData);
+      await userTestManager.createUser(201, userData2);
+
+      const tokenspair = await authTestManager.getTokens(userData.email, userData.password);
+      token = tokenspair.token;
+      const tokenspair2 = await authTestManager.getTokens(userData2.email, userData2.password);
+      token2 = tokenspair2.token;
+
+      const response = await blogTetsManager.createBlog();
+      blogId = response.body.id;
+
+      const postResponse = await postTestManager.createPostToBlog(null, blogId);
+      postId = postResponse.body.id;
+    });
+    it('create comment from user1 and user2', async () => {
+      const response1 = await commentTestManager.createCommentToPost(postId, 'userCommentTestTestTest', token);
+      const response2 = await commentTestManager.createCommentToPost(postId, 'user2CommentTestTestTest', token2);
+      const comment1Id = response1.body.id;
+      const comment2Id = response2.body.id;
+      expect.setState(comment1Id);
+      expect.setState(comment2Id);
+    });
+    it('get comments by post id', async () => {
+      const response = await request(httpServer).get(`/posts/${postId}/comments`).expect(200);
+      expect(response.body.items.length).toEqual(2);
+      expect(response.body.items.length).toEqual(2);
+      expect(response.body.items[0].content).toEqual('user2CommentTestTestTest');
+      expect(response.body.items[1].content).toEqual('userCommentTestTestTest');
+      expect(response.body.items[0].commentatorInfo.userLogin).toEqual('2loginTest');
+      expect(response.body.items[1].commentatorInfo.userLogin).toEqual('loginTest');
+    });
+    it('cant get comments by not exist post id', async () => {
+      await request(httpServer).get(`/posts/123/comments`).expect(404);
+    });
+  });
+  describe('pagination test comment from post', () => {
+    const userData = {
+      login: 'loginTest',
+      password: 'qwerty',
+      email: 'linesreen@mail.ru',
+    };
+    let token: string;
+    let blogId: string;
+    let postId: string;
+
+    beforeAll(async () => {
+      await request(httpServer).delete('/testing/all-data').expect(204);
+
+      await userTestManager.createUser(201, userData);
+
+      const tokenspair = await authTestManager.getTokens(userData.email, userData.password);
+      token = tokenspair.token;
+
+      const response = await blogTetsManager.createBlog();
+      blogId = response.body.id;
+
+      const postResponse = await postTestManager.createPostToBlog(null, blogId);
+      postId = postResponse.body.id;
+    });
+    it('create 10 comments', async () => {
+      const comments = await commentTestManager.createNcommentsToPsot(10, postId, token);
+      console.log(comments);
+    });
   });
 });

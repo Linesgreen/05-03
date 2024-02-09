@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { Blog, BlogsDocument } from '../../blogs/repositories/blogs-schema';
+import { Comment, CommentsDocument } from '../../comments/repositories/comment.schema';
 import { Post, PostsDocument } from '../../posts/repositories/post.schema';
 import { User, UsersDocument } from '../../users/repositories/users-schema';
 
@@ -15,6 +16,8 @@ export class TestingController {
     private PostModel: Model<PostsDocument>,
     @InjectModel(User.name)
     private UserModel: Model<UsersDocument>,
+    @InjectModel(Comment.name)
+    private CommentModel: Model<CommentsDocument>,
   ) {}
   @Delete('/all-data')
   @HttpCode(204)
@@ -22,6 +25,7 @@ export class TestingController {
     await this.BlogModel.deleteMany({});
     await this.PostModel.deleteMany({});
     await this.UserModel.deleteMany({});
+    await this.CommentModel.deleteMany({});
     return;
   }
 }

@@ -5,7 +5,6 @@ import { HydratedDocument } from 'mongoose';
 import { LikeStatus, OutputCommentType } from '../types/output';
 
 @Schema()
-@Schema()
 export class Comment {
   @Prop({ required: true }) _id: string;
   @Prop({ required: true }) postId: string;

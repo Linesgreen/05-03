@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, Put, UseGuards } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 
+import { CommentOwnerGuard } from '../../../infrastructure/guards/comment-owner-guard';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CommentsQueryRepository } from '../repositories/comments.query.repository';
 import { DeleteCommentByIdCommand } from '../service/useCase/delte-comment-byId.useCase';
@@ -24,7 +25,7 @@ export class CommentsController {
 
   @Put(':commentId')
   @HttpCode(204)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, CommentOwnerGuard)
   async updateComment(@Param('commentId') commentId: string, @Body() { content }: CommentUpdateModel): Promise<void> {
     console.log(commentId);
     await this.commandBus.execute(new UpdateCommentCommand(commentId, content));
@@ -32,7 +33,8 @@ export class CommentsController {
   }
 
   @Delete(':commentId')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, CommentOwnerGuard)
+  // @UseGuards(CommentOwnerGuard)
   @HttpCode(204)
   async deleteComment(@Param('commentId') commentId: string): Promise<void> {
     await this.commandBus.execute(new DeleteCommentByIdCommand(commentId));

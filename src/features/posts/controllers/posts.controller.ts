@@ -16,12 +16,13 @@ import { CommandBus } from '@nestjs/cqrs';
 import { AuthGuard } from '../../../infrastructure/guards/auth-basic.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decrator';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { CommentsQueryRepository } from '../../comments/repositories/comments.query.repository';
 import { OutputCommentType } from '../../comments/types/output';
 import { PaginationWithItems } from '../../common/types/output';
 import { PostsQueryRepository } from '../repositories/posts.query.repository';
 import { PostService } from '../services/postService';
-import { CreateCommentCommand } from '../services/useCase/create-comment.userCase';
-import { CommentCreateModel, PostCreateModel, PostSortData, PostUpdateType } from '../types/input';
+import { CreateCommentCommand } from '../services/useCase/create-comment.useCase';
+import { CommentCreateModel, PostCreateModel, postIdforComment, PostSortData, PostUpdateType } from '../types/input';
 import { OutputPostType } from '../types/output';
 
 @Controller('posts')
@@ -29,6 +30,7 @@ export class PostsController {
   constructor(
     protected readonly postService: PostService,
     protected readonly postQueryRepository: PostsQueryRepository,
+    protected readonly commentsQueryRepository: CommentsQueryRepository,
     private commandBus: CommandBus,
   ) {}
 
@@ -42,6 +44,14 @@ export class PostsController {
     const targetPost: OutputPostType | null = await this.postQueryRepository.findById(postId);
     if (!targetPost) throw new NotFoundException('Post Not Found');
     return targetPost;
+  }
+  //TODO узнать насчет валидатора на отсуствие поста тут
+  @Get(':postId/comments')
+  async getCommentsForPost(
+    @Param() { postId }: postIdforComment,
+    @Query() queryData: PostSortData,
+  ): Promise<PaginationWithItems<OutputCommentType>> {
+    return this.commentsQueryRepository.getCommentsByPostId(queryData, postId);
   }
 
   @Post()

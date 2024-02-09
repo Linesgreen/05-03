@@ -26,7 +26,7 @@ import { UpdateCommentUseCase } from './features/comments/service/useCase/update
 import { postProviders } from './features/posts';
 import { PostsController } from './features/posts/controllers/posts.controller';
 import { Post, PostSchema } from './features/posts/repositories/post.schema';
-import { CreateCommentUseCase } from './features/posts/services/useCase/create-comment.userCase';
+import { CreateCommentUseCase } from './features/posts/services/useCase/create-comment.useCase';
 import { TestingController } from './features/testing/controllers/testing.controller';
 import { userProviders } from './features/users';
 import { UserController } from './features/users/controllers/user.controller';
@@ -34,6 +34,7 @@ import { User, UserSchema } from './features/users/repositories/users-schema';
 import { ConfCodeIsValidConstraint } from './infrastructure/decorators/validate/conf-code.decorator';
 import { EmailIsConformedConstraint } from './infrastructure/decorators/validate/email-is-conformed.decorator';
 import { NameIsExistConstraint } from './infrastructure/decorators/validate/name-is-exist.decorator';
+import { PostIsExistConstraint } from './infrastructure/decorators/validate/post-is-exist.decorator';
 import { MailModule } from './mail/mail.module';
 
 const useCases = [
@@ -83,8 +84,9 @@ const useCases = [
     ...commentProviders,
     ...useCases,
     NameIsExistConstraint,
-    ConfCodeIsValidConstraint,
     EmailIsConformedConstraint,
+    ConfCodeIsValidConstraint,
+    PostIsExistConstraint,
     LocalStrategy,
     JwtStrategy,
   ],

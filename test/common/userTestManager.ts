@@ -19,7 +19,11 @@ export class UserTestManager {
   }
 
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  async createUser(status: number, userData?: UserCreateModel | null, adminData?: { login: string; password: string }) {
+  async createUser(
+    status: number = 201,
+    userData?: UserCreateModel | null,
+    adminData?: { login: string; password: string },
+  ) {
     const authData = adminData ?? this.adminData;
     const userCreateData = userData ?? this.userDefaultCreateData;
     return request(this.app.getHttpServer())

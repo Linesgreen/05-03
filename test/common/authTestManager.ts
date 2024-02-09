@@ -26,6 +26,7 @@ export class AuthTestManager {
     const response = await this.login(loginOrEmail, password);
     const token = response.body.accessToken;
 
+    //TODO спросить про ts ignore
     //need ts ignore bcs ts type shit
     // @ts-ignore
     const cookiesArray: string[] = response.header['set-cookie'];

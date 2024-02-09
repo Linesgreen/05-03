@@ -1,5 +1,6 @@
 import { QueryPaginationType } from '../types/input';
 
+//TODO инжектить ли этот класс в блог репозиторий и пост репозиторий
 export class QueryPagination {
   static convertQueryPination(queryParams: QueryPaginationType): QueryPaginationResult {
     return {
