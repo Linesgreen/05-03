@@ -5,6 +5,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 
 import { AppModule } from '../src/app.module';
+import { OutputCommentType } from '../src/features/comments/types/output';
 import { appSettings } from '../src/settings/aplly-app-setting';
 import { AuthTestManager } from './common/authTestManager';
 import { BlogTestManager } from './common/blogTestManager';
@@ -371,6 +372,7 @@ describe('Posts e2e', () => {
     let token: string;
     let blogId: string;
     let postId: string;
+    let comments: OutputCommentType[];
 
     beforeAll(async () => {
       await request(httpServer).delete('/testing/all-data').expect(204);
@@ -386,9 +388,57 @@ describe('Posts e2e', () => {
       const postResponse = await postTestManager.createPostToBlog(null, blogId);
       postId = postResponse.body.id;
     });
-    it('create 10 comments', async () => {
-      const comments = await commentTestManager.createNcommentsToPsot(10, postId, token);
-      console.log(comments);
+    it('create 11 comments', async () => {
+      comments = await commentTestManager.createNcommentsToPost(11, postId, token);
+    });
+    it('get 10 comments from post [sortDirection = ASC]', async () => {
+      const response = await request(httpServer).get(`/posts/${postId}/comments?sortDirection=asc`).expect(200);
+      const commentsFromRes = response.body.items;
+
+      expect(response.body.pagesCount).toEqual(2);
+      expect(response.body.totalCount).toEqual(11);
+      expect(response.body.page).toEqual(1);
+
+      expect(commentsFromRes.length).toEqual(10);
+      expect(commentsFromRes[0]).toEqual(comments[0]);
+      expect(commentsFromRes[2]).toEqual(comments[2]);
+      expect(commentsFromRes[4]).toEqual(comments[4]);
+      expect(commentsFromRes[6]).toEqual(comments[6]);
+      expect(commentsFromRes[8]).toEqual(comments[8]);
+      expect(commentsFromRes[9]).toEqual(comments[9]);
+    });
+    it('get 10 comments from post [sortDirection = DESC(defaults)]', async () => {
+      const descComments = [...comments].reverse();
+      const response = await request(httpServer).get(`/posts/${postId}/comments`).expect(200);
+      const commentsFromRes = response.body.items;
+
+      expect(response.body.pagesCount).toEqual(2);
+      expect(response.body.totalCount).toEqual(11);
+      expect(response.body.page).toEqual(1);
+
+      expect(commentsFromRes.length).toEqual(10);
+      expect(commentsFromRes[0]).toEqual(descComments[0]);
+      expect(commentsFromRes[2]).toEqual(descComments[2]);
+      expect(commentsFromRes[4]).toEqual(descComments[4]);
+      expect(commentsFromRes[6]).toEqual(descComments[6]);
+      expect(commentsFromRes[8]).toEqual(descComments[8]);
+      expect(commentsFromRes[9]).toEqual(descComments[9]);
+    });
+    it('get 5 comments from post [sortDirection: ASC,pageNumber: 2, pageSize: 5,sortBy: content]', async () => {
+      const response = await request(httpServer)
+        .get(`/posts/${postId}/comments?sortDirection=asc&pageNumber=2&pageSize=5&sortBy=content`)
+        .expect(200);
+      const commentsFromRes = response.body.items;
+
+      expect(response.body.pagesCount).toEqual(3);
+      expect(response.body.totalCount).toEqual(11);
+      expect(response.body.page).toEqual(2);
+      expect(response.body.pageSize).toEqual(5);
+
+      expect(commentsFromRes.length).toEqual(5);
+      expect(commentsFromRes[0]).toEqual(comments[4]);
+      expect(commentsFromRes[2]).toEqual(comments[6]);
+      expect(commentsFromRes[4]).toEqual(comments[8]);
     });
   });
 });

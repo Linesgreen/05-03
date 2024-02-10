@@ -41,10 +41,10 @@ export class CommentTestManager {
       .expect(status);
   }
 
-  async createNcommentsToPsot(n: number, postId: string, token: string): Promise<OutputCommentType[]> {
+  async createNcommentsToPost(n: number, postId: string, token: string): Promise<OutputCommentType[]> {
     const basicContent = 'userCommentTestTestTest';
     const comments: OutputCommentType[] = [];
-    for (let i = 0; i < n + 1; i++) {
+    for (let i = 0; i < n; i++) {
       const response = await request(this.app.getHttpServer())
         .post(`/posts/${postId}/comments`)
         .set('Authorization', `Bearer ${token}`)

@@ -26,7 +26,6 @@ export class CommentsQueryRepository {
 
     const filter: FilterQuery<Blog> = { postId };
     const sortFilter: FilterQuery<Blog> = { [formattedSortData.sortBy]: formattedSortData.sortDirection };
-
     const comments = await this.CommentModel.find(filter)
       .sort(sortFilter)
       .skip((+formattedSortData.pageNumber - 1) * +formattedSortData.pageSize)
