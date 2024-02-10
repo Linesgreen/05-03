@@ -2,6 +2,6 @@ import { IsString, Length } from 'class-validator';
 
 export class CommentUpdateModel {
   @IsString()
-  @Length(1, 1000)
+  @Length(30, 300)
   content: string;
 }
