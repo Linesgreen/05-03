@@ -5,7 +5,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 
 import { AppModule } from '../src/app.module';
-import { OutputCommentType } from '../src/features/comments/types/output';
+import { OutputCommentType } from '../src/features/comments/types/comments/output';
 import { appSettings } from '../src/settings/aplly-app-setting';
 import { AuthTestManager } from './common/authTestManager';
 import { BlogTestManager } from './common/blogTestManager';

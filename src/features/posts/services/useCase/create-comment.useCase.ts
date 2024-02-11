@@ -1,9 +1,9 @@
 import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { Comment } from '../../../comments/repositories/comment.schema';
-import { CommentsRepository } from '../../../comments/repositories/comments.repository';
-import { OutputCommentType } from '../../../comments/types/output';
+import { Comment } from '../../../comments/repositories/comments/comment.schema';
+import { CommentsRepository } from '../../../comments/repositories/comments/comments.repository';
+import { OutputCommentType } from '../../../comments/types/comments/output';
 import { UserRepository } from '../../../users/repositories/userRepository';
 import { UsersDocument } from '../../../users/repositories/users-schema';
 import { PostsQueryRepository } from '../../repositories/posts.query.repository';

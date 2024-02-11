@@ -173,9 +173,6 @@ describe('Auth e2e test', () => {
       mockdate.reset();
     });
     it('login user with good data', async () => {
-      //const tokensPair = await authTestManager.getTokens(userLoginData.email, userLoginData.password);
-      //expect(tokensPair.token).toBeTruthy();
-      //expect(tokensPair.refreshToken).toBeTruthy();
       const repspone = await authTestManager.login(userLoginData.email, userLoginData.password, 201);
       //regEx for JWT token [\w-]*\.[\w-]*\.[\w-]*/g
       expect(repspone.body.accessToken).toMatch(/^[\w-]*\.[\w-]*\.[\w-]*/);

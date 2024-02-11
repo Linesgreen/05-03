@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 
-import { CommentsQueryRepository } from '../../features/comments/repositories/comments.query.repository';
+import { CommentsQueryRepository } from '../../features/comments/repositories/comments/comments.query.repository';
 //TODO узнать про интересную особенность что он все равно срабатывает
 // Custom guard
 // https://docs.nestjs.com/guards

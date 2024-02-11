@@ -20,7 +20,9 @@ import { BlogsController } from './features/blogs/controllers/blogs.controller';
 import { Blog, BlogSchema } from './features/blogs/repositories/blogs-schema';
 import { commentProviders } from './features/comments';
 import { CommentsController } from './features/comments/controller/comments.controller';
-import { Comment, CommentSchema } from './features/comments/repositories/comment.schema';
+import { Comment, CommentSchema } from './features/comments/repositories/comments/comment.schema';
+import { CommentsLikes, CommentsLikesSchema } from './features/comments/repositories/likes/likes.schema';
+import { AddLikeToCommentUseCase } from './features/comments/service/useCase/add-like.useCase';
 import { DeleteCommentByIdUseCase } from './features/comments/service/useCase/delte-comment-byId.useCase';
 import { UpdateCommentUseCase } from './features/comments/service/useCase/update-comment.useCase';
 import { postProviders } from './features/posts';
@@ -33,6 +35,7 @@ import { UserController } from './features/users/controllers/user.controller';
 import { User, UserSchema } from './features/users/repositories/users-schema';
 import { ConfCodeIsValidConstraint } from './infrastructure/decorators/validate/conf-code.decorator';
 import { EmailIsConformedConstraint } from './infrastructure/decorators/validate/email-is-conformed.decorator';
+import { LikeStatusConstraint } from './infrastructure/decorators/validate/like-status.decorator';
 import { NameIsExistConstraint } from './infrastructure/decorators/validate/name-is-exist.decorator';
 import { PostIsExistConstraint } from './infrastructure/decorators/validate/post-is-exist.decorator';
 import { MailModule } from './mail/mail.module';
@@ -46,6 +49,7 @@ const useCases = [
   CreateCommentUseCase,
   DeleteCommentByIdUseCase,
   UpdateCommentUseCase,
+  AddLikeToCommentUseCase,
 ];
 
 @Module({
@@ -61,6 +65,7 @@ const useCases = [
       { name: Post.name, schema: PostSchema },
       { name: User.name, schema: UserSchema },
       { name: Comment.name, schema: CommentSchema },
+      { name: CommentsLikes.name, schema: CommentsLikesSchema },
     ]),
     JwtModule.register({
       global: true,
@@ -85,6 +90,7 @@ const useCases = [
     ...useCases,
     NameIsExistConstraint,
     EmailIsConformedConstraint,
+    LikeStatusConstraint,
     ConfCodeIsValidConstraint,
     PostIsExistConstraint,
     LocalStrategy,

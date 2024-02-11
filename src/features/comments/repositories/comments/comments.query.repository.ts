@@ -2,11 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
 
-import { Blog } from '../../blogs/repositories/blogs-schema';
-import { PaginationWithItems } from '../../common/types/output';
-import { QueryPagination } from '../../common/utils/queryPagination';
-import { PostSortData } from '../../posts/types/input';
-import { OutputCommentType } from '../types/output';
+import { Blog } from '../../../blogs/repositories/blogs-schema';
+import { PaginationWithItems } from '../../../common/types/output';
+import { QueryPagination } from '../../../common/utils/queryPagination';
+import { PostSortData } from '../../../posts/types/input';
+import { OutputCommentType } from '../../types/comments/output';
 import { Comment, CommentsDocument } from './comment.schema';
 
 @Injectable()

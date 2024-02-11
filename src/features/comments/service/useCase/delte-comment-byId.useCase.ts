@@ -1,7 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { CommentsRepository } from '../../repositories/comments.repository';
+import { CommentsRepository } from '../../repositories/comments/comments.repository';
 
 export class DeleteCommentByIdCommand {
   constructor(public commentId: string) {}

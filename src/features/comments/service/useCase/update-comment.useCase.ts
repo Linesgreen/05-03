@@ -1,8 +1,8 @@
 import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { CommentsDocument } from '../../repositories/comment.schema';
-import { CommentsRepository } from '../../repositories/comments.repository';
+import { CommentsDocument } from '../../repositories/comments/comment.schema';
+import { CommentsRepository } from '../../repositories/comments/comments.repository';
 
 export class UpdateCommentCommand {
   constructor(

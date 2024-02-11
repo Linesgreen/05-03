@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { Blog, BlogsDocument } from '../../blogs/repositories/blogs-schema';
-import { Comment, CommentsDocument } from '../../comments/repositories/comment.schema';
+import { Comment, CommentsDocument } from '../../comments/repositories/comments/comment.schema';
 import { Post, PostsDocument } from '../../posts/repositories/post.schema';
 import { User, UsersDocument } from '../../users/repositories/users-schema';
 

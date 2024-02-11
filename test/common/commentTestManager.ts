@@ -3,7 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 
 import { BlogUpdateType } from '../../src/features/blogs/types/input';
-import { OutputCommentType } from '../../src/features/comments/types/output';
+import { OutputCommentType } from '../../src/features/comments/types/comments/output';
 
 export class CommentTestManager {
   public adminData: {
