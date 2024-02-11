@@ -1,4 +1,5 @@
-import { Module } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { CqrsModule } from '@nestjs/cqrs';
 import { JwtModule } from '@nestjs/jwt';
@@ -24,6 +25,7 @@ import { Comment, CommentSchema } from './features/comments/repositories/comment
 import { CommentsLikes, CommentsLikesSchema } from './features/comments/repositories/likes/likes.schema';
 import { AddLikeToCommentUseCase } from './features/comments/service/useCase/add-like.useCase';
 import { DeleteCommentByIdUseCase } from './features/comments/service/useCase/delte-comment-byId.useCase';
+import { GetCommentByIdUseCase } from './features/comments/service/useCase/get-comment.userCase';
 import { UpdateCommentUseCase } from './features/comments/service/useCase/update-comment.useCase';
 import { postProviders } from './features/posts';
 import { PostsController } from './features/posts/controllers/posts.controller';
@@ -38,6 +40,7 @@ import { EmailIsConformedConstraint } from './infrastructure/decorators/validate
 import { LikeStatusConstraint } from './infrastructure/decorators/validate/like-status.decorator';
 import { NameIsExistConstraint } from './infrastructure/decorators/validate/name-is-exist.decorator';
 import { PostIsExistConstraint } from './infrastructure/decorators/validate/post-is-exist.decorator';
+import { PayloadFromJwtMiddleware } from './infrastructure/middleware/payload-from-jwt.middleware';
 import { MailModule } from './mail/mail.module';
 
 const useCases = [
@@ -50,6 +53,7 @@ const useCases = [
   DeleteCommentByIdUseCase,
   UpdateCommentUseCase,
   AddLikeToCommentUseCase,
+  GetCommentByIdUseCase,
 ];
 
 @Module({
@@ -97,4 +101,8 @@ const useCases = [
     JwtStrategy,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(PayloadFromJwtMiddleware).forRoutes({ path: 'comments/:commentId', method: RequestMethod.GET });
+  }
+}
