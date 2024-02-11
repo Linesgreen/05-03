@@ -46,7 +46,6 @@ export class CommentsController {
 
   @Delete(':commentId')
   @UseGuards(JwtAuthGuard, CommentOwnerGuard)
-  // @UseGuards(CommentOwnerGuard)
   @HttpCode(204)
   async deleteComment(@Param('commentId') commentId: string): Promise<void> {
     await this.commandBus.execute(new DeleteCommentByIdCommand(commentId));

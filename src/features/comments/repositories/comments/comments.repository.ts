@@ -30,46 +30,16 @@ export class CommentsRepository {
   async saveComment(comment: CommentsDocument): Promise<void> {
     await comment.save();
   }
-  //TODO засунуть в метод класса Comments
-  async addLikes(commentId: string, likeStatus: LikeStatusType): Promise<void> {
-    const targetComment = await this.CommentModel.findById(commentId);
+  //TODO узнать нормально ли или лучше как было раньше?
+  async updateLikesCount(
+    commentId: string,
+    operation: 'increment' | 'decrement',
+    likeStatus: LikeStatusType,
+  ): Promise<void> {
+    const updateField = likeStatus === 'Like' ? 'likesCount' : 'dislikesCount';
+    const updateValue = operation === 'increment' ? 1 : -1;
 
-    switch (likeStatus) {
-      case 'Dislike':
-        targetComment!.dislikesCount = targetComment!.dislikesCount + 1;
-        break;
-      case 'Like':
-        targetComment!.likesCount = targetComment!.likesCount + 1;
-        break;
-    }
-    await targetComment!.save();
-  }
-  async decreaseLike(commentId: string, likeStatus: LikeStatusType): Promise<void> {
-    const targetComment = await this.CommentModel.findById(commentId);
-    switch (likeStatus) {
-      case 'Dislike':
-        targetComment!.dislikesCount = targetComment!.dislikesCount - 1;
-        break;
-      case 'Like':
-        targetComment!.likesCount = targetComment!.likesCount - 1;
-        break;
-    }
-    await targetComment!.save();
-  }
-  async switchLike(commentId: string, likeStatus: LikeStatusType): Promise<void> {
-    const targetComment = await this.CommentModel.findById(commentId);
-
-    switch (likeStatus) {
-      case 'Dislike':
-        targetComment!.dislikesCount++;
-        targetComment!.likesCount--;
-        break;
-      case 'Like':
-        targetComment!.likesCount++;
-        targetComment!.dislikesCount--;
-        break;
-    }
-
-    await targetComment!.save();
+    // Если нужно обновить оба поля (switch), вызовите эту функцию дважды с разными полями
+    await this.CommentModel.findByIdAndUpdate(commentId, { $inc: { [updateField]: updateValue } }, { new: true });
   }
 }

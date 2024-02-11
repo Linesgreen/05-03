@@ -38,32 +38,26 @@ export class AddLikeToCommentUseCase implements ICommandHandler<AddLikeToComment
     );
 
     if (!userLike) {
-      await this.createUserLike(commentId, likeStatus, userId, user!.login, user!.login);
+      await this.createLike(commentId, likeStatus, userId, user!.login, user!.login);
       return;
     }
 
-    if (userLike.likeStatus === likeStatus) {
-      return;
-    }
-
-    if (userLike.likeStatus === 'None') {
-      await this.addUserLike(commentId, likeStatus, userId);
-      return;
-    }
+    // If user's like status is already as expected, no further action needed
+    if (likeStatus === userLike.likeStatus) return;
 
     switch (likeStatus) {
       case 'Dislike':
       case 'Like':
-        await this.switchLikeStatus(commentId, likeStatus, userId);
+        userLike.likeStatus === 'None'
+          ? await this.updateLike(commentId, likeStatus, userId)
+          : await this.switchLike(commentId, likeStatus, userId);
         break;
       case 'None':
-        await this.decreaseLike(commentId, likeStatus, userId, userLike.likeStatus);
-        break;
+        await this.decreaseLike(commentId, userLike.likeStatus, userId);
     }
-    return;
   }
 
-  async createUserLike(
+  private async createLike(
     commentId: string,
     likeStatus: LikeStatusType,
     userId: string,
@@ -71,26 +65,22 @@ export class AddLikeToCommentUseCase implements ICommandHandler<AddLikeToComment
     postId: string,
   ): Promise<void> {
     await this.commentsLikesRepository.createLike(commentId, postId, userId, login, likeStatus);
-    await this.commentsRepository.addLikes(commentId, likeStatus);
+    await this.commentsRepository.updateLikesCount(commentId, 'increment', likeStatus);
   }
 
-  async addUserLike(commentId: string, likeStatus: LikeStatusType, userId: string): Promise<void> {
-    await this.commentsRepository.addLikes(commentId, likeStatus);
+  private async updateLike(commentId: string, likeStatus: LikeStatusType, userId: string): Promise<void> {
+    await this.commentsRepository.updateLikesCount(commentId, 'increment', likeStatus);
     await this.commentsLikesRepository.updateLikeStatus(commentId, userId, likeStatus);
   }
 
-  async switchLikeStatus(commentId: string, likeStatus: LikeStatusType, userId: string): Promise<void> {
-    await this.commentsRepository.switchLike(commentId, likeStatus);
+  private async switchLike(commentId: string, likeStatus: LikeStatusType, userId: string): Promise<void> {
+    await this.commentsRepository.updateLikesCount(commentId, 'increment', likeStatus);
+    await this.commentsRepository.updateLikesCount(commentId, 'decrement', likeStatus === 'Like' ? 'Dislike' : 'Like');
     await this.commentsLikesRepository.updateLikeStatus(commentId, userId, likeStatus);
   }
 
-  async decreaseLike(
-    commentId: string,
-    likeStatus: LikeStatusType,
-    userId: string,
-    userLike: LikeStatusType,
-  ): Promise<void> {
-    await this.commentsRepository.decreaseLike(commentId, userLike);
-    await this.commentsLikesRepository.updateLikeStatus(commentId, userId, likeStatus);
+  private async decreaseLike(commentId: string, likeStatus: LikeStatusType, userId: string): Promise<void> {
+    await this.commentsRepository.updateLikesCount(commentId, 'decrement', likeStatus);
+    await this.commentsLikesRepository.updateLikeStatus(commentId, userId, 'None');
   }
 }
