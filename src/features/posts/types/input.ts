@@ -1,29 +1,36 @@
 import { IsString, Length } from 'class-validator';
 
-import { PostIsExist } from '../../../infrastructure/decorators/validate/post-is-exist.decorator';
+import { Trim } from '../../../infrastructure/decorators/transform/trim';
+import { BlogIsExist } from '../../blogs/validate/blog-is-exist.decorator';
 
 export class PostCreateModel {
+  @Trim()
   @Length(1, 30)
   title: string;
+  @Trim()
   @Length(1, 100)
   shortDescription: string;
+  @Trim()
   @Length(1, 1000)
   content: string;
+  @Trim()
+  @BlogIsExist()
   blogId: string;
 }
 
 export class PostUpdateType {
+  @Trim()
   @Length(1, 30)
   title: string;
+  @Trim()
   @Length(1, 30)
   shortDescription: string;
+  @Trim()
   @Length(1, 1000)
   content: string;
+  @Trim()
+  @BlogIsExist()
   blogId: string;
-}
-export class postIdforComment {
-  @PostIsExist()
-  postId: string;
 }
 
 export type PostSortData = {
@@ -34,6 +41,7 @@ export type PostSortData = {
 };
 
 export class CommentCreateModel {
+  @Trim()
   @IsString()
   @Length(20, 300)
   content: string;

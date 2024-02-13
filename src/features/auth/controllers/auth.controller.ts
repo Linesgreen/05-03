@@ -22,6 +22,7 @@ export class AuthController {
 
   @Post('login')
   @UseGuards(LocalAuthGuards)
+  @HttpCode(200)
   async loginUser(
     //Кастомный перехватчик id из request - который мы получаем с помощью гуарда
     @CurrentUser() userId: string,

@@ -8,9 +8,9 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 
-import { UserRepository } from '../../../features/users/repositories/userRepository';
+import { BlogsQueryRepository } from '../repositories/blogs.query.repository';
 
-export function ConfCodeIsValid(property?: string, validationOptions?: ValidationOptions) {
+export function BlogIsExist(property?: string, validationOptions?: ValidationOptions) {
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   return function (object: Object, propertyName: string) {
     registerDecorator({
@@ -18,29 +18,25 @@ export function ConfCodeIsValid(property?: string, validationOptions?: Validatio
       propertyName: propertyName,
       options: validationOptions,
       constraints: [property],
-      validator: ConfCodeIsValidConstraint,
+      validator: BlogIsExistConstraint,
     });
   };
 }
 
 // Обязательна регистрация в ioc
-@ValidatorConstraint({ name: 'ConfCodeIsValid', async: false })
+@ValidatorConstraint({ name: 'BlogIsExist', async: true })
 @Injectable()
-export class ConfCodeIsValidConstraint implements ValidatorConstraintInterface {
-  constructor(private readonly userRepository: UserRepository) {}
+export class BlogIsExistConstraint implements ValidatorConstraintInterface {
+  constructor(private readonly blogsQueryRepository: BlogsQueryRepository) {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async validate(value: any, args: ValidationArguments): Promise<boolean> {
-    const userWithCode = await this.userRepository.findByConfCode(value);
-    if (!userWithCode) return false;
-    if (!(userWithCode.emailConfirmation.expirationDate > new Date())) return false;
-    if (userWithCode.emailConfirmation.isConfirmed) return false;
-
-    return true;
+    const blog = await this.blogsQueryRepository.findById(value);
+    return !!blog;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   defaultMessage(validationArguments?: ValidationArguments): string {
-    return 'code not valid';
+    return 'blog dont exist';
   }
 }

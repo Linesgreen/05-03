@@ -2,8 +2,9 @@ import { Injectable } from '@nestjs/common';
 
 import { BlogsRepository } from '../repositories/blogs.repository';
 import { Blog, BlogsDocument } from '../repositories/blogs-schema';
-import { BlogCreateModel, BlogUpdateType } from '../types/input';
+import { BlogCreateModel } from '../types/input';
 import { OutputBlogType } from '../types/output';
+
 @Injectable()
 export class BlogsService {
   constructor(protected blogsRepository: BlogsRepository) {}
@@ -15,7 +16,7 @@ export class BlogsService {
     return newBlog.toDto();
   }
 
-  async updateBlog(newData: BlogUpdateType, blogId: string): Promise<boolean | null> {
+  async updateBlog(newData: BlogCreateModel, blogId: string): Promise<boolean | null> {
     const targetBlog: BlogsDocument | null = await this.blogsRepository.getBlogById(blogId);
     if (!targetBlog) return null;
     targetBlog.updateBlog(newData);

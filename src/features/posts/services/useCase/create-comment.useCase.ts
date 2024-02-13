@@ -6,7 +6,8 @@ import { CommentsRepository } from '../../../comments/repositories/comments/comm
 import { OutputCommentType } from '../../../comments/types/comments/output';
 import { UserRepository } from '../../../users/repositories/userRepository';
 import { UsersDocument } from '../../../users/repositories/users-schema';
-import { PostsQueryRepository } from '../../repositories/posts.query.repository';
+import { PostsQueryRepository } from '../../repositories/post/posts.query.repository';
+
 //TODO узнать куда пихать этот юз кейс
 export class CreateCommentCommand {
   constructor(
@@ -15,7 +16,7 @@ export class CreateCommentCommand {
     public content: string,
   ) {}
 }
-
+//TODO в папку коментов
 @CommandHandler(CreateCommentCommand)
 export class CreateCommentUseCase implements ICommandHandler<CreateCommentCommand> {
   constructor(

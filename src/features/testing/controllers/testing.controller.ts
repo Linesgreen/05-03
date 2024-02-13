@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 
 import { Blog, BlogsDocument } from '../../blogs/repositories/blogs-schema';
 import { Comment, CommentsDocument } from '../../comments/repositories/comments/comment.schema';
-import { Post, PostsDocument } from '../../posts/repositories/post.schema';
+import { Post, PostsDocument } from '../../posts/repositories/post/post.schema';
 import { User, UsersDocument } from '../../users/repositories/users-schema';
 
 @Controller('testing')

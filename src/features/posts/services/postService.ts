@@ -2,12 +2,11 @@ import { Injectable } from '@nestjs/common';
 
 import { BlogsQueryRepository } from '../../blogs/repositories/blogs.query.repository';
 import { OutputBlogType } from '../../blogs/types/output';
-import { Post, PostsDocument } from '../repositories/post.schema';
-import { PostsRepository } from '../repositories/posts.repository';
+import { Post, PostsDocument } from '../repositories/post/post.schema';
+import { PostsRepository } from '../repositories/post/posts.repository';
 import { PostCreateModel, PostUpdateType } from '../types/input';
 import { OutputPostType } from '../types/output';
 
-//TODo узнать про импорт поста или прокидывание его в конструктор
 @Injectable()
 export class PostService {
   constructor(

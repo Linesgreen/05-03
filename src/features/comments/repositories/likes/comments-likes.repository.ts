@@ -3,12 +3,12 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { LikeStatusType } from '../../types/comments/input';
-import { CommentsLikes, CommentsLikesDocument } from './likes.schema';
+import { CommentLikes, CommentsLikesDocument } from './likes.schema';
 
 @Injectable()
 export class CommentsLikesRepository {
   constructor(
-    @InjectModel(CommentsLikes.name)
+    @InjectModel(CommentLikes.name)
     private CommentLieksModel: Model<CommentsLikesDocument>,
   ) {}
 
@@ -19,7 +19,7 @@ export class CommentsLikesRepository {
     login: string,
     likeStatus: LikeStatusType,
   ): Promise<void> {
-    const newLike = new CommentsLikes(commentId, userId, login, likeStatus, postId);
+    const newLike = new CommentLikes(commentId, userId, login, likeStatus, postId);
     const newLikeToDb = new this.CommentLieksModel(newLike);
     await newLikeToDb.save();
   }

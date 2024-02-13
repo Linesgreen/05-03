@@ -2,12 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { CommentsLikes, CommentsLikesDocument } from './likes.schema';
+import { CommentLikes, CommentsLikesDocument } from './likes.schema';
 
 @Injectable()
-export class CommentLikesQueryRepository {
+export class CommentsLikesQueryRepository {
   constructor(
-    @InjectModel(CommentsLikes.name)
+    @InjectModel(CommentLikes.name)
     private CommentLieksModel: Model<CommentsLikesDocument>,
   ) {}
 

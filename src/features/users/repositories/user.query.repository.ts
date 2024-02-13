@@ -38,7 +38,6 @@ export class UserQueryRepository {
 
   async getUserById(userId: string): Promise<UserOutputType | null> {
     const user = await this.UserModel.findById(userId);
-    //TODO узнать про этот экспшн
     if (!user) return null;
     return user.toDto();
   }

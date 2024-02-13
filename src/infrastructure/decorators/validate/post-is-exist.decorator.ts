@@ -8,7 +8,7 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 
-import { PostsQueryRepository } from '../../../features/posts/repositories/posts.query.repository';
+import { PostsQueryRepository } from '../../../features/posts/repositories/post/posts.query.repository';
 
 export function PostIsExist(property?: string, validationOptions?: ValidationOptions) {
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -24,14 +24,13 @@ export function PostIsExist(property?: string, validationOptions?: ValidationOpt
 }
 
 // Обязательна регистрация в ioc
-@ValidatorConstraint({ name: 'EmailIsConformed', async: false })
+@ValidatorConstraint({ name: 'PostIsExist', async: true })
 @Injectable()
 export class PostIsExistConstraint implements ValidatorConstraintInterface {
   constructor(private readonly postsQueryRepository: PostsQueryRepository) {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async validate(value: any, args: ValidationArguments): Promise<boolean> {
-    console.log(args);
     const targerPost = await this.postsQueryRepository.findById(value);
     if (!targerPost) throw new NotFoundException();
     return true;

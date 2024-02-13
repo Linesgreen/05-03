@@ -2,28 +2,36 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
-import { LikeStatusType } from '../../types/comments/input';
+import { LikeStatusType } from '../../../comments/types/comments/input';
 
 @Schema()
-export class CommentLikes {
+export class PostLikes {
   @Prop({ required: true }) _id: string;
-  @Prop({ required: true }) commentId: string;
   @Prop({ required: true }) postId: string;
+  @Prop({ required: true }) blogId: string;
   @Prop({ required: true }) createdAt: Date;
   @Prop({ required: true }) userId: string;
   @Prop({ required: true }) login: string;
   @Prop({ required: true, enum: ['None', 'Like', 'Dislike'] })
   likeStatus: LikeStatusType;
-  constructor(commentId: string, userId: string, login: string, likeStatus: LikeStatusType, postId: string) {
+  constructor(postId: string, blogId: string, userId: string, login: string, likeStatus: LikeStatusType) {
     this._id = crypto.randomUUID();
-    this.commentId = commentId;
     this.postId = postId;
+    this.blogId = blogId;
     this.createdAt = new Date();
     this.userId = userId;
     this.login = login;
     this.likeStatus = likeStatus;
   }
+  //TODO добавить тип
+  toDto() {
+    return {
+      addedAt: this.createdAt.toISOString(),
+      userId: this.userId,
+      login: this.login,
+    };
+  }
 }
-export const CommentsLikesSchema = SchemaFactory.createForClass(CommentLikes);
-CommentsLikesSchema.loadClass(CommentLikes);
-export type CommentsLikesDocument = HydratedDocument<CommentLikes>;
+export const PostLikesSchema = SchemaFactory.createForClass(PostLikes);
+PostLikesSchema.loadClass(PostLikes);
+export type PostLikesDocument = HydratedDocument<PostLikes>;

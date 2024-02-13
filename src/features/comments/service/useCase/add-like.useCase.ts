@@ -4,8 +4,8 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UserQueryRepository } from '../../../users/repositories/user.query.repository';
 import { CommentsQueryRepository } from '../../repositories/comments/comments.query.repository';
 import { CommentsRepository } from '../../repositories/comments/comments.repository';
-import { CommentLikesQueryRepository } from '../../repositories/likes/comment-likes.query.repository';
 import { CommentsLikesRepository } from '../../repositories/likes/comments-likes.repository';
+import { CommentsLikesQueryRepository } from '../../repositories/likes/comments-likes-query.repository';
 import { CommentsLikesDocument } from '../../repositories/likes/likes.schema';
 import { LikeStatusType } from '../../types/comments/input';
 
@@ -21,7 +21,7 @@ export class AddLikeToCommentCommand {
 export class AddLikeToCommentUseCase implements ICommandHandler<AddLikeToCommentCommand> {
   constructor(
     protected commentsQueryRepository: CommentsQueryRepository,
-    protected commentLikesQueryRepository: CommentLikesQueryRepository,
+    protected commentLikesQueryRepository: CommentsLikesQueryRepository,
     protected commentsRepository: CommentsRepository,
     protected commentsLikesRepository: CommentsLikesRepository,
     protected userRepository: UserQueryRepository,
@@ -29,6 +29,7 @@ export class AddLikeToCommentUseCase implements ICommandHandler<AddLikeToComment
 
   async execute({ commentId, userId, likeStatus }: AddLikeToCommentCommand): Promise<void> {
     const user = await this.userRepository.getUserById(userId);
+    if (!user) throw new NotFoundException('user not found');
     const targetComment = await this.commentsQueryRepository.getCommentById(commentId);
 
     if (!targetComment) throw new NotFoundException();
@@ -38,7 +39,7 @@ export class AddLikeToCommentUseCase implements ICommandHandler<AddLikeToComment
     );
 
     if (!userLike) {
-      await this.createLike(commentId, likeStatus, userId, user!.login, user!.login);
+      await this.createLike(commentId, likeStatus, userId, user.login, user.login);
       return;
     }
 

@@ -2,9 +2,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
-import { PostUpdateType } from '../types/input';
-import { newestLike } from '../types/likes/output';
-import { OutputPostType } from '../types/output';
+import { LikeStatusType } from '../../../comments/types/comments/input';
+import { PostUpdateType } from '../../types/input';
+import { newestLike } from '../../types/likes/output';
+import { OutputPostType } from '../../types/output';
 
 @Schema()
 export class ExtendedLikesInfo {
@@ -52,7 +53,7 @@ export class Post {
       newestLikes: [],
     };
   }
-  toDto(): OutputPostType {
+  toDto(likeStatus: LikeStatusType = 'None'): OutputPostType {
     return {
       id: this._id.toString(),
       title: this.title,
@@ -64,7 +65,7 @@ export class Post {
       extendedLikesInfo: {
         likesCount: this.extendedLikesInfo.likesCount,
         dislikesCount: this.extendedLikesInfo.dislikesCount,
-        myStatus: 'None',
+        myStatus: likeStatus,
         newestLikes: this.extendedLikesInfo.newestLikes,
       },
     };
