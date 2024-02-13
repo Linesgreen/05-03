@@ -1,6 +1,5 @@
-/* eslint-disable no-underscore-dangle */
-// noinspection JSVoidFunctionReturnValueUsed
-
+/* eslint-disable no-underscore-dangle,@typescript-eslint/explicit-function-return-type */
+// Набор необходимых импортов
 import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
@@ -13,6 +12,7 @@ import { OutputPostType } from '../../../posts/types/output';
 import { BlogsRepository } from '../../repositories/blogs.repository';
 import { PostFromBlogSortData } from '../../types/input';
 
+// Команда
 export class GetPostForBlogCommand {
   constructor(
     public userId: string | null,
@@ -20,34 +20,45 @@ export class GetPostForBlogCommand {
     public sortData: PostFromBlogSortData,
   ) {}
 }
-//TODO узнать по поводу этого безумия
+
+// Обработчик команды
 @CommandHandler(GetPostForBlogCommand)
 export class GetPostForBlogUseCase implements ICommandHandler<GetPostForBlogCommand> {
+  // Конструктор с внедрением зависимостей
   constructor(
     protected postlikesQueryRepository: PostLikesQueryRepository,
     protected postRepository: PostsRepository,
     protected blogRepository: BlogsRepository,
   ) {}
 
+  // Метод выполнения команды
   async execute(command: GetPostForBlogCommand): Promise<PaginationWithItems<OutputPostType>> {
-    const { userId, sortData, blogId }: GetPostForBlogCommand = command;
-    const blog = await this.blogRepository.getBlogById(blogId);
-    if (!blog) throw new NotFoundException(`Blog with id ${blogId} Not Found`);
+    const { userId, sortData, blogId } = command;
 
-    const posts: PaginationWithItems<PostsDocument> = await this.postRepository.findByBlogId(blogId, sortData);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    await this.checkBlogExist(blogId);
 
-    if (!posts?.items?.length) {
-      throw new NotFoundException(`Posts not found`);
-    }
+    const posts = await this.getPosts(blogId, sortData);
 
     const likeStatuses = userId ? await this.getUserLikeStatuses(posts, userId) : {};
+
     return this.generatePostsOutput(posts, likeStatuses);
   }
 
-  private async getUserLikeStatuses(
-    posts: PaginationWithItems<PostsDocument>,
-    userId: string,
-  ): Promise<Record<string, LikeStatusType>> {
+  private async checkBlogExist(blogId: string) {
+    const post = await this.blogRepository.getBlogById(blogId);
+    if (!post) throw new NotFoundException(`Post not found`);
+  }
+
+  private async getPosts(blogId: string, sortData: PostFromBlogSortData) {
+    const posts = await this.postRepository.findByBlogId(blogId, sortData);
+    if (!posts?.items?.length) {
+      throw new NotFoundException(`Posts not found`);
+    }
+    return posts;
+  }
+
+  private async getUserLikeStatuses(posts: PaginationWithItems<PostsDocument>, userId: string) {
     const likes = await Promise.all(
       posts.items.map((post) => this.postlikesQueryRepository.getLikeByUserId(post._id, userId)),
     );
@@ -61,20 +72,12 @@ export class GetPostForBlogUseCase implements ICommandHandler<GetPostForBlogComm
       {} as Record<string, LikeStatusType>,
     );
   }
-  private generatePostsOutput(
-    posts: PaginationWithItems<PostsDocument>,
-    likeStatuses: Record<string, LikeStatusType>,
-  ): PaginationWithItems<OutputPostType> {
+
+  private generatePostsOutput(posts: PaginationWithItems<PostsDocument>, likeStatuses: Record<string, LikeStatusType>) {
     const updatedItems = posts.items.map((post) => {
       const likeStatus = likeStatuses[post._id] ?? 'None';
       return post.toDto(likeStatus);
     });
-
-    // Создание нового объекта, содержащего все поля из оригинального объекта posts,
-    // но с обновленным массивом items
-    return {
-      ...posts,
-      items: updatedItems,
-    };
+    return { ...posts, items: updatedItems };
   }
 }

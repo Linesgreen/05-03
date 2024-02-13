@@ -1,6 +1,5 @@
-/* eslint-disable no-underscore-dangle */
-// noinspection JSVoidFunctionReturnValueUsed
-
+/* eslint-disable @typescript-eslint/explicit-function-return-type,no-underscore-dangle */
+// Набор необходимых импортов
 import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
@@ -13,6 +12,7 @@ import { PaginationWithItems } from '../../../common/types/output';
 import { PostsRepository } from '../../repositories/post/posts.repository';
 import { PostSortData } from '../../types/input';
 
+// Команда
 export class GetCommentsToPostWithLikeStatusCommand {
   constructor(
     public userId: string | null,
@@ -20,38 +20,52 @@ export class GetCommentsToPostWithLikeStatusCommand {
     public sortData: PostSortData,
   ) {}
 }
-//TODO узнать по поводу этого безумия
+
+// Обработчик команды
 @CommandHandler(GetCommentsToPostWithLikeStatusCommand)
 export class GetCommentsToPostWithLikeStatusUseCase implements ICommandHandler<GetCommentsToPostWithLikeStatusCommand> {
+  // Конструктор с внедрением зависимостей
   constructor(
     protected postRepository: PostsRepository,
-    protected commentsLikesQueryRepository: CommentsLikesQueryRepository,
     protected commentRepository: CommentsRepository,
+    protected commentsLikesQueryRepository: CommentsLikesQueryRepository,
   ) {}
 
+  // Метод выполнения команды
   async execute(command: GetCommentsToPostWithLikeStatusCommand): Promise<PaginationWithItems<OutputCommentType>> {
     const { userId, sortData, postId } = command;
-    const posts = await this.postRepository.getPostbyId(postId);
+
+    // Проверяем наличие поста
+    await this.checkPostExist(postId);
+
+    // Получаем комментарии
+    const comments = await this.getComments(postId, sortData);
+
+    // Получаем статусы "лайков"
+    const likeStatuses = userId ? await this.getUserLikeStatuses(comments, userId) : {};
+
+    // Возвращаем данные
+    return this.generateCommentsOutput(comments, likeStatuses);
+  }
+
+  private async checkPostExist(postId: string) {
+    const post = await this.postRepository.getPostbyId(postId);
+    if (!post) throw new NotFoundException(`Post not found`);
+  }
+
+  private async getComments(postId: string, sortData: PostSortData) {
     const comments: PaginationWithItems<CommentsDocument> = await this.commentRepository.getCommentsByPostId(
       sortData,
       postId,
     );
-    if (!posts) throw new NotFoundException(`Posts not found`);
     if (comments.items.length === 0) throw new NotFoundException(`Comments not found`);
-    console.log(userId);
-    const likeStatuses = userId ? await this.getUserLikeStatuses(comments, userId) : {};
-    console.log(likeStatuses);
-    return this.generateCommentsOutput(comments, likeStatuses);
+    return comments;
   }
 
-  private async getUserLikeStatuses(
-    comments: PaginationWithItems<CommentsDocument>,
-    userId: string,
-  ): Promise<Record<string, LikeStatusType>> {
+  private async getUserLikeStatuses(comments: PaginationWithItems<CommentsDocument>, userId: string) {
     const likes = await Promise.all(
       comments.items.map((comment) => this.commentsLikesQueryRepository.getLikeByUserId(comment._id, userId)),
     );
-    console.log(likes);
     return likes.reduce(
       (statuses, like) => {
         if (like) {
@@ -66,17 +80,11 @@ export class GetCommentsToPostWithLikeStatusUseCase implements ICommandHandler<G
   private generateCommentsOutput(
     comments: PaginationWithItems<CommentsDocument>,
     likeStatuses: Record<string, LikeStatusType>,
-  ): PaginationWithItems<OutputCommentType> {
+  ) {
     const updatedItems = comments.items.map((comment) => {
       const likeStatus = likeStatuses[comment._id] ?? 'None';
       return comment.toDto(likeStatus);
     });
-
-    // Создание нового объекта, содержащего все поля из оригинального объекта posts,
-    // но с обновленным массивом items
-    return {
-      ...comments,
-      items: updatedItems,
-    };
+    return { ...comments, items: updatedItems };
   }
 }
