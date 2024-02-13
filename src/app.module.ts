@@ -35,7 +35,7 @@ import { PostLikes, PostLikesSchema } from './features/posts/repositories/likes/
 import { Post, PostSchema } from './features/posts/repositories/post/post.schema';
 import { AddLikeToPostUseCase } from './features/posts/services/useCase/add-like.to.post.useSace';
 import { CreateCommentUseCase } from './features/posts/services/useCase/create-comment.useCase';
-import { GetAllPostsWithLikeStatusUseCase } from './features/posts/services/useCase/get-all-posts-with-like-status.useCase';
+
 import { GetCommentsToPostWithLikeStatusUseCase } from './features/posts/services/useCase/get-comments-to-post-with-like-status.useCase';
 import { GetPostWithLikeStatusUseCase } from './features/posts/services/useCase/get-post-with-like-status.useCase';
 import { TestingController } from './features/testing/controllers/testing.controller';
@@ -49,6 +49,9 @@ import { NameIsExistConstraint } from './infrastructure/decorators/validate/name
 import { PostIsExistConstraint } from './infrastructure/decorators/validate/post-is-exist.decorator';
 import { PayloadFromJwtMiddleware } from './infrastructure/middleware/payload-from-jwt.middleware';
 import { MailModule } from './mail/mail.module';
+import {
+  GetAllPostsWithLikeStatusUseCase
+} from './features/posts/services/useCase/get-all-post-with-likeStatus.UseCase';
 
 const useCases = [
   UserLoginUseCase,

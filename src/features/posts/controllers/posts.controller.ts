@@ -24,11 +24,12 @@ import { PostsQueryRepository } from '../repositories/post/posts.query.repositor
 import { PostService } from '../services/postService';
 import { AddLikeToPostCommand } from '../services/useCase/add-like.to.post.useSace';
 import { CreateCommentCommand } from '../services/useCase/create-comment.useCase';
-import { GetAllPostsWithLikeStatusCommand } from '../services/useCase/get-all-posts-with-like-status.useCase';
+
 import { GetCommentsToPostWithLikeStatusCommand } from '../services/useCase/get-comments-to-post-with-like-status.useCase';
 import { GetPostWithLikeStatusCommand } from '../services/useCase/get-post-with-like-status.useCase';
 import { CommentCreateModel, PostCreateModel, PostSortData, PostUpdateType } from '../types/input';
 import { OutputPostType } from '../types/output';
+import { GetAllPostsWithLikeStatusCommand } from '../services/useCase/get-all-post-with-likeStatus.UseCase';
 
 @Controller('posts')
 export class PostsController {
