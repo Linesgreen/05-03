@@ -45,7 +45,7 @@ export class AddLikeToCommentUseCase implements ICommandHandler<AddLikeToComment
 
     // If user's like status is already as expected, no further action needed
     if (likeStatus === userLike.likeStatus) return;
-    //TODO узнать про эту штуку
+
     switch (likeStatus) {
       case 'Dislike':
       case 'Like':

@@ -92,7 +92,6 @@ export class AddLikeToPostUseCase implements ICommandHandler<AddLikeToPostComman
     const likesForPost = await this.postLikesQueryRepository.getLastThreeLikes(targetPost._id);
     if (!likesForPost) return;
     targetPost.extendedLikesInfo.newestLikes = likesForPost;
-    //todo вынести сейв
-    await targetPost.save();
+    await this.postsRepository.savePost(targetPost);
   }
 }

@@ -14,22 +14,21 @@ import {
 import { CommandBus } from '@nestjs/cqrs';
 
 import { AuthGuard } from '../../../infrastructure/guards/auth-basic.guard';
+import { JwtAuthGuard } from '../../../infrastructure/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decrator';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CommentsQueryRepository } from '../../comments/repositories/comments/comments.query.repository';
+import { CreateCommentCommand } from '../../comments/service/useCase/create-comment.useCase';
 import { LikeCreateModel } from '../../comments/types/comments/input';
 import { OutputCommentType } from '../../comments/types/comments/output';
 import { PaginationWithItems } from '../../common/types/output';
 import { PostsQueryRepository } from '../repositories/post/posts.query.repository';
 import { PostService } from '../services/postService';
 import { AddLikeToPostCommand } from '../services/useCase/add-like.to.post.useSace';
-import { CreateCommentCommand } from '../services/useCase/create-comment.useCase';
-
+import { GetAllPostsWithLikeStatusCommand } from '../services/useCase/get-all-post-with-likeStatus.UseCase';
 import { GetCommentsToPostWithLikeStatusCommand } from '../services/useCase/get-comments-to-post-with-like-status.useCase';
 import { GetPostWithLikeStatusCommand } from '../services/useCase/get-post-with-like-status.useCase';
 import { CommentCreateModel, PostCreateModel, PostSortData, PostUpdateType } from '../types/input';
 import { OutputPostType } from '../types/output';
-import { GetAllPostsWithLikeStatusCommand } from '../services/useCase/get-all-post-with-likeStatus.UseCase';
 
 @Controller('posts')
 export class PostsController {

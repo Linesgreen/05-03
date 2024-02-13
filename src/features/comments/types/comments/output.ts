@@ -1,4 +1,3 @@
-//TODO укзнать куда пихать тип
 export type OutputCommentType = {
   id: string;
   content: string;

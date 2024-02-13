@@ -1,10 +1,10 @@
 export type ExtendedLikesInfoDbType = {
   likesCount: number;
   dislikesCount: number;
-  newestLikes: newestLike[];
+  newestLikes: NewestLikeType[];
 };
 
-export type newestLike = {
+export type NewestLikeType = {
   addedAt: string;
   userId: string;
   login: string;

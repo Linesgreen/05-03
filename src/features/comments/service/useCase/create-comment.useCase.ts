@@ -1,14 +1,13 @@
 import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { Comment } from '../../../comments/repositories/comments/comment.schema';
-import { CommentsRepository } from '../../../comments/repositories/comments/comments.repository';
-import { OutputCommentType } from '../../../comments/types/comments/output';
+import { PostsQueryRepository } from '../../../posts/repositories/post/posts.query.repository';
 import { UserRepository } from '../../../users/repositories/userRepository';
 import { UsersDocument } from '../../../users/repositories/users-schema';
-import { PostsQueryRepository } from '../../repositories/post/posts.query.repository';
+import { Comment } from '../../repositories/comments/comment.schema';
+import { CommentsRepository } from '../../repositories/comments/comments.repository';
+import { OutputCommentType } from '../../types/comments/output';
 
-//TODO узнать куда пихать этот юз кейс
 export class CreateCommentCommand {
   constructor(
     public userId: string,
@@ -16,7 +15,7 @@ export class CreateCommentCommand {
     public content: string,
   ) {}
 }
-//TODO в папку коментов
+
 @CommandHandler(CreateCommentCommand)
 export class CreateCommentUseCase implements ICommandHandler<CreateCommentCommand> {
   constructor(

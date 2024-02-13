@@ -2,9 +2,9 @@ import { Body, Controller, Get, HttpCode, Post, Res, UseGuards } from '@nestjs/c
 import { CommandBus } from '@nestjs/cqrs';
 import { Response } from 'express';
 
+import { JwtAuthGuard } from '../../../infrastructure/guards/jwt-auth.guard';
+import { LocalAuthGuards } from '../../../infrastructure/guards/local-auth.guards';
 import { CurrentUser } from '../decorators/current-user.decrator';
-import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { LocalAuthGuards } from '../guards/local-auth.guards';
 import { ChangeUserConfirmationCommand } from '../service/useCases/change-User-Confirmation-UserCase';
 import { EmailResendingCommand } from '../service/useCases/email-resending.useCase';
 import { UserGetInformationAboutMeCommand } from '../service/useCases/user-get-information-about-me.useCase';

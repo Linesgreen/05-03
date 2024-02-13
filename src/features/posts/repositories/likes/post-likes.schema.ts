@@ -3,6 +3,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
 import { LikeStatusType } from '../../../comments/types/comments/input';
+import { NewestLikeType } from '../../types/likes/output';
 
 @Schema()
 export class PostLikes {
@@ -23,8 +24,7 @@ export class PostLikes {
     this.login = login;
     this.likeStatus = likeStatus;
   }
-  //TODO добавить тип
-  toDto() {
+  toDto(): NewestLikeType {
     return {
       addedAt: this.createdAt.toISOString(),
       userId: this.userId,

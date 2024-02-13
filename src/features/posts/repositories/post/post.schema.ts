@@ -4,7 +4,7 @@ import { HydratedDocument } from 'mongoose';
 
 import { LikeStatusType } from '../../../comments/types/comments/input';
 import { PostUpdateType } from '../../types/input';
-import { newestLike } from '../../types/likes/output';
+import { NewestLikeType } from '../../types/likes/output';
 import { OutputPostType } from '../../types/output';
 
 @Schema()
@@ -16,7 +16,7 @@ export class ExtendedLikesInfo {
   dislikesCount: number;
 
   @Prop({ _id: false, required: true, default: [] })
-  newestLikes: newestLike[];
+  newestLikes: NewestLikeType[];
 }
 
 export const ExtendedLikesInfoSchema = SchemaFactory.createForClass(ExtendedLikesInfo);

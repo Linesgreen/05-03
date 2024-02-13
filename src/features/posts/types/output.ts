@@ -1,10 +1,10 @@
 import { LikeStatus } from './likes/input';
-import { newestLike } from './likes/output';
+import { NewestLikeType } from './likes/output';
 
 export type ExtendedLikesInfoOutputType = {
   likesCount: number;
   dislikesCount: number;
-  newestLikes: newestLike[];
+  newestLikes: NewestLikeType[];
   myStatus: LikeStatus;
 };
 
