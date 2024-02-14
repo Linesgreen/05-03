@@ -12,7 +12,6 @@ import { PaginationWithItems } from '../../../common/types/output';
 import { PostsRepository } from '../../repositories/post/posts.repository';
 import { PostSortData } from '../../types/input';
 
-// Команда
 export class GetCommentsToPostWithLikeStatusCommand {
   constructor(
     public userId: string | null,
@@ -21,10 +20,8 @@ export class GetCommentsToPostWithLikeStatusCommand {
   ) {}
 }
 
-// Обработчик команды
 @CommandHandler(GetCommentsToPostWithLikeStatusCommand)
 export class GetCommentsToPostWithLikeStatusUseCase implements ICommandHandler<GetCommentsToPostWithLikeStatusCommand> {
-  // Конструктор с внедрением зависимостей
   constructor(
     protected postRepository: PostsRepository,
     protected commentRepository: CommentsRepository,
@@ -32,14 +29,14 @@ export class GetCommentsToPostWithLikeStatusUseCase implements ICommandHandler<G
     protected commonRepository: CommonRepository,
   ) {}
 
-  // Метод выполнения команды
   async execute(command: GetCommentsToPostWithLikeStatusCommand): Promise<PaginationWithItems<OutputCommentType>> {
     const { userId, sortData, postId } = command;
 
     await this.checkPostExist(postId);
 
-    const comments = await this.getComments(postId, sortData);
+    const comments = await this.findComments(postId, sortData);
 
+    //if the user is not authorized, the like status is none
     let likeStatuses = {};
     if (userId) {
       likeStatuses = await this.commonRepository.getUserLikeStatuses(
@@ -54,11 +51,12 @@ export class GetCommentsToPostWithLikeStatusUseCase implements ICommandHandler<G
   }
 
   private async checkPostExist(postId: string) {
+    //TODo проверка существует ли а не тянуть весь вост
     const post = await this.postRepository.getPostbyId(postId);
     if (!post) throw new NotFoundException(`Post not found`);
   }
 
-  private async getComments(postId: string, sortData: PostSortData) {
+  private async findComments(postId: string, sortData: PostSortData) {
     const comments: PaginationWithItems<CommentsDocument> = await this.commentRepository.getCommentsByPostId(
       sortData,
       postId,

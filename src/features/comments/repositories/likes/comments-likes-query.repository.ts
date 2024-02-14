@@ -4,8 +4,14 @@ import { Model } from 'mongoose';
 
 import { CommentLikes, CommentsLikesDocument } from './likes.schema';
 
+//TODO куда положить интерфейс
+export interface ICommentsLikesQueryRepository {
+  getLikeByUserId(commentId: string, userId: string): Promise<CommentsLikesDocument | null>;
+  getManyLikesByUserId(ids: string[], userId: string): Promise<CommentsLikesDocument[]>;
+}
+
 @Injectable()
-export class CommentsLikesQueryRepository {
+export class CommentsLikesQueryRepository implements ICommentsLikesQueryRepository {
   constructor(
     @InjectModel(CommentLikes.name)
     private CommentLieksModel: Model<CommentsLikesDocument>,
@@ -15,7 +21,10 @@ export class CommentsLikesQueryRepository {
     return this.CommentLieksModel.findOne({ commentId, userId });
   }
 
-  async saveComment(comment: CommentsLikesDocument): Promise<void> {
-    await comment.save();
+  async getManyLikesByUserId(ids: string[], userId: string): Promise<CommentsLikesDocument[]> {
+    return this.CommentLieksModel.find({
+      commentId: { $in: ids },
+      userId,
+    });
   }
 }

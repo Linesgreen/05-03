@@ -31,11 +31,11 @@ export class GetPostForBlogUseCase implements ICommandHandler<GetPostForBlogComm
   async execute(command: GetPostForBlogCommand): Promise<PaginationWithItems<OutputPostType>> {
     const { userId, sortData, blogId } = command;
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     await this.checkBlogExist(blogId);
 
-    const posts = await this.getPostsForBlog(blogId, sortData);
+    const posts = await this.findPostsForBlog(blogId, sortData);
 
+    //if the user is not authorized, the like status is none
     let likeStatuses = {};
     if (userId) {
       likeStatuses = await this.commonRepository.getUserLikeStatuses(
@@ -53,7 +53,7 @@ export class GetPostForBlogUseCase implements ICommandHandler<GetPostForBlogComm
     if (!post) throw new NotFoundException(`Post not found`);
   }
 
-  private async getPostsForBlog(blogId: string, sortData: PostFromBlogSortData) {
+  private async findPostsForBlog(blogId: string, sortData: PostFromBlogSortData) {
     const posts = await this.postRepository.findByBlogId(blogId, sortData);
     if (!posts?.items?.length) {
       throw new NotFoundException(`Posts not found`);

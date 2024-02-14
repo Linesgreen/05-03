@@ -4,9 +4,15 @@ import { Model } from 'mongoose';
 
 import { NewestLikeType } from '../../types/likes/output';
 import { PostLikes, PostLikesDocument } from './post-likes.schema';
+//TODO куда положить интерфейс
+export interface IPostLikesQueryRepository {
+  getLikeByUserId(postId: string, userId: string): Promise<PostLikesDocument | null>;
+  getLastThreeLikes(postId: string): Promise<NewestLikeType[]>;
+  getManyLikesByUserId(ids: string[], userId: string): Promise<PostLikesDocument[]>;
+}
 
 @Injectable()
-export class PostLikesQueryRepository {
+export class PostLikesQueryRepository implements IPostLikesQueryRepository {
   constructor(
     @InjectModel(PostLikes.name)
     private PostLikesModel: Model<PostLikesDocument>,
@@ -15,7 +21,12 @@ export class PostLikesQueryRepository {
   async getLikeByUserId(postId: string, userId: string): Promise<PostLikesDocument | null> {
     return this.PostLikesModel.findOne({ postId, userId });
   }
-
+  async getManyLikesByUserId(ids: string[], userId: string): Promise<PostLikesDocument[]> {
+    return this.PostLikesModel.find({
+      postId: { $in: ids },
+      userId,
+    });
+  }
   async getLastThreeLikes(postId: string): Promise<NewestLikeType[]> {
     const targetLikes: PostLikesDocument[] | null = await this.PostLikesModel.find({
       postId: postId,

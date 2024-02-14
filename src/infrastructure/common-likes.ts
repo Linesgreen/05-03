@@ -1,29 +1,40 @@
 /* eslint-disable no-underscore-dangle,@typescript-eslint/no-explicit-any,@typescript-eslint/explicit-function-return-type */
-// noinspection JSUnusedGlobalSymbols
+// noinspection JSUnusedGlobalSymbols,UnnecessaryLocalVariableJS
 
 import { Injectable } from '@nestjs/common';
 
 import { LikeStatusType } from '../features/comments/types/comments/input';
 import { PaginationWithItems } from '../features/common/types/output';
+
+export interface ILikesQueryRepository {
+  getLikeByUserId(id: string, userId: string): Promise<any | null>;
+  getManyLikesByUserId(ids: string[], userId: string): Promise<any[]>;
+}
 @Injectable()
 export class CommonRepository {
   async getUserLikeStatuses<T extends { _id: string }>(
     items: PaginationWithItems<T>,
-    repository: any,
+    repository: ILikesQueryRepository,
     userId: string,
     likeIdName: string,
   ) {
-    const likes = await Promise.all(items.items.map((item) => repository.getLikeByUserId(item._id, userId)));
-    return likes.reduce(
+    //create an array of id
+    const itemsId = items.items.map((item) => item._id);
+    const likes = await repository.getManyLikesByUserId(itemsId, userId);
+
+    const likeStatuses = likes.reduce(
       (statuses, like) => {
-        if (like) {
+        if (like && like[likeIdName]) {
           statuses[like[likeIdName]] = like.likeStatus;
         }
         return statuses;
       },
       {} as Record<string, LikeStatusType>,
     );
+
+    return likeStatuses;
   }
+
   generateDto<T extends { _id: string } & { toDto: (likeStatus: LikeStatusType) => any }>(
     items: PaginationWithItems<T>,
     likeStatuses: Record<string, LikeStatusType>,
