@@ -17,7 +17,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --detectOpenHandles --config ./test/jest-e2e.json"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^1.10.3",
@@ -32,6 +32,7 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/cookie-parser": "^1.4.6",
     "@types/nodemailer": "^6.4.14",
+    "@types/prettyjson": "^0.0.33",
     "bcryptjs": "^2.4.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
@@ -45,13 +46,17 @@
     "mockdate": "^3.0.5",
     "mongodb-memory-server": "^9.1.6",
     "mongoose": "^8.1.1",
+    "nestjs-pino": "^4.0.0",
     "nodemailer": "^6.9.9",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
+    "pretty-print-json": "^3.0.0",
+    "prettyjson": "^1.2.5",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
-    "scan-unused-packages": "^1.0.0"
+    "scan-unused-packages": "^1.0.0",
+    "signale": "^1.4.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
@@ -63,6 +68,7 @@
     "@types/passport": "^0",
     "@types/passport-jwt": "^4.0.1",
     "@types/passport-local": "^1.0.38",
+    "@types/signale": "^1",
     "@types/supertest": "^6.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",

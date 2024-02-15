@@ -2,7 +2,7 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 
-import { BlogUpdateType, PostToBlogCreateModel } from '../../src/features/blogs/types/input';
+import { BlogCreateModel, PostToBlogCreateModel } from '../../src/features/blogs/types/input';
 import { PostCreateModel } from '../../src/features/posts/types/input';
 
 export class PostTestManager {
@@ -41,7 +41,7 @@ export class PostTestManager {
   }
 
   async updatePost(
-    postData: BlogUpdateType,
+    postData: BlogCreateModel,
     postId: string,
     status: number,
     adminData?: { login: string; password: string },

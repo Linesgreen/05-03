@@ -19,7 +19,7 @@ export class AuthTestManager {
   async registration(userData: UserRegistrationModel, status: number = 204) {
     return request(this.app.getHttpServer()).post('/auth/registration').send(userData).expect(status);
   }
-  async login(loginOrEmail: string, password: string, status: number = 201) {
+  async login(loginOrEmail: string, password: string, status: number = 200) {
     return request(this.app.getHttpServer()).post('/auth/login').send({ loginOrEmail, password }).expect(status);
   }
   async getTokens(loginOrEmail: string, password: string) {

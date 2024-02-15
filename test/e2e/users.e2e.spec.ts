@@ -4,9 +4,9 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 
-import { AppModule } from '../src/app.module';
-import { appSettings } from '../src/settings/aplly-app-setting';
-import { UserTestManager } from './common/userTestManager';
+import { AppModule } from '../../src/app.module';
+import { appSettings } from '../../src/settings/aplly-app-setting';
+import { UserTestManager } from '../common/userTestManager';
 
 describe('Users e2e test', () => {
   let app: INestApplication;

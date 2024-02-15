@@ -2,7 +2,7 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 
-import { BlogUpdateType } from '../../src/features/blogs/types/input';
+import { BlogCreateModel } from '../../src/features/blogs/types/input';
 import { OutputCommentType } from '../../src/features/comments/types/comments/output';
 
 export class CommentTestManager {
@@ -28,7 +28,7 @@ export class CommentTestManager {
   }
 
   async updatePost(
-    postData: BlogUpdateType,
+    postData: BlogCreateModel,
     postId: string,
     status: number,
     adminData?: { login: string; password: string },
@@ -41,14 +41,19 @@ export class CommentTestManager {
       .expect(status);
   }
 
-  async createNcommentsToPost(n: number, postId: string, token: string): Promise<OutputCommentType[]> {
+  async createNcommentsToPost(
+    n: number,
+    postId: string,
+    token: string,
+    optional: string = '',
+  ): Promise<OutputCommentType[]> {
     const basicContent = 'userCommentTestTestTest';
     const comments: OutputCommentType[] = [];
     for (let i = 0; i < n; i++) {
       const response = await request(this.app.getHttpServer())
         .post(`/posts/${postId}/comments`)
         .set('Authorization', `Bearer ${token}`)
-        .send({ content: `${i}${basicContent}` })
+        .send({ content: `${i}${optional}${basicContent}` })
         .expect(201);
       comments.push(response.body);
     }

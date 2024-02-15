@@ -5,9 +5,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import mongoose from 'mongoose';
 import request from 'supertest';
 
-import { AppModule } from '../src/app.module';
-import { appSettings } from '../src/settings/aplly-app-setting';
-import { BlogTestManager } from './common/blogTestManager';
+import { AppModule } from '../../src/app.module';
+import { appSettings } from '../../src/settings/aplly-app-setting';
+import { BlogTestManager } from '../common/blogTestManager';
 
 describe('Blogs e2e', () => {
   let app: INestApplication;

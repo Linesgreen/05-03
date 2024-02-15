@@ -4,9 +4,9 @@ import { MailerService } from '@nestjs-modules/mailer';
 import * as mockdate from 'mockdate';
 import request from 'supertest';
 
-import { AppModule } from '../src/app.module';
-import { appSettings } from '../src/settings/aplly-app-setting';
-import { AuthTestManager } from './common/authTestManager';
+import { AppModule } from '../../src/app.module';
+import { appSettings } from '../../src/settings/aplly-app-setting';
+import { AuthTestManager } from '../common/authTestManager';
 
 const userLoginData = {
   login: 'test',
@@ -173,7 +173,7 @@ describe('Auth e2e test', () => {
       mockdate.reset();
     });
     it('login user with good data', async () => {
-      const repspone = await authTestManager.login(userLoginData.email, userLoginData.password, 201);
+      const repspone = await authTestManager.login(userLoginData.email, userLoginData.password, 200);
       //regEx for JWT token [\w-]*\.[\w-]*\.[\w-]*/g
       expect(repspone.body.accessToken).toMatch(/^[\w-]*\.[\w-]*\.[\w-]*/);
     });

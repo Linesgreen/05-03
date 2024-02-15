@@ -2,7 +2,7 @@ import { InternalServerErrorException, NotFoundException } from '@nestjs/common'
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { PostsQueryRepository } from '../../../posts/repositories/post/posts.query.repository';
-import { UserRepository } from '../../../users/repositories/userRepository';
+import { UserRepository } from '../../../users/repositories/user.repository';
 import { UsersDocument } from '../../../users/repositories/users-schema';
 import { Comment } from '../../repositories/comments/comment.schema';
 import { CommentsRepository } from '../../repositories/comments/comments.repository';

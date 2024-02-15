@@ -2,7 +2,7 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 
-import { BlogUpdateType } from '../../src/features/blogs/types/input';
+import { BlogCreateModel } from '../../src/features/blogs/types/input';
 
 export class BlogTestManager {
   public adminData: {
@@ -27,7 +27,7 @@ export class BlogTestManager {
   }
 
   async createBlog(
-    blogData: BlogUpdateType = this.basicBlogData,
+    blogData: BlogCreateModel = this.basicBlogData,
     status: number = 201,
     adminData?: { login: string; password: string },
   ) {
@@ -40,7 +40,7 @@ export class BlogTestManager {
   }
 
   async updateBlog(
-    blogData: BlogUpdateType,
+    blogData: BlogCreateModel,
     blogId: string,
     status: number,
     adminData?: { login: string; password: string },

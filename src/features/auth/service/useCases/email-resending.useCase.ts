@@ -2,7 +2,7 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { MailService } from '../../../../mail/mail.service';
-import { UserRepository } from '../../../users/repositories/userRepository';
+import { UserRepository } from '../../../users/repositories/user.repository';
 import { UsersDocument } from '../../../users/repositories/users-schema';
 
 export class EmailResendingCommand {

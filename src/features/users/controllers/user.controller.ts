@@ -27,6 +27,7 @@ export class UserController {
     protected readonly userQueryRepository: UserQueryRepository,
   ) {}
   @Post('')
+  @HttpCode(201)
   async createUser(@Body() userCreateData: UserCreateModel): Promise<UserOutputType> {
     return this.userService.createUserToDto(userCreateData);
   }

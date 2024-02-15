@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 
-import { UserRepository } from '../repositories/userRepository';
+import { UserRepository } from '../repositories/user.repository';
 import { User, UsersDocument } from '../repositories/users-schema';
 import { UserCreateModel } from '../types/input';
 import { UserOutputType } from '../types/output';

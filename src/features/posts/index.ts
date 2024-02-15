@@ -2,7 +2,7 @@ import { PostLikesQueryRepository } from './repositories/likes/post-likes.query.
 import { PostLikesRepository } from './repositories/likes/post-likes.repository';
 import { PostsQueryRepository } from './repositories/post/posts.query.repository';
 import { PostsRepository } from './repositories/post/posts.repository';
-import { PostService } from './services/postService';
+import { PostService } from './services/post.service';
 
 export const postProviders = [
   PostsRepository,

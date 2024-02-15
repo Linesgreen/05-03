@@ -16,7 +16,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import { AuthGuard } from '../../../infrastructure/guards/auth-basic.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decrator';
 import { PaginationWithItems } from '../../common/types/output';
-import { PostService } from '../../posts/services/postService';
+import { PostService } from '../../posts/services/post.service';
 import { OutputPostType } from '../../posts/types/output';
 import { BlogsQueryRepository } from '../repositories/blogs.query.repository';
 import { BlogsService } from '../services/blogs.service';

@@ -25,12 +25,14 @@ export const appSettings = (app: INestApplication) => {
 
         errors.forEach((e) => {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
+          // @ts-ignore6
           const constraintKeys = Object.keys(e.constraints);
 
-          constraintKeys.forEach((cKey) => {
+          constraintKeys.forEach((cKey: keyof typeof e.constraints) => {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
+
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
             const msg = e.constraints[cKey];
 
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment

@@ -22,7 +22,7 @@ import { LikeCreateModel } from '../../comments/types/comments/input';
 import { OutputCommentType } from '../../comments/types/comments/output';
 import { PaginationWithItems } from '../../common/types/output';
 import { PostsQueryRepository } from '../repositories/post/posts.query.repository';
-import { PostService } from '../services/postService';
+import { PostService } from '../services/post.service';
 import { AddLikeToPostCommand } from '../services/useCase/add-like.to.post.useSace';
 import { GetAllPostsWithLikeStatusCommand } from '../services/useCase/get-all-post-with-likeStatus.UseCase';
 import { GetCommentsToPostWithLikeStatusCommand } from '../services/useCase/get-comments-to-post-with-like-status.useCase';
@@ -87,6 +87,7 @@ export class PostsController {
   }
 
   @Post(':postId/comments')
+  @HttpCode(201)
   @UseGuards(JwtAuthGuard)
   async createCommentToPost(
     @CurrentUser() userId: string,

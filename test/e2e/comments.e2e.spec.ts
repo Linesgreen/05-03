@@ -2,13 +2,13 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 
-import { AppModule } from '../src/app.module';
-import { appSettings } from '../src/settings/aplly-app-setting';
-import { AuthTestManager } from './common/authTestManager';
-import { BlogTestManager } from './common/blogTestManager';
-import { CommentTestManager } from './common/commentTestManager';
-import { PostTestManager } from './common/postTestManager';
-import { UserTestManager } from './common/userTestManager';
+import { AppModule } from '../../src/app.module';
+import { appSettings } from '../../src/settings/aplly-app-setting';
+import { AuthTestManager } from '../common/authTestManager';
+import { BlogTestManager } from '../common/blogTestManager';
+import { CommentTestManager } from '../common/commentTestManager';
+import { PostTestManager } from '../common/postTestManager';
+import { UserTestManager } from '../common/userTestManager';
 
 describe('Comments e2e', () => {
   let app: INestApplication;
