@@ -3,3 +3,10 @@ export type AboutMeType = {
   login: string;
   userId: string;
 };
+
+export type SessionOutputType = {
+  ip: string;
+  title: string;
+  lastActiveDate: string;
+  deviceId: string;
+};

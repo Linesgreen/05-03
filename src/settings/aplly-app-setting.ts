@@ -9,8 +9,8 @@ import { HttpExceptionFilter } from '../infrastructure/exception-filters/http-ex
 export const appSettings = (app: INestApplication) => {
   // Для внедрения зависимостей в validator constraint (кастомные пайпы)
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
-  //Для доступа с другого ip
   app.use(cookieParser());
+  //Для доступа с другого ip
   app.enableCors();
   //Для валидации входных параметров
   app.useGlobalPipes(

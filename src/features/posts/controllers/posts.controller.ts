@@ -15,7 +15,7 @@ import { CommandBus } from '@nestjs/cqrs';
 
 import { AuthGuard } from '../../../infrastructure/guards/auth-basic.guard';
 import { JwtAuthGuard } from '../../../infrastructure/guards/jwt-auth.guard';
-import { CurrentUser } from '../../auth/decorators/current-user.decrator';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { CommentsQueryRepository } from '../../comments/repositories/comments/comments.query.repository';
 import { CreateCommentCommand } from '../../comments/service/useCase/create-comment.useCase';
 import { LikeCreateModel } from '../../comments/types/comments/input';

@@ -3,7 +3,7 @@ import { CommandBus } from '@nestjs/cqrs';
 
 import { CommentOwnerGuard } from '../../../infrastructure/guards/comment-owner.guard';
 import { JwtAuthGuard } from '../../../infrastructure/guards/jwt-auth.guard';
-import { CurrentUser } from '../../auth/decorators/current-user.decrator';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { AddLikeToCommentCommand } from '../service/useCase/add-like.useCase';
 import { DeleteCommentByIdCommand } from '../service/useCase/delte-comment-byId.useCase';
 import { GetCommentByIdCommand } from '../service/useCase/get-comment.userCase';

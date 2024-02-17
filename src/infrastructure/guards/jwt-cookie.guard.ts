@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
+//FROM Cookie
 @Injectable()
-export class LocalAuthGuards extends AuthGuard('local') {}
+export class CookieJwtGuard extends AuthGuard('jwt-cookie') {}

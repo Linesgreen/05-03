@@ -14,7 +14,7 @@ import {
 import { CommandBus } from '@nestjs/cqrs';
 
 import { AuthGuard } from '../../../infrastructure/guards/auth-basic.guard';
-import { CurrentUser } from '../../auth/decorators/current-user.decrator';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { PaginationWithItems } from '../../common/types/output';
 import { PostService } from '../../posts/services/post.service';
 import { OutputPostType } from '../../posts/types/output';
@@ -41,7 +41,6 @@ export class BlogsController {
   @Get(':id')
   async getBlog(@Param('id') id: string): Promise<OutputBlogType> {
     const targetBlog = await this.blogsQueryRepository.findById(id);
-
     if (!targetBlog) throw new NotFoundException('Blog Not Found');
     return targetBlog;
   }

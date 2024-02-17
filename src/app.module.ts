@@ -5,15 +5,19 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 import { authProviders } from './features/auth';
 import { AuthController } from './features/auth/controllers/auth.controller';
+import { SessionDb, SessionSchema } from './features/auth/repository/seesion.schema';
 import { jwtConstants } from './features/auth/service/constants';
 import { ChangeUserConfirmationUserCase } from './features/auth/service/useCases/change-User-Confirmation-UserCase';
 import { EmailResendingUseCase } from './features/auth/service/useCases/email-resending.useCase';
+import { RefreshTokenUseCase } from './features/auth/service/useCases/refresh-token.useCase';
 import { GetInformationAboutUserCase } from './features/auth/service/useCases/user-get-information-about-me.useCase';
 import { UserLoginUseCase } from './features/auth/service/useCases/user-login.useCase';
-import { UserRegistrationUseCase } from './features/auth/service/useCases/user-registration,UseCase';
+import { UserRegistrationUseCase } from './features/auth/service/useCases/user-registration.UseCase';
+import { CookieJwtStrategy } from './features/auth/strategies/cookie.jwt.strategy';
 import { JwtStrategy } from './features/auth/strategies/jwt.strategy';
 import { LocalStrategy } from './features/auth/strategies/local.strategy';
 import { blogsProviders } from './features/blogs';
@@ -50,7 +54,7 @@ import { NameIsExistConstraint } from './infrastructure/decorators/validate/name
 import { PostIsExistConstraint } from './infrastructure/decorators/validate/post-is-exist.decorator';
 import { PayloadFromJwtMiddleware } from './infrastructure/middleware/payload-from-jwt.middleware';
 import { MailModule } from './mail/mail.module';
-
+//TODO как и провайдеры
 const useCases = [
   UserLoginUseCase,
   EmailResendingUseCase,
@@ -67,6 +71,7 @@ const useCases = [
   GetAllPostsWithLikeStatusUseCase,
   GetCommentsToPostWithLikeStatusUseCase,
   GetPostForBlogUseCase,
+  RefreshTokenUseCase,
 ];
 
 @Module({
@@ -76,6 +81,7 @@ const useCases = [
     //Регистрируем для испльзования @CommandHandler
     CqrsModule,
     ConfigModule.forRoot(),
+
     MongooseModule.forRoot(process.env.MONGO_URL!),
     MongooseModule.forFeature([
       { name: Blog.name, schema: BlogSchema },
@@ -84,12 +90,19 @@ const useCases = [
       { name: Comment.name, schema: CommentSchema },
       { name: CommentLikes.name, schema: CommentsLikesSchema },
       { name: PostLikes.name, schema: PostLikesSchema },
+      { name: SessionDb.name, schema: SessionSchema },
     ]),
     JwtModule.register({
       global: true,
       secret: jwtConstants.secret,
     }),
     MailModule,
+    ThrottlerModule.forRoot([
+      {
+        ttl: 10000,
+        limit: 10,
+      },
+    ]),
   ],
   controllers: [
     BlogsController,
@@ -114,6 +127,7 @@ const useCases = [
     BlogIsExistConstraint,
     LocalStrategy,
     JwtStrategy,
+    CookieJwtStrategy,
     CommonRepository,
   ],
 })
