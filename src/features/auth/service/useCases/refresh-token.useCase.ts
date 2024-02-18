@@ -22,9 +22,11 @@ export class RefreshTokenUseCase implements ICommandHandler<RefreshTokenCommand>
   async execute(command: RefreshTokenCommand): Promise<{ token: string; refreshToken: string }> {
     const { userId, tokenKey } = command;
     const session: SessionDocument = await this.findSession(userId, tokenKey);
+    console.log(session);
     const newTokenKey = crypto.randomUUID();
+    const deviceId = session.deviceId;
     await this.updateAndSaveSession(session, newTokenKey);
-    return this.authService.generateTokensPair(userId, tokenKey);
+    return this.authService.generateTokensPair(userId, newTokenKey, deviceId);
   }
 
   async findSession(userId: string, tokenKey: string): Promise<SessionDocument> {

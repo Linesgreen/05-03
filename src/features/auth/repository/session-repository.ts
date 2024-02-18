@@ -17,6 +17,7 @@ export class SessionRepository {
   }
   async sessionIsExist(userId: string, tokenKey: string): Promise<boolean> {
     const session = await this.SeesionModel.countDocuments({ userId: userId, tokenKey: tokenKey });
+    console.log(!!session);
     return !!session;
   }
   async getByUserIdAndTokenKey(userId: string, tokenKey: string): Promise<SessionDocument | null> {
@@ -25,5 +26,17 @@ export class SessionRepository {
   }
   async saveSession(session: SessionDocument): Promise<void> {
     await session.save();
+  }
+  async getByDeviceId(deviceId: string): Promise<SessionDocument | null> {
+    return this.SeesionModel.findOne({ deviceId: deviceId });
+  }
+  async terminateCurrentSession(deviceId: string, userId: string): Promise<void> {
+    await this.SeesionModel.findOneAndDelete({ deviceId: deviceId, userId: userId });
+  }
+  async terminateSessionWithTokenKey(userId: string, tokenKey: string): Promise<void> {
+    await this.SeesionModel.findOneAndDelete({ userId: userId, tokenKey: tokenKey });
+  }
+  async terminateOtherSession(userId: string, tokenKey: string): Promise<void> {
+    await this.SeesionModel.findOneAndDelete({ userId: userId, tokenKey: { $ne: tokenKey } });
   }
 }

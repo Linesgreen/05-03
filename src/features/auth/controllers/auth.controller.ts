@@ -9,6 +9,7 @@ import { LocalAuthGuard } from '../../../infrastructure/guards/local-auth.guard'
 import { CurrentUser } from '../decorators/current-user.decorator';
 import { UserAgent } from '../decorators/user-agent-from-headers.decorator';
 import { CurrentSession } from '../decorators/userId-sessionKey.decorator';
+import { SessionRepository } from '../repository/session-repository';
 import { ChangeUserConfirmationCommand } from '../service/useCases/change-User-Confirmation-UserCase';
 import { EmailResendingCommand } from '../service/useCases/email-resending.useCase';
 import { RefreshTokenCommand } from '../service/useCases/refresh-token.useCase';
@@ -24,6 +25,7 @@ export class AuthController {
   constructor(
     //protected authService: AuthService,
     private commandBus: CommandBus,
+    private sessionRepository: SessionRepository,
   ) {}
 
   @Post('login')
@@ -64,6 +66,7 @@ export class AuthController {
   }
   @UseGuards(CookieJwtGuard)
   @Post('refresh-token')
+  @HttpCode(200)
   async createNewTokensPair(
     @CurrentSession() { userId, tokenKey }: { userId: string; tokenKey: string },
     @Res({ passthrough: true }) res: Response,
@@ -80,5 +83,13 @@ export class AuthController {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async getUserInformation(@CurrentUser() userId: string): Promise<AboutMeType> {
     return this.commandBus.execute(new UserGetInformationAboutMeCommand(userId));
+  }
+  @UseGuards(CookieJwtGuard)
+  @Post('logout')
+  @HttpCode(204)
+  async terminateOtherSession(
+    @CurrentSession() { userId, tokenKey }: { userId: string; tokenKey: string },
+  ): Promise<void> {
+    await this.sessionRepository.terminateSessionWithTokenKey(userId, tokenKey);
   }
 }

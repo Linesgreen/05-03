@@ -26,14 +26,14 @@ export class SessionDb {
 
   @Prop({ required: true })
   deviceId: string;
-  constructor(tokenKey: string, title: string, userId: string, ip: string) {
+  constructor(tokenKey: string, devicId: string, title: string, userId: string, ip: string) {
     this._id = crypto.randomUUID();
     this.tokenKey = tokenKey;
     this.issuedDate = new Date().toISOString();
     this.title = title;
     this.userId = userId;
     this.ip = ip;
-    this.deviceId = crypto.randomUUID();
+    this.deviceId = devicId;
   }
   toDto(): SessionOutputType {
     return {

@@ -42,6 +42,7 @@ import { AddLikeToPostUseCase } from './features/posts/services/useCase/add-like
 import { GetAllPostsWithLikeStatusUseCase } from './features/posts/services/useCase/get-all-post-with-likeStatus.UseCase';
 import { GetCommentsToPostWithLikeStatusUseCase } from './features/posts/services/useCase/get-comments-to-post-with-like-status.useCase';
 import { GetPostWithLikeStatusUseCase } from './features/posts/services/useCase/get-post-with-like-status.useCase';
+import { SecurityController } from './features/security/controllers/security.controller';
 import { TestingController } from './features/testing/controllers/testing.controller';
 import { userProviders } from './features/users';
 import { UserController } from './features/users/controllers/user.controller';
@@ -82,7 +83,7 @@ const useCases = [
     CqrsModule,
     ConfigModule.forRoot(),
 
-    MongooseModule.forRoot(process.env.MONGO_URL!),
+    MongooseModule.forRoot(process.env.MONGO_URL_LOCAl!),
     MongooseModule.forFeature([
       { name: Blog.name, schema: BlogSchema },
       { name: Post.name, schema: PostSchema },
@@ -100,7 +101,7 @@ const useCases = [
     ThrottlerModule.forRoot([
       {
         ttl: 10000,
-        limit: 10,
+        limit: 5,
       },
     ]),
   ],
@@ -111,6 +112,7 @@ const useCases = [
     AuthController,
     TestingController,
     CommentsController,
+    SecurityController,
   ],
   providers: [
     ...blogsProviders,
