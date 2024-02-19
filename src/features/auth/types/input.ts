@@ -5,16 +5,6 @@ import { ConfCodeIsValid } from '../../../infrastructure/decorators/validate/con
 import { EmailIsConformed } from '../../../infrastructure/decorators/validate/email-is-conformed.decorator';
 import { NameIsExist } from '../../../infrastructure/decorators/validate/name-is-exist.decorator';
 
-export class UserLoginModel {
-  @Trim()
-  @IsString()
-  @Length(1, 30)
-  loginOrEmail: string;
-  @IsString()
-  @Length(1, 30)
-  password: string;
-}
-
 export class UserRegistrationModel {
   @Trim()
   @NameIsExist()

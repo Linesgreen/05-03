@@ -31,7 +31,6 @@ export class UserRepository {
 
   async deleteUserById(userId: string): Promise<boolean> {
     const deleteResult = await this.UserModel.findByIdAndDelete(userId);
-    console.log(deleteResult);
     return !!deleteResult;
   }
 

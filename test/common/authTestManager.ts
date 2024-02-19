@@ -25,7 +25,6 @@ export class AuthTestManager {
   async getTokens(loginOrEmail: string, password: string) {
     const response = await this.login(loginOrEmail, password);
     const token = response.body.accessToken;
-
     //TODO спросить про ts ignore
     //need ts ignore bcs ts type shit
     // @ts-ignore

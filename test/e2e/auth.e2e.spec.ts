@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { MailerService } from '@nestjs-modules/mailer';
 import * as mockdate from 'mockdate';
 import request from 'supertest';
@@ -23,7 +24,14 @@ describe('Auth e2e test', () => {
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    }) //Мокаем ддос защиту для того что бы она не мешала
+      .overrideGuard(ThrottlerGuard)
+      .useValue({
+        canActivate: () => {
+          return true;
+        },
+      })
+      .compile();
     app = moduleFixture.createNestApplication();
     appSettings(app);
     await app.init();

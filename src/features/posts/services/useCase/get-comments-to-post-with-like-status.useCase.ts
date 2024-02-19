@@ -3,7 +3,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { CommonRepository } from '../../../../infrastructure/common-likes';
+import { LikesToMapperManager } from '../../../../infrastructure/utils/likes-to-map-manager';
 import { CommentsDocument } from '../../../comments/repositories/comments/comment.schema';
 import { CommentsRepository } from '../../../comments/repositories/comments/comments.repository';
 import { CommentsLikesQueryRepository } from '../../../comments/repositories/likes/comments-likes-query.repository';
@@ -26,7 +26,7 @@ export class GetCommentsToPostWithLikeStatusUseCase implements ICommandHandler<G
     protected postRepository: PostsRepository,
     protected commentRepository: CommentsRepository,
     protected commentsLikesQueryRepository: CommentsLikesQueryRepository,
-    protected commonRepository: CommonRepository,
+    protected likesToMapperManager: LikesToMapperManager,
   ) {}
 
   async execute(command: GetCommentsToPostWithLikeStatusCommand): Promise<PaginationWithItems<OutputCommentType>> {
@@ -39,7 +39,7 @@ export class GetCommentsToPostWithLikeStatusUseCase implements ICommandHandler<G
     //if the user is not authorized, the like status is none
     let likeStatuses = {};
     if (userId) {
-      likeStatuses = await this.commonRepository.getUserLikeStatuses(
+      likeStatuses = await this.likesToMapperManager.getUserLikeStatuses(
         comments,
         this.commentsLikesQueryRepository,
         userId,
@@ -47,12 +47,11 @@ export class GetCommentsToPostWithLikeStatusUseCase implements ICommandHandler<G
       );
     }
 
-    return this.commonRepository.generateDto(comments, likeStatuses);
+    return this.likesToMapperManager.generateDto(comments, likeStatuses);
   }
 
   private async checkPostExist(postId: string) {
-    //TODo проверка существует ли а не тянуть весь вост
-    const post = await this.postRepository.getPostbyId(postId);
+    const post = await this.postRepository.postIsExist(postId);
     if (!post) throw new NotFoundException(`Post not found`);
   }
 

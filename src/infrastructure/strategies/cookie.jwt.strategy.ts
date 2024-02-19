@@ -2,10 +2,10 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import * as process from 'process';
 
-import { SessionRepository } from '../repository/session-repository';
-import { jwtConstants } from '../service/constants';
-//TODO перенести стратегии в нормальное место
+import { SessionRepository } from '../../features/security/repository/session.repository';
+
 @Injectable()
 export class CookieJwtStrategy extends PassportStrategy(Strategy, 'jwt-cookie') {
   constructor(private sessionRepository: SessionRepository) {
@@ -16,12 +16,11 @@ export class CookieJwtStrategy extends PassportStrategy(Strategy, 'jwt-cookie') 
         },
       ]),
       ignoreExpiration: false,
-      secretOrKey: jwtConstants.secret,
+      secretOrKey: process.env.JWT_SECRET,
     });
   }
 
   async validate(payload: any) {
-    console.log('123');
     const sessionId = await this.sessionRepository.sessionIsExist(payload.userId, payload.tokenKey);
     if (!sessionId) throw new UnauthorizedException();
     return { id: payload.userId, tokenKey: payload.tokenKey, deviceId: payload.deviceId };

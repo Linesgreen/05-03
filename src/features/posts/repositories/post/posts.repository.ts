@@ -52,6 +52,10 @@ export class PostsRepository {
     await this.savePost(newPostToDB);
     return newPostToDB;
   }
+  async postIsExist(postId: string): Promise<boolean> {
+    const post = await this.PostModel.findById(postId);
+    return !!post;
+  }
   /**
    * @param params
    * @param id - post id

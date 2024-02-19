@@ -6,7 +6,7 @@ import { JwtAuthGuard } from '../../../infrastructure/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { AddLikeToCommentCommand } from '../service/useCase/add-like.useCase';
 import { DeleteCommentByIdCommand } from '../service/useCase/delte-comment-byId.useCase';
-import { GetCommentByIdCommand } from '../service/useCase/get-comment.userCase';
+import { GetCommentByIdCommand } from '../service/useCase/get-comment.useCase';
 import { UpdateCommentCommand } from '../service/useCase/update-comment.useCase';
 import { CommentUpdateModel, LikeCreateModel } from '../types/comments/input';
 import { OutputCommentType } from '../types/comments/output';

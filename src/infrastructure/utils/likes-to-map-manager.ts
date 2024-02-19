@@ -3,15 +3,15 @@
 
 import { Injectable } from '@nestjs/common';
 
-import { LikeStatusType } from '../features/comments/types/comments/input';
-import { PaginationWithItems } from '../features/common/types/output';
+import { LikeStatusType } from '../../features/comments/types/comments/input';
+import { PaginationWithItems } from '../../features/common/types/output';
 
 export interface ILikesQueryRepository {
   getLikeByUserId(id: string, userId: string): Promise<any | null>;
   getManyLikesByUserId(ids: string[], userId: string): Promise<any[]>;
 }
 @Injectable()
-export class CommonRepository {
+export class LikesToMapperManager {
   async getUserLikeStatuses<T extends { _id: string }>(
     items: PaginationWithItems<T>,
     repository: ILikesQueryRepository,

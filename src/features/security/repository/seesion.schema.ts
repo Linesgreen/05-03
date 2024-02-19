@@ -2,7 +2,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
-import { SessionOutputType } from '../types/output';
+import { SessionOutputType } from '../../auth/types/output';
 
 @Schema()
 export class SessionDb {

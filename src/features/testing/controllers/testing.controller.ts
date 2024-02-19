@@ -2,12 +2,12 @@ import { Controller, Delete, HttpCode } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { SessionDb, SessionDocument } from '../../auth/repository/seesion.schema';
 import { Blog, BlogsDocument } from '../../blogs/repositories/blogs-schema';
 import { Comment, CommentsDocument } from '../../comments/repositories/comments/comment.schema';
-import { CommentLikes, CommentsLikesDocument } from '../../comments/repositories/likes/likes.schema';
+import { CommentLikes, CommentsLikesDocument } from '../../comments/repositories/likes/comment-like.schema';
 import { PostLikes, PostLikesDocument } from '../../posts/repositories/likes/post-likes.schema';
 import { Post, PostsDocument } from '../../posts/repositories/post/post.schema';
+import { SessionDb, SessionDocument } from '../../security/repository/seesion.schema';
 import { User, UsersDocument } from '../../users/repositories/users-schema';
 
 @Controller('testing')

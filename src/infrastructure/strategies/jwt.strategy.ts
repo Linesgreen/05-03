@@ -3,8 +3,7 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
-import { UserQueryRepository } from '../../users/repositories/user.query.repository';
-import { jwtConstants } from '../service/constants';
+import { UserQueryRepository } from '../../features/users/repositories/user.query.repository';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -12,14 +11,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: jwtConstants.secret,
+      secretOrKey: process.env.JWT_SECRET,
     });
   }
 
   async validate(payload: any) {
     const user = await this.userQueryRepository.getUserById(payload.userId);
     if (!user) throw new ForbiddenException();
-    console.log(payload);
     return { id: payload.userId };
   }
 }

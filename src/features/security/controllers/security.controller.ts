@@ -2,10 +2,10 @@ import { Controller, Delete, Get, HttpCode, NotFoundException, Param, UseGuards 
 
 import { CookieJwtGuard } from '../../../infrastructure/guards/jwt-cookie.guard';
 import { CurrentSession } from '../../auth/decorators/userId-sessionKey.decorator';
-import { SessionQueryRepository } from '../../auth/repository/session.query.repository';
-import { SessionRepository } from '../../auth/repository/session-repository';
 import { SessionOutputType } from '../../auth/types/output';
 import { SessionOwnerGuard } from '../guards/session-owner.guard';
+import { SessionQueryRepository } from '../repository/session.query.repository';
+import { SessionRepository } from '../repository/session.repository';
 
 @Controller('security')
 export class SecurityController {

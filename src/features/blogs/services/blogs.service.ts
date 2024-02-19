@@ -4,7 +4,7 @@ import { BlogsRepository } from '../repositories/blogs.repository';
 import { Blog, BlogsDocument } from '../repositories/blogs-schema';
 import { BlogCreateModel } from '../types/input';
 import { OutputBlogType } from '../types/output';
-//TODO имеет ли смысл делать useCase
+
 @Injectable()
 export class BlogsService {
   constructor(protected blogsRepository: BlogsRepository) {}

@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { SessionOutputType } from '../types/output';
+import { SessionOutputType } from '../../auth/types/output';
 import { SessionDb, SessionDocument } from './seesion.schema';
 
 @Injectable()

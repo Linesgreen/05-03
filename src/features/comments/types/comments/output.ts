@@ -1,3 +1,5 @@
+import { LikeStatus } from '../../../posts/types/likes/input';
+
 export type OutputCommentType = {
   id: string;
   content: string;
@@ -12,5 +14,3 @@ export type OutputCommentType = {
     myStatus: LikeStatus;
   };
 };
-
-export type LikeStatus = 'None' | 'Like' | 'Dislike';

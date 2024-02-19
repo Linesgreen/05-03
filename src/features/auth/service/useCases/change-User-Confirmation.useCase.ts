@@ -12,7 +12,7 @@ export class ChangeUserConfirmationCommand {
 }
 
 @CommandHandler(ChangeUserConfirmationCommand)
-export class ChangeUserConfirmationUserCase implements ICommandHandler<ChangeUserConfirmationCommand> {
+export class ChangeUserConfirmationUseCase implements ICommandHandler<ChangeUserConfirmationCommand> {
   constructor(protected userRepository: UserRepository) {}
 
   async execute(command: ChangeUserConfirmationCommand): Promise<void> {

@@ -4,7 +4,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { CommonRepository } from '../../../../infrastructure/common-likes';
+import { LikesToMapperManager } from '../../../../infrastructure/utils/likes-to-map-manager';
 import { PaginationWithItems } from '../../../common/types/output';
 import { PostLikesQueryRepository } from '../../repositories/likes/post-likes.query.repository';
 import { PostsRepository } from '../../repositories/post/posts.repository';
@@ -17,13 +17,13 @@ export class GetAllPostsWithLikeStatusCommand {
     public sortData: PostSortData,
   ) {}
 }
-//TODO узнать по поводу этого безумия
+
 @CommandHandler(GetAllPostsWithLikeStatusCommand)
 export class GetAllPostsWithLikeStatusUseCase implements ICommandHandler<GetAllPostsWithLikeStatusCommand> {
   constructor(
     protected postRepository: PostsRepository,
     protected postLikesQueryRepository: PostLikesQueryRepository,
-    protected commonRepository: CommonRepository,
+    protected likesToMapperManager: LikesToMapperManager,
   ) {}
 
   async execute(command: GetAllPostsWithLikeStatusCommand): Promise<PaginationWithItems<OutputPostType>> {
@@ -36,7 +36,7 @@ export class GetAllPostsWithLikeStatusUseCase implements ICommandHandler<GetAllP
     //if the user is not authorized, the like status is none
     let likeStatuses = {};
     if (userId) {
-      likeStatuses = await this.commonRepository.getUserLikeStatuses(
+      likeStatuses = await this.likesToMapperManager.getUserLikeStatuses(
         posts,
         this.postLikesQueryRepository,
         userId,
@@ -44,6 +44,6 @@ export class GetAllPostsWithLikeStatusUseCase implements ICommandHandler<GetAllP
       );
     }
 
-    return this.commonRepository.generateDto(posts, likeStatuses);
+    return this.likesToMapperManager.generateDto(posts, likeStatuses);
   }
 }

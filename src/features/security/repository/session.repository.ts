@@ -17,11 +17,9 @@ export class SessionRepository {
   }
   async sessionIsExist(userId: string, tokenKey: string): Promise<boolean> {
     const session = await this.SeesionModel.countDocuments({ userId: userId, tokenKey: tokenKey });
-    console.log(!!session);
     return !!session;
   }
   async getByUserIdAndTokenKey(userId: string, tokenKey: string): Promise<SessionDocument | null> {
-    console.log(userId);
     return this.SeesionModel.findOne({ userId: userId, tokenKey: tokenKey });
   }
   async saveSession(session: SessionDocument): Promise<void> {

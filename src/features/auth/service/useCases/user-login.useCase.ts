@@ -1,8 +1,8 @@
 /* eslint-disable no-underscore-dangle */
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { SessionDb } from '../../repository/seesion.schema';
-import { SessionRepository } from '../../repository/session-repository';
+import { SessionDb } from '../../../security/repository/seesion.schema';
+import { SessionRepository } from '../../../security/repository/session.repository';
 import { AuthService } from '../auth.service';
 
 export class UserLoginCommand {

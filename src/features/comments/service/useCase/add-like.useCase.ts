@@ -4,9 +4,9 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UserQueryRepository } from '../../../users/repositories/user.query.repository';
 import { CommentsQueryRepository } from '../../repositories/comments/comments.query.repository';
 import { CommentsRepository } from '../../repositories/comments/comments.repository';
+import { CommentsLikesDocument } from '../../repositories/likes/comment-like.schema';
 import { CommentsLikesRepository } from '../../repositories/likes/comments-likes.repository';
 import { CommentsLikesQueryRepository } from '../../repositories/likes/comments-likes-query.repository';
-import { CommentsLikesDocument } from '../../repositories/likes/likes.schema';
 import { LikeStatusType } from '../../types/comments/input';
 
 export class AddLikeToCommentCommand {

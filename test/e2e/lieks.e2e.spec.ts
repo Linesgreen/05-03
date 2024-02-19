@@ -1,6 +1,7 @@
 // noinspection JSUnresolvedReference
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { render } from 'prettyjson';
 import request from 'supertest';
 
@@ -40,7 +41,14 @@ describe('Users e2e test', () => {
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    }) //Мокаем ддос защиту для того что бы она не мешала
+      .overrideGuard(ThrottlerGuard)
+      .useValue({
+        canActivate: () => {
+          return true;
+        },
+      })
+      .compile();
     app = moduleFixture.createNestApplication();
     appSettings(app);
     await app.init();
@@ -214,6 +222,11 @@ describe('Users e2e test', () => {
     let blogId;
 
     beforeAll(async () => {
+      //Updates token
+      const tokenspair = await authTestManager.getTokens(userCreateData.email, userCreateData.password);
+      token = tokenspair.token;
+      const tokenspair2 = await authTestManager.getTokens(user2CreateData.email, user2CreateData.password);
+      token2 = tokenspair2.token;
       //create two more users
       await userTestManager.createUser(201, user3CreateData);
       await userTestManager.createUser(201, user4CreateData);
@@ -357,7 +370,6 @@ describe('Users e2e test', () => {
         .get(`/posts/${post1.id}`)
         .set('Authorization', `Bearer ${token}`)
         .expect(200);
-      console.log(render(response.body));
       expect(response.body.extendedLikesInfo.likesCount).toEqual(2);
       expect(response.body.extendedLikesInfo.dislikesCount).toEqual(1);
       expect(response.body.extendedLikesInfo.myStatus).toEqual('None');
@@ -384,6 +396,12 @@ describe('Users e2e test', () => {
       expect(posts[3].extendedLikesInfo.newestLikes.length).toEqual(2);
     });
     it('user2 like post1 | post2 | post3 | post4 again ', async () => {
+      //Updates token again
+      const tokenspair = await authTestManager.getTokens(userCreateData.email, userCreateData.password);
+      token = tokenspair.token;
+      const tokenspair2 = await authTestManager.getTokens(user2CreateData.email, user2CreateData.password);
+      token2 = tokenspair2.token;
+
       await request(httpServer)
         .put(`/posts/${post1.id}/like-status`)
         .set('Authorization', `Bearer ${token2}`)

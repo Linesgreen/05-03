@@ -2,14 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
+import { IPostLikesQueryRepository } from '../../../../infrastructure/types/interfaces/IPostLikesQueryRepository';
 import { NewestLikeType } from '../../types/likes/output';
 import { PostLikes, PostLikesDocument } from './post-likes.schema';
-//TODO куда положить интерфейс
-export interface IPostLikesQueryRepository {
-  getLikeByUserId(postId: string, userId: string): Promise<PostLikesDocument | null>;
-  getLastThreeLikes(postId: string): Promise<NewestLikeType[]>;
-  getManyLikesByUserId(ids: string[], userId: string): Promise<PostLikesDocument[]>;
-}
 
 @Injectable()
 export class PostLikesQueryRepository implements IPostLikesQueryRepository {

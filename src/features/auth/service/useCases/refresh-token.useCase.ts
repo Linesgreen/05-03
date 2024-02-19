@@ -1,8 +1,8 @@
 import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { SessionDocument } from '../../repository/seesion.schema';
-import { SessionRepository } from '../../repository/session-repository';
+import { SessionDocument } from '../../../security/repository/seesion.schema';
+import { SessionRepository } from '../../../security/repository/session.repository';
 import { AuthService } from '../auth.service';
 
 export class RefreshTokenCommand {
@@ -22,7 +22,6 @@ export class RefreshTokenUseCase implements ICommandHandler<RefreshTokenCommand>
   async execute(command: RefreshTokenCommand): Promise<{ token: string; refreshToken: string }> {
     const { userId, tokenKey } = command;
     const session: SessionDocument = await this.findSession(userId, tokenKey);
-    console.log(session);
     const newTokenKey = crypto.randomUUID();
     const deviceId = session.deviceId;
     await this.updateAndSaveSession(session, newTokenKey);

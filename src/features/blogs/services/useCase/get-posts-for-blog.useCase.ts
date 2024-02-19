@@ -3,7 +3,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { CommonRepository } from '../../../../infrastructure/common-likes';
+import { LikesToMapperManager } from '../../../../infrastructure/utils/likes-to-map-manager';
 import { PaginationWithItems } from '../../../common/types/output';
 import { PostLikesQueryRepository } from '../../../posts/repositories/likes/post-likes.query.repository';
 import { PostsRepository } from '../../../posts/repositories/post/posts.repository';
@@ -25,7 +25,7 @@ export class GetPostForBlogUseCase implements ICommandHandler<GetPostForBlogComm
     protected postLikesQueryRepository: PostLikesQueryRepository,
     protected postRepository: PostsRepository,
     protected blogRepository: BlogsRepository,
-    protected commonRepository: CommonRepository,
+    protected likesToMapperManager: LikesToMapperManager,
   ) {}
 
   async execute(command: GetPostForBlogCommand): Promise<PaginationWithItems<OutputPostType>> {
@@ -38,14 +38,14 @@ export class GetPostForBlogUseCase implements ICommandHandler<GetPostForBlogComm
     //if the user is not authorized, the like status is none
     let likeStatuses = {};
     if (userId) {
-      likeStatuses = await this.commonRepository.getUserLikeStatuses(
+      likeStatuses = await this.likesToMapperManager.getUserLikeStatuses(
         posts,
         this.postLikesQueryRepository,
         userId,
         'postId',
       );
     }
-    return this.commonRepository.generateDto(posts, likeStatuses);
+    return this.likesToMapperManager.generateDto(posts, likeStatuses);
   }
 
   private async checkBlogExist(blogId: string) {

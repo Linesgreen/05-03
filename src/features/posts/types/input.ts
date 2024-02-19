@@ -1,7 +1,7 @@
 import { IsString, Length } from 'class-validator';
 
 import { Trim } from '../../../infrastructure/decorators/transform/trim';
-import { BlogIsExist } from '../../blogs/validate/blog-is-exist.decorator';
+import { BlogIsExist } from '../../blogs/decorators/blog-is-exist.decorator';
 
 export class PostCreateModel {
   @Trim()
