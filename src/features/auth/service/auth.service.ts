@@ -10,8 +10,11 @@ export class AuthService {
     tokenKey: string,
     deviceId: string,
   ): Promise<{ token: string; refreshToken: string }> {
-    const token = await this.createJwt({ userId }, 10);
-    const refreshToken = await this.createJwt({ userId, tokenKey, deviceId }, 20);
+    //TODO узнать про это
+    const tokenExpirationTime = process.env.TOKEN_EXP as string;
+    const refreshTokenExpirationTime = process.env.REFRESH_TOKEN_EXP as string;
+    const token = await this.createJwt({ userId }, tokenExpirationTime);
+    const refreshToken = await this.createJwt({ userId, tokenKey, deviceId }, refreshTokenExpirationTime);
     return { token, refreshToken };
   }
 
@@ -21,7 +24,7 @@ export class AuthService {
       tokenKey?: string;
       deviceId?: string;
     },
-    expirationTime: number,
+    expirationTime: string,
   ): Promise<string> {
     return this.jwtService.signAsync(payload, { expiresIn: `${expirationTime}s` });
   }

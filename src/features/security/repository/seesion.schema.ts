@@ -1,6 +1,8 @@
 /* eslint-disable no-underscore-dangle */
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { add } from 'date-fns';
 import { HydratedDocument } from 'mongoose';
+import * as process from 'process';
 
 import { SessionOutputType } from '../../auth/types/output';
 
@@ -14,6 +16,9 @@ export class SessionDb {
 
   @Prop({ required: true })
   issuedDate: string;
+
+  @Prop({ required: true })
+  expiredDate: Date;
 
   @Prop({ required: true })
   title: string;
@@ -30,6 +35,9 @@ export class SessionDb {
     this._id = crypto.randomUUID();
     this.tokenKey = tokenKey;
     this.issuedDate = new Date().toISOString();
+    this.expiredDate = add(new Date(), {
+      seconds: Number(process.env.REFRESH_TOKEN_EXP),
+    });
     this.title = title;
     this.userId = userId;
     this.ip = ip;
