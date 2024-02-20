@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { join } from 'path';
+import * as process from 'process';
 
 import { MailService } from './mail.service';
 
@@ -13,8 +14,8 @@ import { MailService } from './mail.service';
         port: 587,
         secure: false,
         auth: {
-          user: 'linesgreenTest@gmail.com',
-          pass: 'knlc evir ufry fcbr',
+          user: process.env.GMAIL_USER,
+          pass: process.env.GMAIL_PASS,
         },
       },
       defaults: {
