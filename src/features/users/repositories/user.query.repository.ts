@@ -2,9 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
 
+import { QueryPaginationResult } from '../../../infrastructure/types/query-sort.type';
 import { PaginationWithItems } from '../../common/types/output';
-import { QueryPagination } from '../../common/utils/queryPagination';
-import { UserSortData } from '../types/input';
 import { UserOutputType } from '../types/output';
 import { User, UsersDocument } from './users-schema';
 
@@ -15,25 +14,25 @@ export class UserQueryRepository {
     private UserModel: Model<UsersDocument>,
   ) {}
 
-  async findAll(sortData: UserSortData): Promise<PaginationWithItems<UserOutputType>> {
-    const formattedSortData = QueryPagination.convertQueryPination(sortData);
+  async findAll(sortData: QueryPaginationResult): Promise<PaginationWithItems<UserOutputType>> {
     const filter: FilterQuery<User> = {
       $or: [
-        { 'accountData.email': { $regex: formattedSortData.searchEmailTerm ?? '', $options: 'i' } },
-        { 'accountData.login': { $regex: formattedSortData.searchLoginTerm ?? '', $options: 'i' } },
+        { 'accountData.email': { $regex: sortData.searchEmailTerm ?? '', $options: 'i' } },
+        { 'accountData.login': { $regex: sortData.searchLoginTerm ?? '', $options: 'i' } },
       ],
     };
+
     const sortFilter: FilterQuery<User> = {
-      [`accountData.${formattedSortData.sortBy}`]: formattedSortData.sortDirection,
+      [`accountData.${sortData.sortBy}`]: sortData.sortDirection,
     };
     const allUsers: UsersDocument[] = await this.UserModel.find(filter)
       .sort(sortFilter)
-      .skip((+formattedSortData.pageNumber - 1) * +formattedSortData.pageSize)
-      .limit(+formattedSortData.pageSize);
+      .skip((+sortData.pageNumber - 1) * +sortData.pageSize)
+      .limit(+sortData.pageSize);
 
     const allDtoUsers: UserOutputType[] = allUsers.map((user) => user.toDto());
     const totalCount: number = await this.UserModel.countDocuments(filter);
-    return new PaginationWithItems(+formattedSortData.pageNumber, +formattedSortData.pageSize, totalCount, allDtoUsers);
+    return new PaginationWithItems(+sortData.pageNumber, +sortData.pageSize, totalCount, allDtoUsers);
   }
 
   async getUserById(userId: string): Promise<UserOutputType | null> {

@@ -2,10 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
 
+import { QueryPaginationResult } from '../../../../infrastructure/types/query-sort.type';
 import { Blog } from '../../../blogs/repositories/blogs-schema';
 import { PaginationWithItems } from '../../../common/types/output';
-import { QueryPagination } from '../../../common/utils/queryPagination';
-import { PostSortData } from '../../../posts/types/input';
 import { LikeStatusType } from '../../types/comments/input';
 import { Comment, CommentsDocument } from './comment.schema';
 
@@ -30,19 +29,21 @@ export class CommentsRepository {
   async getCommentById(commentId: string): Promise<CommentsDocument | null> {
     return this.CommentModel.findById(commentId);
   }
-  async getCommentsByPostId(queryData: PostSortData, postId: string): Promise<PaginationWithItems<CommentsDocument>> {
-    const formattedSortData = QueryPagination.convertQueryPination(queryData);
-
+  async getCommentsByPostId(
+    queryData: QueryPaginationResult,
+    postId: string,
+  ): Promise<PaginationWithItems<CommentsDocument>> {
+    //TODO Подоставать нормально
     const filter: FilterQuery<Blog> = { postId };
-    const sortFilter: FilterQuery<Blog> = { [formattedSortData.sortBy]: formattedSortData.sortDirection };
+    const sortFilter: FilterQuery<Blog> = { [queryData.sortBy]: queryData.sortDirection };
     const comments = await this.CommentModel.find(filter)
       .sort(sortFilter)
-      .skip((+formattedSortData.pageNumber - 1) * +formattedSortData.pageSize)
-      .limit(+formattedSortData.pageSize);
+      .skip((+queryData.pageNumber - 1) * +queryData.pageSize)
+      .limit(+queryData.pageSize);
 
     const totalCount: number = await this.CommentModel.countDocuments(filter);
 
-    return new PaginationWithItems(+formattedSortData.pageNumber, +formattedSortData.pageSize, totalCount, comments);
+    return new PaginationWithItems(+queryData.pageNumber, +queryData.pageSize, totalCount, comments);
   }
 
   async saveComment(comment: CommentsDocument): Promise<void> {

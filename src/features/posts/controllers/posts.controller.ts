@@ -13,8 +13,10 @@ import {
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 
+import { QueryPaginationPipe } from '../../../infrastructure/decorators/transform/query-pagination.pipe';
 import { AuthGuard } from '../../../infrastructure/guards/auth-basic.guard';
 import { JwtAuthGuard } from '../../../infrastructure/guards/jwt-auth.guard';
+import { QueryPaginationResult } from '../../../infrastructure/types/query-sort.type';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { CreateCommentCommand } from '../../comments/service/useCase/create-comment.useCase';
 import { LikeCreateModel } from '../../comments/types/comments/input';
@@ -25,7 +27,7 @@ import { AddLikeToPostCommand } from '../services/useCase/add-like.to.post.useSa
 import { GetAllPostsWithLikeStatusCommand } from '../services/useCase/get-all-post-with-likeStatus.useCase';
 import { GetCommentsToPostWithLikeStatusCommand } from '../services/useCase/get-comments-to-post-with-like-status.useCase';
 import { GetPostWithLikeStatusCommand } from '../services/useCase/get-post-with-like-status.useCase';
-import { CommentCreateModel, PostCreateModel, PostSortData, PostUpdateType } from '../types/input';
+import { CommentCreateModel, PostCreateModel, PostUpdateType } from '../types/input';
 import { OutputPostType } from '../types/output';
 
 @Controller('posts')
@@ -38,7 +40,7 @@ export class PostsController {
   @Get('/')
   async getAllPosts(
     @CurrentUser() userId: string,
-    @Query() queryData: PostSortData,
+    @Query(QueryPaginationPipe) queryData: QueryPaginationResult,
   ): Promise<PaginationWithItems<OutputPostType>> {
     return this.commandBus.execute(new GetAllPostsWithLikeStatusCommand(userId, queryData));
   }
@@ -52,7 +54,7 @@ export class PostsController {
   async getCommentsForPost(
     @CurrentUser() userId: string,
     @Param('postId') postId: string,
-    @Query() queryData: PostSortData,
+    @Query(QueryPaginationPipe) queryData: QueryPaginationResult,
   ): Promise<PaginationWithItems<OutputCommentType>> {
     return this.commandBus.execute(new GetCommentsToPostWithLikeStatusCommand(userId, postId, queryData));
   }

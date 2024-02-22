@@ -1,4 +1,4 @@
-import { IsIn, IsNumber, IsOptional, IsString, Length, Matches } from 'class-validator';
+import { IsString, Length, Matches } from 'class-validator';
 
 import { Trim } from '../../../infrastructure/decorators/transform/trim';
 
@@ -19,38 +19,17 @@ export class PostToBlogCreateModel {
   @Trim()
   @IsString()
   @Length(1, 30)
+  //@ApiProperty()
   title: string;
+
   @Trim()
   @IsString()
   @Length(1, 100)
   @Trim()
   shortDescription: string;
+
   @IsString()
   @Trim()
   @Length(1, 1000)
   content: string;
-}
-
-export type BlogSortData = {
-  searchNameTerm?: string;
-  sortBy?: string;
-  sortDirection?: 'asc' | 'desc';
-  pageNumber?: string;
-  pageSize?: string;
-};
-
-export class PostFromBlogSortData {
-  @IsOptional()
-  @IsString()
-  @Trim()
-  sortBy?: string;
-  @IsOptional()
-  @IsIn(['asc', 'desc'])
-  sortDirection?: 'asc' | 'desc';
-  @IsOptional()
-  @IsNumber()
-  pageNumber?: string;
-  @IsOptional()
-  @IsNumber()
-  pageSize?: string;
 }

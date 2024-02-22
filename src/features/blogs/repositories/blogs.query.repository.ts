@@ -2,9 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
 
+import { QueryPaginationResult } from '../../../infrastructure/types/query-sort.type';
 import { PaginationWithItems } from '../../common/types/output';
-import { QueryPagination } from '../../common/utils/queryPagination';
-import { BlogSortData } from '../types/input';
 import { OutputBlogType } from '../types/output';
 import { Blog, BlogsDocument } from './blogs-schema';
 
@@ -14,23 +13,21 @@ export class BlogsQueryRepository {
     @InjectModel(Blog.name)
     private BlogModel: Model<BlogsDocument>,
   ) {}
-
-  async findAll(sortData: BlogSortData): Promise<PaginationWithItems<OutputBlogType>> {
-    const formattedSortData = QueryPagination.convertQueryPination(sortData);
-
-    const filter: FilterQuery<Blog> = { name: { $regex: formattedSortData.searchNameTerm ?? '', $options: 'i' } };
-    const sortFilter: FilterQuery<Blog> = { [formattedSortData.sortBy]: formattedSortData.sortDirection };
+  //todo подаставать переменные нормально
+  async findAll(sortData: QueryPaginationResult): Promise<PaginationWithItems<OutputBlogType>> {
+    const filter: FilterQuery<Blog> = { name: { $regex: sortData.searchNameTerm ?? '', $options: 'i' } };
+    const sortFilter: FilterQuery<Blog> = { [sortData.sortBy]: sortData.sortDirection };
 
     const allBlogs: BlogsDocument[] = await this.BlogModel.find(filter)
       .sort(sortFilter)
-      .skip((+formattedSortData.pageNumber - 1) * +formattedSortData.pageSize)
-      .limit(+formattedSortData.pageSize);
+      .skip((+sortData.pageNumber - 1) * +sortData.pageSize)
+      .limit(+sortData.pageSize);
 
     const allDtoBlogs: OutputBlogType[] = allBlogs.map((blog: BlogsDocument) => blog.toDto());
 
     const totalCount: number = await this.BlogModel.countDocuments(filter);
 
-    return new PaginationWithItems(+formattedSortData.pageNumber, +formattedSortData.pageSize, totalCount, allDtoBlogs);
+    return new PaginationWithItems(+sortData.pageNumber, +sortData.pageSize, totalCount, allDtoBlogs);
   }
 
   async findById(id: string): Promise<OutputBlogType | null> {

@@ -18,15 +18,6 @@ export class UserCreateModel {
   email: string;
 }
 
-export type UserSortData = {
-  sortBy?: string;
-  sortDirection?: 'asc' | 'desc';
-  pageNumber?: string;
-  pageSize?: string;
-  searchLoginTerm?: string;
-  searchEmailTerm?: string;
-};
-
 export type UserDbType = {
   login: string;
   password: string;

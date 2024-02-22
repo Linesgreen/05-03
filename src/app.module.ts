@@ -29,6 +29,7 @@ import { TestingController } from './features/testing/controllers/testing.contro
 import { userProviders } from './features/users';
 import { UserController } from './features/users/controllers/user.controller';
 import { User, UserSchema } from './features/users/repositories/users-schema';
+import { QueryPaginationPipe } from './infrastructure/decorators/transform/query-pagination.pipe';
 import { ConfCodeIsValidConstraint } from './infrastructure/decorators/validate/conf-code.decorator';
 import { EmailIsConformedConstraint } from './infrastructure/decorators/validate/email-is-conformed.decorator';
 import { LikeStatusConstraint } from './infrastructure/decorators/validate/like-status.decorator';
@@ -40,7 +41,7 @@ import { JwtStrategy } from './infrastructure/strategies/jwt.strategy';
 import { LocalStrategy } from './infrastructure/strategies/local.strategy';
 import { LikesToMapperManager } from './infrastructure/utils/likes-to-map-manager';
 import { MailModule } from './mail/mail.module';
-//TODO как и провайдеры
+
 const strategies = [LocalStrategy, JwtStrategy, CookieJwtStrategy];
 const decorators = [
   NameIsExistConstraint,
@@ -104,6 +105,7 @@ const decorators = [
     LikesToMapperManager,
     ...strategies,
     ...decorators,
+    QueryPaginationPipe,
   ],
 })
 export class AppModule implements NestModule {

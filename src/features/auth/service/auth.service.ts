@@ -5,12 +5,12 @@ import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class AuthService {
   constructor(protected jwtService: JwtService) {}
-  async generateTokensPair(
+  async generateTokenPair(
     userId: string,
     tokenKey: string,
     deviceId: string,
   ): Promise<{ token: string; refreshToken: string }> {
-    //TODO узнать про это
+    //TODO валидировать
     const tokenExpirationTime = process.env.TOKEN_EXP as string;
     const refreshTokenExpirationTime = process.env.REFRESH_TOKEN_EXP as string;
     const token = await this.createJwt({ userId }, tokenExpirationTime);

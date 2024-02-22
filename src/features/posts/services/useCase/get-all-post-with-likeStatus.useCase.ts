@@ -4,17 +4,17 @@
 import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
+import { QueryPaginationResult } from '../../../../infrastructure/types/query-sort.type';
 import { LikesToMapperManager } from '../../../../infrastructure/utils/likes-to-map-manager';
 import { PaginationWithItems } from '../../../common/types/output';
 import { PostLikesQueryRepository } from '../../repositories/likes/post-likes.query.repository';
 import { PostsRepository } from '../../repositories/post/posts.repository';
-import { PostSortData } from '../../types/input';
 import { OutputPostType } from '../../types/output';
 
 export class GetAllPostsWithLikeStatusCommand {
   constructor(
     public userId: string | null,
-    public sortData: PostSortData,
+    public sortData: QueryPaginationResult,
   ) {}
 }
 

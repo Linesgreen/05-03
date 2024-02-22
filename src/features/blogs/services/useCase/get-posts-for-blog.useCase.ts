@@ -3,19 +3,19 @@
 import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
+import { QueryPaginationResult } from '../../../../infrastructure/types/query-sort.type';
 import { LikesToMapperManager } from '../../../../infrastructure/utils/likes-to-map-manager';
 import { PaginationWithItems } from '../../../common/types/output';
 import { PostLikesQueryRepository } from '../../../posts/repositories/likes/post-likes.query.repository';
 import { PostsRepository } from '../../../posts/repositories/post/posts.repository';
 import { OutputPostType } from '../../../posts/types/output';
 import { BlogsRepository } from '../../repositories/blogs.repository';
-import { PostFromBlogSortData } from '../../types/input';
 
 export class GetPostForBlogCommand {
   constructor(
     public userId: string | null,
     public blogId: string,
-    public sortData: PostFromBlogSortData,
+    public sortData: QueryPaginationResult,
   ) {}
 }
 
@@ -53,7 +53,7 @@ export class GetPostForBlogUseCase implements ICommandHandler<GetPostForBlogComm
     if (!post) throw new NotFoundException(`Post not found`);
   }
 
-  private async findPostsForBlog(blogId: string, sortData: PostFromBlogSortData) {
+  private async findPostsForBlog(blogId: string, sortData: QueryPaginationResult) {
     const posts = await this.postRepository.findByBlogId(blogId, sortData);
     if (!posts?.items?.length) {
       throw new NotFoundException(`Posts not found`);

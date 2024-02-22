@@ -25,7 +25,7 @@ export class UserLoginUseCase implements ICommandHandler<UserLoginCommand> {
     const tokenKey = crypto.randomUUID();
     const deviceId = crypto.randomUUID();
     await this.createSession(userId, deviceId, ip, userAgent, tokenKey);
-    return this.authService.generateTokensPair(userId, tokenKey, deviceId);
+    return this.authService.generateTokenPair(userId, tokenKey, deviceId);
   }
 
   async createSession(

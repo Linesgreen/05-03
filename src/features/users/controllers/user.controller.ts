@@ -12,11 +12,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
+import { QueryPaginationPipe } from '../../../infrastructure/decorators/transform/query-pagination.pipe';
 import { AuthGuard } from '../../../infrastructure/guards/auth-basic.guard';
+import { QueryPaginationResult } from '../../../infrastructure/types/query-sort.type';
 import { PaginationWithItems } from '../../common/types/output';
 import { UserQueryRepository } from '../repositories/user.query.repository';
 import { UserService } from '../services/user.service';
-import { UserCreateModel, UserSortData } from '../types/input';
+import { UserCreateModel } from '../types/input';
 import { UserOutputType } from '../types/output';
 
 @Controller('users')
@@ -32,7 +34,9 @@ export class UserController {
     return this.userService.createUserToDto(userCreateData);
   }
   @Get('')
-  async getAllUsers(@Query() queryData: UserSortData): Promise<PaginationWithItems<UserOutputType>> {
+  async getAllUsers(
+    @Query(QueryPaginationPipe) queryData: QueryPaginationResult,
+  ): Promise<PaginationWithItems<UserOutputType>> {
     return this.userQueryRepository.findAll(queryData);
   }
   @Delete(':userId')

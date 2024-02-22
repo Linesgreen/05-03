@@ -25,7 +25,7 @@ export class RefreshTokenUseCase implements ICommandHandler<RefreshTokenCommand>
     const newTokenKey = crypto.randomUUID();
     const deviceId = session.deviceId;
     await this.updateAndSaveSession(session, newTokenKey);
-    return this.authService.generateTokensPair(userId, newTokenKey, deviceId);
+    return this.authService.generateTokenPair(userId, newTokenKey, deviceId);
   }
 
   async findSession(userId: string, tokenKey: string): Promise<SessionDocument> {

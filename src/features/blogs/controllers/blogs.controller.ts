@@ -13,7 +13,9 @@ import {
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 
+import { QueryPaginationPipe } from '../../../infrastructure/decorators/transform/query-pagination.pipe';
 import { AuthGuard } from '../../../infrastructure/guards/auth-basic.guard';
+import { QueryPaginationResult } from '../../../infrastructure/types/query-sort.type';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { PaginationWithItems } from '../../common/types/output';
 import { PostService } from '../../posts/services/post.service';
@@ -21,7 +23,7 @@ import { OutputPostType } from '../../posts/types/output';
 import { BlogsQueryRepository } from '../repositories/blogs.query.repository';
 import { BlogsService } from '../services/blogs.service';
 import { GetPostForBlogCommand } from '../services/useCase/get-posts-for-blog.useCase';
-import { BlogCreateModel, BlogSortData, PostFromBlogSortData, PostToBlogCreateModel } from '../types/input';
+import { BlogCreateModel, PostToBlogCreateModel } from '../types/input';
 import { OutputBlogType } from '../types/output';
 
 @Controller('blogs')
@@ -34,7 +36,9 @@ export class BlogsController {
   ) {}
 
   @Get('')
-  async getAllBlogs(@Query() queryData: BlogSortData): Promise<PaginationWithItems<OutputBlogType>> {
+  async getAllBlogs(
+    @Query(QueryPaginationPipe) queryData: QueryPaginationResult,
+  ): Promise<PaginationWithItems<OutputBlogType>> {
     return this.blogsQueryRepository.findAll(queryData);
   }
 
@@ -54,7 +58,7 @@ export class BlogsController {
   @Get(':blogId/posts')
   async getPostForBlog(
     @CurrentUser() userId: string,
-    @Query() queryData: PostFromBlogSortData,
+    @Query(QueryPaginationPipe) queryData: QueryPaginationResult,
     @Param('blogId') blogId: string,
   ): Promise<PaginationWithItems<OutputPostType>> {
     return this.commandBus.execute(new GetPostForBlogCommand(userId, blogId, queryData));
