@@ -2,7 +2,6 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ThrottlerGuard } from '@nestjs/throttler';
-import { render } from 'prettyjson';
 import request from 'supertest';
 
 import { AppModule } from '../../src/app.module';
@@ -386,7 +385,6 @@ describe('Users e2e test', () => {
         .expect(200);
 
       const posts = response.body.items;
-      console.log(render(response.body));
       expect(posts[0].extendedLikesInfo.newestLikes[0].login).toEqual(user3CreateData.login);
       expect(posts[0].extendedLikesInfo.newestLikes[1].login).toEqual(user2CreateData.login);
       expect(posts[0].extendedLikesInfo.newestLikes[2].login).toEqual(userCreateData.login);
@@ -430,7 +428,7 @@ describe('Users e2e test', () => {
         .expect(200);
 
       const posts = response.body.items;
-      console.log(render(response.body));
+
       expect(posts[0].extendedLikesInfo.newestLikes[0].login).toEqual(user3CreateData.login);
       expect(posts[0].extendedLikesInfo.newestLikes[1].login).toEqual(user2CreateData.login);
       expect(posts[0].extendedLikesInfo.newestLikes[2].login).toEqual(userCreateData.login);
@@ -468,7 +466,7 @@ describe('Users e2e test', () => {
         .expect(200);
 
       const posts = response.body.items;
-      console.log(render(response.body));
+
       expect(posts[0].extendedLikesInfo.newestLikes[0].login).toEqual(user3CreateData.login);
       expect(posts[0].extendedLikesInfo.newestLikes[1].login).toEqual(userCreateData.login);
       expect(posts[0].extendedLikesInfo.newestLikes.length).toEqual(2);

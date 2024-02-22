@@ -30,7 +30,7 @@ export class QueryPaginationType {
   @IsOptional()
   @Transform((value: TransformFnParams) => parseInt(value.value, 10))
   @IsPositive()
-  pageSize = 1;
+  pageSize: number;
 }
 
 export class QueryPaginationResult {

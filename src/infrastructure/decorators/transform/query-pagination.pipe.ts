@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+// noinspection UnnecessaryLocalVariableJS
+
 import { ArgumentMetadata, BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import { validateOrReject } from 'class-validator';
@@ -17,7 +20,6 @@ export class QueryPaginationPipe implements PipeTransform<QueryPaginationType, P
     } catch (errors) {
       throw new BadRequestException(`Validation failed: ${errors}`);
     }
-    console.log(object);
 
     const queryPaginationResult: QueryPaginationResult = {
       searchLoginTerm: object?.searchLoginTerm ?? null,
@@ -29,7 +31,6 @@ export class QueryPaginationPipe implements PipeTransform<QueryPaginationType, P
       pageSize: object?.pageSize ? `${object?.pageSize}` : '10',
     };
 
-    console.log(queryPaginationResult);
     return queryPaginationResult;
   }
 }
