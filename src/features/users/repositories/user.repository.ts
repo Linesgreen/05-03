@@ -2,19 +2,19 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { User, UsersDocument } from './users-schema';
+import { UserMongo, UsersDocument } from './users-schema';
 
 @Injectable()
 export class UserRepository {
   constructor(
-    @InjectModel(User.name)
+    @InjectModel(UserMongo.name)
     private UserModel: Model<UsersDocument>,
   ) {}
   /**
    * @returns id созданного блога
    * @param newUser : UsersDocument
    */
-  async addUser(newUser: User): Promise<UsersDocument> {
+  async addUser(newUser: UserMongo): Promise<UsersDocument> {
     const newUserToDb = new this.UserModel(newUser);
     await newUserToDb.save();
     return newUserToDb;

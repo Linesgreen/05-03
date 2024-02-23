@@ -8,7 +8,7 @@ import { CommentLikes, CommentsLikesDocument } from '../../comments/repositories
 import { PostLikes, PostLikesDocument } from '../../posts/repositories/likes/post-likes.schema';
 import { Post, PostsDocument } from '../../posts/repositories/post/post.schema';
 import { SessionDb, SessionDocument } from '../../security/repository/seesion.schema';
-import { User, UsersDocument } from '../../users/repositories/users-schema';
+import { UserMongo, UsersDocument } from '../../users/repositories/users-schema';
 
 @Controller('testing')
 export class TestingController {
@@ -17,7 +17,7 @@ export class TestingController {
     private BlogModel: Model<BlogsDocument>,
     @InjectModel(Post.name)
     private PostModel: Model<PostsDocument>,
-    @InjectModel(User.name)
+    @InjectModel(UserMongo.name)
     private UserModel: Model<UsersDocument>,
     @InjectModel(Comment.name)
     private CommentModel: Model<CommentsDocument>,

@@ -6,6 +6,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import * as process from 'process';
 
 import { authProviders, authUseCases } from './features/auth';
@@ -28,7 +29,7 @@ import { SessionDb, SessionSchema } from './features/security/repository/seesion
 import { TestingController } from './features/testing/controllers/testing.controller';
 import { userProviders } from './features/users';
 import { UserController } from './features/users/controllers/user.controller';
-import { User, UserSchema } from './features/users/repositories/users-schema';
+import { UserMongo, UserSchema } from './features/users/repositories/users-schema';
 import { QueryPaginationPipe } from './infrastructure/decorators/transform/query-pagination.pipe';
 import { ConfCodeIsValidConstraint } from './infrastructure/decorators/validate/conf-code.decorator';
 import { EmailIsConformedConstraint } from './infrastructure/decorators/validate/email-is-conformed.decorator';
@@ -41,6 +42,7 @@ import { JwtStrategy } from './infrastructure/strategies/jwt.strategy';
 import { LocalStrategy } from './infrastructure/strategies/local.strategy';
 import { LikesToMapperManager } from './infrastructure/utils/likes-to-map-manager';
 import { MailModule } from './mail/mail.module';
+import { configService } from './settings/config.service';
 
 const strategies = [LocalStrategy, JwtStrategy, CookieJwtStrategy];
 const decorators = [
@@ -54,17 +56,18 @@ const decorators = [
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    //Регистрируем для работы в postgres
+    TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
     //Регистрируем для испльзования Passport strategy
     PassportModule,
     //Регистрируем для испльзования @CommandHandler
     CqrsModule,
-    ConfigModule.forRoot({ isGlobal: true }),
-
     MongooseModule.forRoot(process.env.MONGO_URL!),
     MongooseModule.forFeature([
       { name: Blog.name, schema: BlogSchema },
       { name: Post.name, schema: PostSchema },
-      { name: User.name, schema: UserSchema },
+      { name: UserMongo.name, schema: UserSchema },
       { name: Comment.name, schema: CommentSchema },
       { name: CommentLikes.name, schema: CommentsLikesSchema },
       { name: PostLikes.name, schema: PostLikesSchema },

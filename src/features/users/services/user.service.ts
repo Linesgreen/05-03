@@ -1,27 +1,31 @@
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 
+import { User } from '../entites/user';
+import { PostgreeUserRepository } from '../repositories/postgree.user.repository';
 import { UserRepository } from '../repositories/user.repository';
-import { User, UsersDocument } from '../repositories/users-schema';
 import { UserCreateModel } from '../types/input';
 import { UserOutputType } from '../types/output';
 
 @Injectable()
 export class UserService {
-  constructor(protected usersRepository: UserRepository) {}
+  constructor(
+    protected usersRepository: UserRepository,
+    private postgresUsersRepository: PostgreeUserRepository,
+  ) {}
   async createUserToDto(userData: UserCreateModel): Promise<UserOutputType> {
     const newUserInDb = await this.createUser(userData);
     return newUserInDb.toDto();
   }
 
-  async createUser(userData: UserCreateModel): Promise<UsersDocument> {
+  async createUser(userData: UserCreateModel): Promise<User> {
     const passwordHash = await bcrypt.hash(userData.password, 12);
-    const newUser = new User(userData, passwordHash);
-    return this.usersRepository.addUser(newUser);
+    const newUser: User = new User(userData, passwordHash);
+    return this.postgresUsersRepository.addUser(newUser);
   }
 
-  async checkCredentials(loginOrEmail: string, password: string): Promise<UsersDocument | null> {
-    const user: UsersDocument | null = await this.usersRepository.getByLoginOrEmail(loginOrEmail);
+  async checkCredentials(loginOrEmail: string, password: string): Promise<User | null> {
+    const user: User | null = await this.postgresUsersRepository.getByLoginOrEmail(loginOrEmail);
     if (user && (await bcrypt.compare(password, user.accountData.passwordHash))) {
       return user;
     }

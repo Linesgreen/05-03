@@ -4,3 +4,14 @@ export type UserOutputType = {
   email: string;
   createdAt: string;
 };
+//TODO Что то думать с этим классом
+export class UserPgDb {
+  id: number;
+  login: string;
+  email: string;
+  passwordHash: string;
+  confirmationCode: string;
+  expirationDate: Date;
+  createdAt: Date;
+  isConfirmed: boolean;
+}

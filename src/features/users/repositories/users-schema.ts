@@ -31,7 +31,7 @@ export class EmailConfirmation {
 export const EmailConfirmationSchema = SchemaFactory.createForClass(EmailConfirmation);
 
 @Schema()
-export class User {
+export class UserMongo {
   @Prop({ required: true }) _id: string;
 
   @Prop({ _id: false, required: true, type: AccountDataSchema })
@@ -71,6 +71,6 @@ export class User {
   }
 }
 
-export const UserSchema = SchemaFactory.createForClass(User);
-UserSchema.loadClass(User);
-export type UsersDocument = HydratedDocument<User>;
+export const UserSchema = SchemaFactory.createForClass(UserMongo);
+UserSchema.loadClass(UserMongo);
+export type UsersDocument = HydratedDocument<UserMongo>;

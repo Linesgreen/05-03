@@ -2,7 +2,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { add } from 'date-fns';
 import { HydratedDocument } from 'mongoose';
-import * as process from 'process';
+import process from 'process';
 
 import { SessionOutputType } from '../../auth/types/output';
 

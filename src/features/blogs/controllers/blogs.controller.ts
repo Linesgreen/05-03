@@ -81,15 +81,13 @@ export class BlogsController {
   async updateBlog(@Param('id') id: string, @Body() blogUpdateType: BlogCreateModel): Promise<void> {
     const updateResult = await this.blogsService.updateBlog(blogUpdateType, id);
     if (!updateResult) throw new NotFoundException('Blog Not Found');
-    return;
   }
 
   @Delete(':id')
   @UseGuards(AuthGuard)
   @HttpCode(204)
   async deleteBlog(@Param('id') id: string): Promise<void> {
-    const delteResult = await this.blogsService.deleteBlog(id);
-    if (!delteResult) throw new NotFoundException('Blog Not Found');
-    return;
+    const deleteResult = await this.blogsService.deleteBlog(id);
+    if (!deleteResult) throw new NotFoundException('Blog Not Found');
   }
 }

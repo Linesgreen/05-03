@@ -8,7 +8,7 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 
-import { UserRepository } from '../../../features/users/repositories/user.repository';
+import { PostgreeUserRepository } from '../../../features/users/repositories/postgree.user.repository';
 
 export function ConfCodeIsValid(property?: string, validationOptions?: ValidationOptions) {
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -27,12 +27,14 @@ export function ConfCodeIsValid(property?: string, validationOptions?: Validatio
 @ValidatorConstraint({ name: 'ConfCodeIsValid', async: false })
 @Injectable()
 export class ConfCodeIsValidConstraint implements ValidatorConstraintInterface {
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(private readonly postgreUserRepository: PostgreeUserRepository) {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async validate(value: any, args: ValidationArguments): Promise<boolean> {
-    const userWithCode = await this.userRepository.findByConfCode(value);
+    const userWithCode = await this.postgreUserRepository.findByConfCode(value);
+
     if (!userWithCode) return false;
+    console.log(!(userWithCode.emailConfirmation.expirationDate > new Date()));
     if (!(userWithCode.emailConfirmation.expirationDate > new Date())) return false;
     if (userWithCode.emailConfirmation.isConfirmed) return false;
 

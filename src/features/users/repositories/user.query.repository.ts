@@ -5,24 +5,24 @@ import { FilterQuery, Model } from 'mongoose';
 import { QueryPaginationResult } from '../../../infrastructure/types/query-sort.type';
 import { PaginationWithItems } from '../../common/types/output';
 import { UserOutputType } from '../types/output';
-import { User, UsersDocument } from './users-schema';
+import { UserMongo, UsersDocument } from './users-schema';
 
 @Injectable()
 export class UserQueryRepository {
   constructor(
-    @InjectModel(User.name)
+    @InjectModel(UserMongo.name)
     private UserModel: Model<UsersDocument>,
   ) {}
 
   async findAll(sortData: QueryPaginationResult): Promise<PaginationWithItems<UserOutputType>> {
-    const filter: FilterQuery<User> = {
+    const filter: FilterQuery<UserMongo> = {
       $or: [
         { 'accountData.email': { $regex: sortData.searchEmailTerm ?? '', $options: 'i' } },
         { 'accountData.login': { $regex: sortData.searchLoginTerm ?? '', $options: 'i' } },
       ],
     };
 
-    const sortFilter: FilterQuery<User> = {
+    const sortFilter: FilterQuery<UserMongo> = {
       [`accountData.${sortData.sortBy}`]: sortData.sortDirection,
     };
     const allUsers: UsersDocument[] = await this.UserModel.find(filter)

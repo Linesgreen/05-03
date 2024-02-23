@@ -2,10 +2,14 @@ import { Module } from '@nestjs/common';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { join } from 'path';
-import * as process from 'process';
 
+import { configService } from '../settings/config.service';
 import { MailService } from './mail.service';
-
+const user = configService.getGmailUser();
+const pass = configService.getGmailPass();
+console.log('-------------------');
+console.log(user, pass);
+console.log('-------------------');
 @Module({
   imports: [
     MailerModule.forRoot({
@@ -14,8 +18,8 @@ import { MailService } from './mail.service';
         port: 587,
         secure: false,
         auth: {
-          user: process.env.GMAIL_USER,
-          pass: process.env.GMAIL_PASS,
+          user: user,
+          pass: pass,
         },
       },
       defaults: {
