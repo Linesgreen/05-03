@@ -10,7 +10,7 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 
-import { UserRepository } from '../../../features/users/repositories/user.repository';
+import { PostgreeUserRepository } from '../../../features/users/repositories/postgree.user.repository';
 
 export function NameIsExist(property?: string, validationOptions?: ValidationOptions) {
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -29,15 +29,15 @@ export function NameIsExist(property?: string, validationOptions?: ValidationOpt
 @ValidatorConstraint({ name: 'NameIsExist', async: false })
 @Injectable()
 export class NameIsExistConstraint implements ValidatorConstraintInterface {
-  constructor(@Inject(UserRepository) private readonly userRepository: UserRepository) {}
+  constructor(@Inject(PostgreeUserRepository) private readonly postgreeUserRepository: PostgreeUserRepository) {}
 
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   async validate(value: any, args: ValidationArguments) {
-    const nameIsExist = await this.userRepository.getByLoginOrEmail(value);
-    return !!!nameIsExist;
+    const nameIsExist = await this.postgreeUserRepository.chekUserIsExist(value);
+    return !nameIsExist;
   }
 
   defaultMessage(validationArguments?: ValidationArguments): string {
-    return 'Name already exist';
+    return `${validationArguments?.property}  already exist`;
   }
 }

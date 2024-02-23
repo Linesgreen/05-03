@@ -66,4 +66,8 @@ export class User {
       createdAt: this.accountData.createdAt,
     };
   }
+  updateConfirmationCode(): void {
+    this.emailConfirmation.confirmationCode = crypto.randomUUID();
+    this.emailConfirmation.expirationDate = add(new Date(), { hours: 1 });
+  }
 }

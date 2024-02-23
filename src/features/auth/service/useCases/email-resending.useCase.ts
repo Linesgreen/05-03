@@ -2,8 +2,8 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { MailService } from '../../../../mail/mail.service';
-import { UserRepository } from '../../../users/repositories/user.repository';
-import { UsersDocument } from '../../../users/repositories/users-schema';
+import { User } from '../../../users/entites/user';
+import { PostgreeUserRepository } from '../../../users/repositories/postgree.user.repository';
 
 export class EmailResendingCommand {
   constructor(public email: string) {}
@@ -13,16 +13,21 @@ export class EmailResendingCommand {
 export class EmailResendingUseCase implements ICommandHandler<EmailResendingCommand> {
   constructor(
     protected mailService: MailService,
-    protected userRepository: UserRepository,
+    protected postgreeUserRepository: PostgreeUserRepository,
   ) {}
 
   async execute(command: EmailResendingCommand): Promise<void> {
     const { email } = command;
-    const targetUser: UsersDocument | null = await this.userRepository.getByLoginOrEmail(email);
+    const targetUser: User | null = await this.postgreeUserRepository.getByLoginOrEmail(email);
     if (!targetUser) throw new HttpException('user not found', HttpStatus.NOT_FOUND);
 
     targetUser.updateConfirmationCode();
-    await this.userRepository.saveUser(targetUser);
+    const confirmationCode = targetUser.emailConfirmation.confirmationCode;
+    //Делаем isoString иначе ругается что дата не подходит
+    const expirationDate = targetUser.emailConfirmation.expirationDate.toISOString();
+    console.log(confirmationCode);
+    await this.postgreeUserRepository.updateField('email', email, 'confirmationCode', confirmationCode);
+    await this.postgreeUserRepository.updateField('email', email, 'expirationDate', expirationDate);
 
     await this.mailService.sendUserConfirmation(
       targetUser.accountData.email,

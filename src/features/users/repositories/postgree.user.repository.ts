@@ -33,6 +33,14 @@ export class PostgreeUserRepository {
     newUser.id = userId[0].id;
     return newUser;
   }
+  async chekUserIsExist(loginOrEmail: string): Promise<boolean> {
+    const chekResult = await this.dataSource.query(
+      `SELECT EXISTS(SELECT id FROM public.users
+             WHERE email = '${loginOrEmail}' OR login = '${loginOrEmail}')`,
+    );
+    console.log(chekResult);
+    return chekResult.exists;
+  }
 
   async getByLoginOrEmail(logOrEmail: string): Promise<User | null> {
     const user = await this.dataSource.query(
@@ -55,7 +63,7 @@ export class PostgreeUserRepository {
     const objUser = User.fromDbToObject(user[0]);
     return objUser;
   }
-  async updateField(searchField: string, searchValue: string, field: string, value: string | boolean): Promise<void> {
+  async updateField(searchField: string, searchValue: string, field: string, value: unknown): Promise<void> {
     await this.dataSource.query(
       `UPDATE public.users
              SET "${field}" = '${value}'
