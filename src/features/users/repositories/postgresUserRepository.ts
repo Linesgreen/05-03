@@ -39,10 +39,10 @@ export class PostgresUserRepository {
   async chekUserIsExist(loginOrEmail: string): Promise<boolean> {
     const chekResult = await this.dataSource.query(
       `SELECT EXISTS(SELECT id FROM public.users
-             WHERE email = $1 OR login = $2)`,
+                     WHERE email = $1 OR login = $2) as exists`,
       [loginOrEmail, loginOrEmail],
     );
-    return chekResult.exists;
+    return chekResult[0];
   }
 
   /**
