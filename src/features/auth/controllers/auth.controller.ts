@@ -6,7 +6,6 @@ import { Response } from 'express';
 import { JwtAuthGuard } from '../../../infrastructure/guards/jwt-auth.guard';
 import { CookieJwtGuard } from '../../../infrastructure/guards/jwt-cookie.guard';
 import { LocalAuthGuard } from '../../../infrastructure/guards/local-auth.guard';
-import { SessionRepository } from '../../security/repository/session.repository';
 import { CurrentUser } from '../decorators/current-user.decorator';
 import { UserAgent } from '../decorators/user-agent-from-headers.decorator';
 import { CurrentSession } from '../decorators/userId-sessionKey.decorator';
@@ -19,51 +18,49 @@ import { UserRegistrationCommand } from '../service/useCases/user-registration.U
 import { EmailResendingModel, UserRegistrationModel, ValidationCodeModel } from '../types/input';
 import { AboutMeType } from '../types/output';
 
+// Контроллер для аутентификации и управления пользователями
 @UseGuards(ThrottlerGuard)
 @Controller('auth')
 export class AuthController {
-  constructor(
-    //protected authService: AuthService,
-    private commandBus: CommandBus,
-    private sessionRepository: SessionRepository,
-  ) {}
+  constructor(private commandBus: CommandBus) {}
 
+  // Метод для аутентификации пользователя
   @Post('login')
   @UseGuards(LocalAuthGuard)
   @HttpCode(200)
   async loginUser(
-    //Достаем user agent из headers
     @UserAgent() userAgent: string,
     @Ip() ip: string,
-    //Кастомный перехватчик id из request - который мы получаем с помощью гуарда
     @CurrentUser() userId: string,
-    // { passthrough: true } для того что бы делать просто return
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ accessToken: string }> {
     const tokenPair = await this.commandBus.execute(new UserLoginCommand(userId, ip, userAgent));
     res.cookie('refreshToken', tokenPair.refreshToken, { httpOnly: true, secure: true });
-    return {
-      accessToken: tokenPair.token,
-    };
+    return { accessToken: tokenPair.token };
   }
 
+  // Метод для регистрации нового пользователя
   @Post('registration')
   @HttpCode(204)
   async userRegistration(@Body() registrationData: UserRegistrationModel): Promise<void> {
     await this.commandBus.execute(new UserRegistrationCommand(registrationData));
   }
 
+  // Метод для подтверждения регистрации по электронной почте
   @Post('registration-confirmation')
   @HttpCode(204)
   async userConfirmation(@Body() confirmationCode: ValidationCodeModel): Promise<void> {
     await this.commandBus.execute(new ChangeUserConfirmationCommand(confirmationCode.code, true));
   }
 
+  // Метод для повторной отправки письма с подтверждением
   @Post('registration-email-resending')
   @HttpCode(204)
   async emailConfirmationResending(@Body() body: EmailResendingModel): Promise<void> {
     await this.commandBus.execute(new EmailResendingCommand(body.email));
   }
+
+  // Метод для обновления токенов
   @UseGuards(CookieJwtGuard)
   @Post('refresh-token')
   @HttpCode(200)
@@ -73,23 +70,13 @@ export class AuthController {
   ): Promise<{ accessToken: string }> {
     const tokenPair = await this.commandBus.execute(new RefreshTokenCommand(userId, tokenKey));
     res.cookie('refreshToken', tokenPair.refreshToken, { httpOnly: true, secure: true });
-    return {
-      accessToken: tokenPair.token,
-    };
+    return { accessToken: tokenPair.token };
   }
 
+  // Метод для получения информации о текущем пользователе
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async getUserInformation(@CurrentUser() userId: string): Promise<AboutMeType> {
     return this.commandBus.execute(new UserGetInformationAboutMeCommand(userId));
-  }
-  @UseGuards(CookieJwtGuard)
-  @Post('logout')
-  @HttpCode(204)
-  async terminateOtherSession(
-    @CurrentSession() { userId, tokenKey }: { userId: string; tokenKey: string },
-  ): Promise<void> {
-    await this.sessionRepository.terminateSessionWithTokenKey(userId, tokenKey);
   }
 }
