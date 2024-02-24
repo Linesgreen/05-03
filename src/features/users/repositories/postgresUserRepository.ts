@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // noinspection UnnecessaryLocalVariableJS
 
 import { Injectable } from '@nestjs/common';
@@ -75,18 +76,31 @@ export class PostgresUserRepository {
     return User.fromDbToObject(user[0]);
   }
   /**
-   * Обновляет поле в таблице users
-   * @param searchField - Поле для поиска
-   * @param searchValue - Значение для поиска
-   * @param field - Поле для обновления
-   * @param value - Новое значение
+   * Обновляет указанные поля для пользователя в базе данных.
+   * так же можно обновить только одно поле
+   * @param searchField - Поле для поиска пользователя.
+   * @param searchValue - Значение поля для поиска пользователя.
+   * @param fieldsToUpdate - Объект с полями для обновления и их значениями.
+   * @returns Promise<void>
    */
-  async updateField(searchField: string, searchValue: string, field: string, value: unknown): Promise<void> {
+  async updateFields(searchField: string, searchValue: string, fieldsToUpdate: Record<string, unknown>): Promise<void> {
+    // Входные данные: { status: 'active', role: 'admin' }
+
+    // entries = [['status', 'active'], ['role', 'admin']]
+    const entries = Object.entries(fieldsToUpdate);
+
+    // setFields = '"status" = $2,"role" = $3'
+    const setFields = entries.map(([key, value], index) => `"${key}" = $${index + 2}`).join(',');
+
+    // values = ['userId123(searchField)', 'active', 'admin']
+    const values = [searchValue, ...entries.map(([, value]) => value)];
+
+    // Выполняем запрос к базе данных
     await this.dataSource.query(
       `UPDATE public.users
-             SET "${field}" = $1
-             WHERE "${searchField}" = $2`,
-      [value, searchValue],
+         SET ${setFields}
+         WHERE "${searchField}" = $1`,
+      values,
     );
   }
 }
