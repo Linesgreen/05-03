@@ -8,7 +8,7 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 
-import { PostgreeUserRepository } from '../../../features/users/repositories/postgree.user.repository';
+import { PostgresUserRepository } from '../../../features/users/repositories/postgresUserRepository';
 
 export function EmailIsConformed(property?: string, validationOptions?: ValidationOptions) {
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -27,7 +27,7 @@ export function EmailIsConformed(property?: string, validationOptions?: Validati
 @ValidatorConstraint({ name: 'EmailIsConformed', async: false })
 @Injectable()
 export class EmailIsConformedConstraint implements ValidatorConstraintInterface {
-  constructor(private readonly postgreeUserRepository: PostgreeUserRepository) {}
+  constructor(private readonly postgreeUserRepository: PostgresUserRepository) {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async validate(value: any, args: ValidationArguments): Promise<boolean> {

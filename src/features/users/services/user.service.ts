@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 
 import { User } from '../entites/user';
-import { PostgreeUserRepository } from '../repositories/postgree.user.repository';
+import { PostgresUserRepository } from '../repositories/postgresUserRepository';
 import { UserRepository } from '../repositories/user.repository';
 import { UserCreateModel } from '../types/input';
 import { UserOutputType } from '../types/output';
@@ -11,7 +11,7 @@ import { UserOutputType } from '../types/output';
 export class UserService {
   constructor(
     protected usersRepository: UserRepository,
-    private postgresUsersRepository: PostgreeUserRepository,
+    private postgresUsersRepository: PostgresUserRepository,
   ) {}
   async createUserToDto(userData: UserCreateModel): Promise<UserOutputType> {
     const newUserInDb = await this.createUser(userData);

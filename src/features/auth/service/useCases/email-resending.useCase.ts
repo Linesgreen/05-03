@@ -3,7 +3,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { MailService } from '../../../../mail/mail.service';
 import { User } from '../../../users/entites/user';
-import { PostgreeUserRepository } from '../../../users/repositories/postgree.user.repository';
+import { PostgresUserRepository } from '../../../users/repositories/postgresUserRepository';
 
 export class EmailResendingCommand {
   constructor(public email: string) {}
@@ -13,7 +13,7 @@ export class EmailResendingCommand {
 export class EmailResendingUseCase implements ICommandHandler<EmailResendingCommand> {
   constructor(
     protected mailService: MailService,
-    protected postgreeUserRepository: PostgreeUserRepository,
+    protected postgreeUserRepository: PostgresUserRepository,
   ) {}
 
   async execute(command: EmailResendingCommand): Promise<void> {

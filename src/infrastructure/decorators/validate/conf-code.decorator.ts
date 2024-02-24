@@ -8,7 +8,7 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 
-import { PostgreeUserRepository } from '../../../features/users/repositories/postgree.user.repository';
+import { PostgresUserRepository } from '../../../features/users/repositories/postgresUserRepository';
 
 export function ConfCodeIsValid(property?: string, validationOptions?: ValidationOptions) {
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -27,7 +27,7 @@ export function ConfCodeIsValid(property?: string, validationOptions?: Validatio
 @ValidatorConstraint({ name: 'ConfCodeIsValid', async: false })
 @Injectable()
 export class ConfCodeIsValidConstraint implements ValidatorConstraintInterface {
-  constructor(private readonly postgreUserRepository: PostgreeUserRepository) {}
+  constructor(private readonly postgreUserRepository: PostgresUserRepository) {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async validate(value: any, args: ValidationArguments): Promise<boolean> {

@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { PostgreeUserRepository } from '../../../users/repositories/postgree.user.repository';
+import { PostgresUserRepository } from '../../../users/repositories/postgresUserRepository';
 
 export class ChangeUserConfirmationCommand {
   constructor(
@@ -11,7 +11,7 @@ export class ChangeUserConfirmationCommand {
 
 @CommandHandler(ChangeUserConfirmationCommand)
 export class ChangeUserConfirmationUseCase implements ICommandHandler<ChangeUserConfirmationCommand> {
-  constructor(protected postgreeUserRepository: PostgreeUserRepository) {}
+  constructor(protected postgreeUserRepository: PostgresUserRepository) {}
 
   async execute(command: ChangeUserConfirmationCommand): Promise<void> {
     const { confCode, confirmationStatus } = command;

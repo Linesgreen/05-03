@@ -5,9 +5,9 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
 import { User } from '../entites/user';
-
+//TODO узнать
 @Injectable()
-export class PostgreeUserRepository {
+export class PostgresUserRepository {
   constructor(@InjectDataSource() private dataSource: DataSource) {}
   /**
    * Создаем пользователя и затем возвращаем добавленный к нему id, который затем вставляем в поле id пользователя
