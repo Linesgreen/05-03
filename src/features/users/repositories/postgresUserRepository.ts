@@ -13,7 +13,7 @@ export class PostgresUserRepository {
   /**
    * Создаем пользователя и затем возвращаем добавленный к нему id, который затем вставляем в поле id пользователя
    * @returns нового пользователя с вставленным в него id
-   * @param newUser : UsersDocument
+   * @param newUser : User
    */
   async addUser(newUser: User): Promise<User> {
     const { login, email, passwordHash, createdAt } = newUser.accountData;
@@ -87,13 +87,13 @@ export class PostgresUserRepository {
     // Входные данные: { status: 'active', role: 'admin' }
 
     // entries = [['status', 'active'], ['role', 'admin']]
-    const entries = Object.entries(fieldsToUpdate);
+    const entries: [string, unknown][] = Object.entries(fieldsToUpdate);
 
     // setFields = '"status" = $2,"role" = $3'
-    const setFields = entries.map(([key, value], index) => `"${key}" = $${index + 2}`).join(',');
+    const setFields: string = entries.map(([key, value], index) => `"${key}" = $${index + 2}`).join(',');
 
     // values = ['userId123(searchField)', 'active', 'admin']
-    const values = [searchValue, ...entries.map(([, value]) => value)];
+    const values: (string | unknown)[] = [searchValue, ...entries.map(([, value]) => value)];
 
     // Выполняем запрос к базе данных
     await this.dataSource.query(

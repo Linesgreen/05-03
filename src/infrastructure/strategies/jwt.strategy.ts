@@ -3,11 +3,11 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
-import { UserQueryRepository } from '../../features/users/repositories/user.query.repository';
+import { PostgresUserQueryRepository } from '../../features/users/repositories/postgres.user.query.repository';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private userQueryRepository: UserQueryRepository) {
+  constructor(private postgresUserQueryRepository: PostgresUserQueryRepository) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -16,7 +16,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    const user = await this.userQueryRepository.getUserById(payload.userId);
+    const user = await this.postgresUserQueryRepository.getUserById(payload.userId);
     if (!user) throw new ForbiddenException();
     return { id: payload.userId };
   }
