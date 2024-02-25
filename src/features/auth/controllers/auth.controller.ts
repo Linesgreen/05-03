@@ -82,18 +82,23 @@ export class AuthController {
   }
 
   // Метод для получения информации о текущем пользователе
+  //TODo добавить проверку для типа AboutMeType
   @Get('me')
   @UseGuards(JwtAuthGuard)
   async getUserInformation(@CurrentUser() userId: string): Promise<AboutMeType> {
     return this.commandBus.execute(new UserGetInformationAboutMeCommand(userId));
   }
 
+  // Метод для запроса восстановления пароля
+  //никаких проверок что пользователь с таким емайлом существует, нет. Но возможность добавить есть внутри командБаса
   @Post('password-recovery')
   @HttpCode(204)
   async newPassword(@Body() { email }: EmailInBodyModel): Promise<void> {
     await this.commandBus.execute(new NewPasswordRequestCommand(email));
   }
 
+  // Метод для установки нового пароля
+  //Проверка на валидность кода происходит в декораторе
   @Post('new-password')
   @HttpCode(204)
   async newPasswordSet(@Body() { newPassword, recoveryCode }: RecoveryCodeModel): Promise<void> {
