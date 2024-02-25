@@ -42,7 +42,7 @@ export class PostgresUserRepository {
                      WHERE email = $1 OR login = $2) as exists`,
       [loginOrEmail, loginOrEmail],
     );
-    return chekResult[0];
+    return chekResult[0].exists;
   }
 
   /**

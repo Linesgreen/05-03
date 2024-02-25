@@ -9,13 +9,21 @@ import { LocalAuthGuard } from '../../../infrastructure/guards/local-auth.guard'
 import { CurrentUser } from '../decorators/current-user.decorator';
 import { UserAgent } from '../decorators/user-agent-from-headers.decorator';
 import { CurrentSession } from '../decorators/userId-sessionKey.decorator';
+import { ChangePasswordCommand } from '../service/useCases/change-password.useCase';
 import { ChangeUserConfirmationCommand } from '../service/useCases/change-User-Confirmation.useCase';
 import { EmailResendingCommand } from '../service/useCases/email-resending.useCase';
+import { NewPasswordRequestCommand } from '../service/useCases/new-password-request.useCase';
 import { RefreshTokenCommand } from '../service/useCases/refresh-token.useCase';
 import { UserGetInformationAboutMeCommand } from '../service/useCases/user-get-information-about-me.useCase';
 import { UserLoginCommand } from '../service/useCases/user-login.useCase';
 import { UserRegistrationCommand } from '../service/useCases/user-registration.UseCase';
-import { EmailResendingModel, UserRegistrationModel, ValidationCodeModel } from '../types/input';
+import {
+  EmailInBodyModel,
+  EmailResendingModel,
+  RecoveryCodeModel,
+  UserRegistrationModel,
+  ValidationCodeModel,
+} from '../types/input';
 import { AboutMeType } from '../types/output';
 
 // Контроллер для аутентификации и управления пользователями
@@ -78,5 +86,17 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async getUserInformation(@CurrentUser() userId: string): Promise<AboutMeType> {
     return this.commandBus.execute(new UserGetInformationAboutMeCommand(userId));
+  }
+
+  @Post('password-recovery')
+  @HttpCode(204)
+  async newPassword(@Body() { email }: EmailInBodyModel): Promise<void> {
+    await this.commandBus.execute(new NewPasswordRequestCommand(email));
+  }
+
+  @Post('new-password')
+  @HttpCode(204)
+  async newPasswordSet(@Body() { newPassword, recoveryCode }: RecoveryCodeModel): Promise<void> {
+    await this.commandBus.execute(new ChangePasswordCommand(newPassword, recoveryCode));
   }
 }

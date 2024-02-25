@@ -35,6 +35,7 @@ import { ConfCodeIsValidConstraint } from './infrastructure/decorators/validate/
 import { EmailIsConformedConstraint } from './infrastructure/decorators/validate/email-is-conformed.decorator';
 import { LikeStatusConstraint } from './infrastructure/decorators/validate/like-status.decorator';
 import { NameIsExistConstraint } from './infrastructure/decorators/validate/name-is-exist.decorator';
+import { RecoveryCodeIsValidConstraint } from './infrastructure/decorators/validate/password-recovery-code.decorator';
 import { PostIsExistConstraint } from './infrastructure/decorators/validate/post-is-exist.decorator';
 import { PayloadFromJwtMiddleware } from './infrastructure/middleware/payload-from-jwt.middleware';
 import { CookieJwtStrategy } from './infrastructure/strategies/cookie.jwt.strategy';
@@ -52,6 +53,7 @@ const decorators = [
   ConfCodeIsValidConstraint,
   PostIsExistConstraint,
   BlogIsExistConstraint,
+  RecoveryCodeIsValidConstraint,
 ];
 
 @Module({

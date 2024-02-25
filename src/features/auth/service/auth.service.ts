@@ -20,12 +20,10 @@ export class AuthService {
 
   async createJwt(
     payload: {
-      userId: string;
-      tokenKey?: string;
-      deviceId?: string;
+      [key: string]: string;
     },
-    expirationTime: string,
+    expirationTimeInSeconds: string,
   ): Promise<string> {
-    return this.jwtService.signAsync(payload, { expiresIn: `${expirationTime}s` });
+    return this.jwtService.signAsync(payload, { expiresIn: `${expirationTimeInSeconds}s` });
   }
 }

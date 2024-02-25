@@ -1,8 +1,10 @@
 import { SessionQueryRepository } from '../security/repository/session.query.repository';
 import { SessionRepository } from '../security/repository/session.repository';
 import { AuthService } from './service/auth.service';
+import { ChangePasswordUseCase } from './service/useCases/change-password.useCase';
 import { ChangeUserConfirmationUseCase } from './service/useCases/change-User-Confirmation.useCase';
 import { EmailResendingUseCase } from './service/useCases/email-resending.useCase';
+import { NewPasswordRequestUseCase } from './service/useCases/new-password-request.useCase';
 import { RefreshTokenUseCase } from './service/useCases/refresh-token.useCase';
 import { GetInformationAboutUserCase } from './service/useCases/user-get-information-about-me.useCase';
 import { UserLoginUseCase } from './service/useCases/user-login.useCase';
@@ -16,4 +18,6 @@ export const authUseCases = [
   RefreshTokenUseCase,
   EmailResendingUseCase,
   ChangeUserConfirmationUseCase,
+  NewPasswordRequestUseCase,
+  ChangePasswordUseCase,
 ];

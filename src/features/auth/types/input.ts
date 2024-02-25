@@ -1,9 +1,12 @@
+// noinspection RegExpRedundantEscape
+
 import { IsEmail, IsString, Length, Matches } from 'class-validator';
 
 import { Trim } from '../../../infrastructure/decorators/transform/trim';
 import { ConfCodeIsValid } from '../../../infrastructure/decorators/validate/conf-code.decorator';
 import { EmailIsConformed } from '../../../infrastructure/decorators/validate/email-is-conformed.decorator';
 import { NameIsExist } from '../../../infrastructure/decorators/validate/name-is-exist.decorator';
+import { RecoveryCodeIsValid } from '../../../infrastructure/decorators/validate/password-recovery-code.decorator';
 
 export class UserRegistrationModel {
   @Trim()
@@ -34,4 +37,20 @@ export class EmailResendingModel {
   @IsEmail()
   @EmailIsConformed()
   email: string;
+}
+
+export class EmailInBodyModel {
+  @Trim()
+  @IsEmail()
+  email: string;
+}
+
+export class RecoveryCodeModel {
+  @Trim()
+  @RecoveryCodeIsValid()
+  recoveryCode: string;
+  @Trim()
+  @IsString()
+  @Length(6, 20)
+  newPassword: string;
 }

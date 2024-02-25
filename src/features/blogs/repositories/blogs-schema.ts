@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
@@ -37,7 +38,6 @@ export class Blog {
 
   toDto(): OutputBlogType {
     return {
-      // eslint-disable-next-line no-underscore-dangle
       id: this._id,
       name: this.name,
       description: this.description,
