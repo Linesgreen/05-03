@@ -10,7 +10,7 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 
-import { PostgresUserRepository } from '../../../features/users/repositories/postgresUserRepository';
+import { PostgresUserRepository } from '../../../features/users/repositories/postgres.user.repository';
 
 export function NameIsExist(property?: string, validationOptions?: ValidationOptions) {
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

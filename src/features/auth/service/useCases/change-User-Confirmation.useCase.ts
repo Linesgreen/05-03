@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { PostgresUserRepository } from '../../../users/repositories/postgresUserRepository';
+import { PostgresUserRepository } from '../../../users/repositories/postgres.user.repository';
 
 export class ChangeUserConfirmationCommand {
   constructor(

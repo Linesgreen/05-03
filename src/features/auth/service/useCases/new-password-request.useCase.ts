@@ -2,7 +2,7 @@ import { HttpException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { MailService } from '../../../../mail/mail.service';
-import { PostgresUserRepository } from '../../../users/repositories/postgresUserRepository';
+import { PostgresUserRepository } from '../../../users/repositories/postgres.user.repository';
 import { AuthService } from '../auth.service';
 
 export class NewPasswordRequestCommand {

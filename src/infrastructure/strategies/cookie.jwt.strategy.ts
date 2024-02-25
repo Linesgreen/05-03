@@ -4,11 +4,11 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import * as process from 'process';
 
-import { SessionRepository } from '../../features/security/repository/session.repository';
+import { PostgresSessionRepository } from '../../features/security/repository/session.postgres.repository';
 
 @Injectable()
 export class CookieJwtStrategy extends PassportStrategy(Strategy, 'jwt-cookie') {
-  constructor(private sessionRepository: SessionRepository) {
+  constructor(private postgresSessionRepository: PostgresSessionRepository) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request) => {
@@ -21,7 +21,8 @@ export class CookieJwtStrategy extends PassportStrategy(Strategy, 'jwt-cookie') 
   }
 
   async validate(payload: any) {
-    const sessionId = await this.sessionRepository.sessionIsExist(payload.userId, payload.tokenKey);
+    const sessionId = await this.postgresSessionRepository.chekSessionIsExist(payload.userId, payload.tokenKey);
+    console.log(sessionId);
     if (!sessionId) throw new UnauthorizedException();
     return { id: payload.userId, tokenKey: payload.tokenKey, deviceId: payload.deviceId };
   }

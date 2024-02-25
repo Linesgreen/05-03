@@ -1,8 +1,8 @@
 /* eslint-disable no-underscore-dangle */
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { SessionDb } from '../../../security/repository/seesion.schema';
-import { SessionRepository } from '../../../security/repository/session.repository';
+import { Session } from '../../../security/entites/session';
+import { PostgresSessionRepository } from '../../../security/repository/session.postgres.repository';
 import { AuthService } from '../auth.service';
 
 export class UserLoginCommand {
@@ -16,7 +16,7 @@ export class UserLoginCommand {
 @CommandHandler(UserLoginCommand)
 export class UserLoginUseCase implements ICommandHandler<UserLoginCommand> {
   constructor(
-    protected sessionRepository: SessionRepository,
+    protected postgresSessionRepository: PostgresSessionRepository,
     protected authService: AuthService,
   ) {}
 
@@ -24,18 +24,18 @@ export class UserLoginUseCase implements ICommandHandler<UserLoginCommand> {
     const { userId, ip, userAgent } = command;
     const tokenKey = crypto.randomUUID();
     const deviceId = crypto.randomUUID();
-    await this.createSession(userId, deviceId, ip, userAgent, tokenKey);
+    await this.createSession(Number(userId), deviceId, ip, userAgent, tokenKey);
     return this.authService.generateTokenPair(userId, tokenKey, deviceId);
   }
 
   async createSession(
-    userId: string,
+    userId: number,
     deviceId: string,
     ip: string,
     userAgent: string,
     tokenKey: string,
   ): Promise<void> {
-    const session = new SessionDb(tokenKey, deviceId, userAgent, userId, ip);
-    await this.sessionRepository.addSession(session);
+    const session = new Session(tokenKey, deviceId, userAgent, userId, ip);
+    await this.postgresSessionRepository.addSession(session);
   }
 }

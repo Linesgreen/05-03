@@ -2,7 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 
-import { PostgresUserRepository } from '../../../users/repositories/postgresUserRepository';
+import { PostgresUserRepository } from '../../../users/repositories/postgres.user.repository';
 
 export class ChangePasswordCommand {
   constructor(

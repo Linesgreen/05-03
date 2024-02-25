@@ -3,7 +3,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { MailService } from '../../../../mail/mail.service';
 import { User } from '../../../users/entites/user';
-import { PostgresUserRepository } from '../../../users/repositories/postgresUserRepository';
+import { PostgresUserRepository } from '../../../users/repositories/postgres.user.repository';
 
 export class EmailResendingCommand {
   constructor(public email: string) {}

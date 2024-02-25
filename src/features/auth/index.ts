@@ -1,3 +1,4 @@
+import { PostgresSessionRepository } from '../security/repository/session.postgres.repository';
 import { SessionQueryRepository } from '../security/repository/session.query.repository';
 import { SessionRepository } from '../security/repository/session.repository';
 import { AuthService } from './service/auth.service';
@@ -10,7 +11,7 @@ import { GetInformationAboutUserCase } from './service/useCases/user-get-informa
 import { UserLoginUseCase } from './service/useCases/user-login.useCase';
 import { UserRegistrationUseCase } from './service/useCases/user-registration.UseCase';
 
-export const authProviders = [AuthService, SessionRepository, SessionQueryRepository];
+export const authProviders = [AuthService, SessionRepository, SessionQueryRepository, PostgresSessionRepository];
 export const authUseCases = [
   UserRegistrationUseCase,
   UserLoginUseCase,

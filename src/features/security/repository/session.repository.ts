@@ -31,9 +31,6 @@ export class SessionRepository {
   async terminateCurrentSession(deviceId: string, userId: string): Promise<void> {
     await this.SeesionModel.findOneAndDelete({ deviceId: deviceId, userId: userId });
   }
-  async terminateSessionWithTokenKey(userId: string, tokenKey: string): Promise<void> {
-    await this.SeesionModel.findOneAndDelete({ userId: userId, tokenKey: tokenKey });
-  }
   async terminateOtherSession(userId: string, tokenKey: string): Promise<void> {
     await this.SeesionModel.findOneAndDelete({ userId: userId, tokenKey: { $ne: tokenKey } });
   }
