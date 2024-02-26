@@ -1,6 +1,8 @@
 import { Controller, Delete, HttpCode } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { InjectDataSource } from '@nestjs/typeorm';
 import { Model } from 'mongoose';
+import { DataSource } from 'typeorm';
 
 import { Blog, BlogsDocument } from '../../blogs/repositories/blogs-schema';
 import { Comment, CommentsDocument } from '../../comments/repositories/comments/comment.schema';
@@ -27,6 +29,7 @@ export class TestingController {
     private PostLikesModel: Model<PostLikesDocument>,
     @InjectModel(SessionDb.name)
     private SessionDbModel: Model<SessionDocument>,
+    @InjectDataSource() private dataSource: DataSource,
   ) {}
   @Delete('/all-data')
   @HttpCode(204)
@@ -38,6 +41,8 @@ export class TestingController {
     await this.CommentLikesModel.deleteMany({});
     await this.PostLikesModel.deleteMany({});
     await this.SessionDbModel.deleteMany({});
+    await this.dataSource.query(`DELETE FROM public.users`);
+    await this.dataSource.query(`DELETE FROM public.sessions`);
     return;
   }
 }

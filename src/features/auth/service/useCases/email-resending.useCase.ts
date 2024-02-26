@@ -46,6 +46,6 @@ export class EmailResendingUseCase implements ICommandHandler<EmailResendingComm
       expirationDate,
     };
 
-    await this.postgreeUserRepository.updateFields('email', email, fieldToUpdate);
+    await this.postgreeUserRepository.updateUserFields('email', email, fieldToUpdate);
   }
 }

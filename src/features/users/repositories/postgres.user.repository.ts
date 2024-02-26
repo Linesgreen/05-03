@@ -5,11 +5,15 @@ import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
+import { AbstractRepository } from '../../../infrastructure/repositories/abstract.repository';
 import { User } from '../entites/user';
+import { UserPgDb } from '../types/output';
 //TODO узнать
 @Injectable()
-export class PostgresUserRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+export class PostgresUserRepository extends AbstractRepository<UserPgDb> {
+  constructor(@InjectDataSource() protected dataSource: DataSource) {
+    super(dataSource);
+  }
   /**
    * Создаем пользователя и затем возвращаем добавленный к нему id, который затем вставляем в поле id пользователя
    * @returns нового пользователя с вставленным в него id
@@ -18,19 +22,21 @@ export class PostgresUserRepository {
   async addUser(newUser: User): Promise<User> {
     const { login, email, passwordHash, createdAt } = newUser.accountData;
     const { confirmationCode, expirationDate, isConfirmed } = newUser.emailConfirmation;
-
-    const userId = await this.dataSource.query(
-      `INSERT INTO public.users(login, email, "passwordHash", "confirmationCode", "expirationDate","createdAt", "isConfirmed")
-             VALUES ($1, $2, $3, $4, $5, $6, $7) 
-              RETURNING id;`,
-      [login, email, passwordHash, confirmationCode, expirationDate.toISOString(), createdAt, isConfirmed],
-    );
-
+    const entity = {
+      login,
+      email,
+      passwordHash,
+      createdAt,
+      confirmationCode,
+      expirationDate,
+      isConfirmed,
+    };
+    const userInDb = await this.add('users', entity);
     // Присваиваем новому пользователю идентификатор, возвращенный из базы данных
-    newUser.id = userId[0].id;
-    // Возвращаем нового пользователя
+    newUser.id = userInDb[0].id;
     return newUser;
   }
+
   /**
    * Проверяет существование пользователя по логину или email
    * @param loginOrEmail - Логин или email пользователя
@@ -39,9 +45,10 @@ export class PostgresUserRepository {
   async chekUserIsExist(loginOrEmail: string): Promise<boolean> {
     const chekResult = await this.dataSource.query(
       `SELECT EXISTS(SELECT id FROM public.users
-                     WHERE email = $1 OR login = $2) as exists`,
-      [loginOrEmail, loginOrEmail],
+                     WHERE email = $1 OR login = $1) as exists`,
+      [loginOrEmail],
     );
+    console.log(chekResult[0].exists);
     return chekResult[0].exists;
   }
 
@@ -54,8 +61,8 @@ export class PostgresUserRepository {
     const user = await this.dataSource.query(
       `SELECT id, login, email, "passwordHash", "confirmationCode", "expirationDate","createdAt", "isConfirmed"
              FROM public.users
-             WHERE email = $1 OR login = $2`,
-      [logOrEmail, logOrEmail],
+             WHERE email = $1 OR login = $1`,
+      [logOrEmail],
     );
     if (user.length === 0) return null;
     return User.fromDbToObject(user[0]);
@@ -66,14 +73,20 @@ export class PostgresUserRepository {
    * @returns Объект пользователя или null, если пользователь не найден
    */
   async findByConfCode(code: string): Promise<User | null> {
-    const user = await this.dataSource.query(
-      `SELECT id, login, email, "passwordHash", "confirmationCode", "expirationDate","createdAt", "isConfirmed"
-             FROM public.users
-             WHERE "confirmationCode" = $1`,
-      [code],
-    );
-    if (user.length === 0) return null;
-    return User.fromDbToObject(user[0]);
+    const fieldsToSelect = [
+      'id',
+      'login',
+      'email',
+      'passwordHash',
+      'confirmationCode',
+      'expirationDate',
+      'createdAt',
+      'isConfirmed',
+    ];
+    const tableName = 'users';
+    const foundedUser = await this.getByField(tableName, fieldsToSelect, 'confirmationCode', code);
+    if (!foundedUser) return null;
+    return User.fromDbToObject(foundedUser[0]);
   }
   /**
    * Обновляет указанные поля для пользователя в базе данных.
@@ -83,24 +96,13 @@ export class PostgresUserRepository {
    * @param fieldsToUpdate - Объект с полями для обновления и их значениями.
    * @returns Promise<void>
    */
-  async updateFields(searchField: string, searchValue: string, fieldsToUpdate: Record<string, unknown>): Promise<void> {
-    // Входные данные: { status: 'active', role: 'admin' }
-
-    // entries = [['status', 'active'], ['role', 'admin']]
-    const entries: [string, unknown][] = Object.entries(fieldsToUpdate);
-
-    // setFields = '"status" = $2,"role" = $3'
-    const setFields: string = entries.map(([key, value], index) => `"${key}" = $${index + 2}`).join(',');
-
-    // values = ['userId123(searchField)', 'active', 'admin']
-    const values: (string | unknown)[] = [searchValue, ...entries.map(([, value]) => value)];
-
-    // Выполняем запрос к базе данных
-    await this.dataSource.query(
-      `UPDATE public.users
-         SET ${setFields}
-         WHERE "${searchField}" = $1`,
-      values,
-    );
+  async updateUserFields(
+    searchField: string,
+    searchValue: string,
+    fieldsToUpdate: Record<string, unknown>,
+  ): Promise<void> {
+    const tableName = 'users';
+    // Call the parent class method
+    await this.updateFields(tableName, searchField, searchValue, fieldsToUpdate);
   }
 }

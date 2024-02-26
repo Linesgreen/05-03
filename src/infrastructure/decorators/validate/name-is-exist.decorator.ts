@@ -33,7 +33,7 @@ export class NameIsExistConstraint implements ValidatorConstraintInterface {
 
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   async validate(value: any, args: ValidationArguments) {
-    return this.postgreeUserRepository.chekUserIsExist(value);
+    return !(await this.postgreeUserRepository.chekUserIsExist(value));
   }
 
   defaultMessage(validationArguments?: ValidationArguments): string {

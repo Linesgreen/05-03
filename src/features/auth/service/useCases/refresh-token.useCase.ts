@@ -37,6 +37,6 @@ export class RefreshTokenUseCase implements ICommandHandler<RefreshTokenCommand>
   async updateAndSaveSession(session: Session, newTokenKey: string): Promise<void> {
     session.updateSession(newTokenKey);
     const { id, issuedDate, expiredDate, tokenKey } = session;
-    await this.postgresSessionRepository.updateFields('id', id, { issuedDate, tokenKey, expiredDate });
+    await this.postgresSessionRepository.updateSessionFields('id', id, { issuedDate, tokenKey, expiredDate });
   }
 }

@@ -30,6 +30,6 @@ export class ChangePasswordUseCase implements ICommandHandler<ChangePasswordComm
   }
 
   private updatePasswordInDb(email: string, newPassword: string): Promise<void> {
-    return this.postgresUserRepository.updateFields('email', email, { passwordHash: newPassword });
+    return this.postgresUserRepository.updateUserFields('email', email, { passwordHash: newPassword });
   }
 }

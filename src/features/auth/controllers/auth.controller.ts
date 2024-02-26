@@ -6,6 +6,7 @@ import { Response } from 'express';
 import { JwtAuthGuard } from '../../../infrastructure/guards/jwt-auth.guard';
 import { CookieJwtGuard } from '../../../infrastructure/guards/jwt-cookie.guard';
 import { LocalAuthGuard } from '../../../infrastructure/guards/local-auth.guard';
+import { SessionService } from '../../security/service/session.service';
 import { CurrentUser } from '../decorators/current-user.decorator';
 import { UserAgent } from '../decorators/user-agent-from-headers.decorator';
 import { CurrentSession } from '../decorators/userId-sessionKey.decorator';
@@ -30,7 +31,10 @@ import { AboutMeType } from '../types/output';
 @UseGuards(ThrottlerGuard)
 @Controller('auth')
 export class AuthController {
-  constructor(private commandBus: CommandBus) {}
+  constructor(
+    private commandBus: CommandBus,
+    private sessionService: SessionService,
+  ) {}
 
   // Метод для аутентификации пользователя
   @Post('login')
@@ -103,5 +107,12 @@ export class AuthController {
   @HttpCode(204)
   async newPasswordSet(@Body() { newPassword, recoveryCode }: RecoveryCodeModel): Promise<void> {
     await this.commandBus.execute(new ChangePasswordCommand(newPassword, recoveryCode));
+  }
+
+  @UseGuards(CookieJwtGuard)
+  @Post('logout')
+  @HttpCode(204)
+  async logout(@CurrentSession() { userId, tokenKey }: { userId: string; tokenKey: string }): Promise<void> {
+    await this.sessionService.terminateCurrentSession(userId, tokenKey);
   }
 }

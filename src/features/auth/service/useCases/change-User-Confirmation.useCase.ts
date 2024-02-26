@@ -16,6 +16,8 @@ export class ChangeUserConfirmationUseCase implements ICommandHandler<ChangeUser
   async execute(command: ChangeUserConfirmationCommand): Promise<void> {
     const { confCode, confirmationStatus } = command;
 
-    await this.postgreeUserRepository.updateFields('confirmationCode', confCode, { isConfirmed: confirmationStatus });
+    await this.postgreeUserRepository.updateUserFields('confirmationCode', confCode, {
+      isConfirmed: confirmationStatus,
+    });
   }
 }

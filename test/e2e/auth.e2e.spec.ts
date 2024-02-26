@@ -15,6 +15,8 @@ const userLoginData = {
   password: 'testTest',
 };
 
+const mockedUUID = '29c2ea4b-f9a8-4f65-b006-b4fdd816dd25';
+
 describe('Auth e2e test', () => {
   let app: INestApplication;
   let httpServer: string;
@@ -91,8 +93,8 @@ describe('Auth e2e test', () => {
     });
     it('registration user with mocked code', async () => {
       //Mock code
-      jest.spyOn(crypto, 'randomUUID').mockImplementation(() => '11-11-11-11-11');
-      expect.setState({ code: '11-11-11-11-11' });
+      jest.spyOn(crypto, 'randomUUID').mockImplementation(() => mockedUUID);
+      expect.setState({ code: mockedUUID });
       await authTestManager.registration(userLoginData, 204);
       //check that there was a call to the Email Service
       expect(jestSpyEmail).toBeCalled();
@@ -116,7 +118,7 @@ describe('Auth e2e test', () => {
       //Mock date
       mockdate.set(new Date(Date.now() - 9999999999));
       //Moc code
-      jest.spyOn(crypto, 'randomUUID').mockImplementation(() => '11-11-11-11-11');
+      jest.spyOn(crypto, 'randomUUID').mockImplementation(() => mockedUUID);
 
       await authTestManager.registration(userLoginData, 204);
       //clear the call counter for the following tests
@@ -148,7 +150,7 @@ describe('Auth e2e test', () => {
     it('email resending', async () => {
       //const { code } = expect.getState();
       //Moc code
-      jest.spyOn(crypto, 'randomUUID').mockImplementation(() => '11-11-11-11-11');
+      jest.spyOn(crypto, 'randomUUID').mockImplementation(() => mockedUUID);
 
       await request(httpServer)
         .post('/auth/registration-email-resending')
@@ -163,7 +165,7 @@ describe('Auth e2e test', () => {
     it("shouldn't send an email to an already confirmed account", async () => {
       //const { code } = expect.getState();
       //Moc code
-      jest.spyOn(crypto, 'randomUUID').mockImplementation(() => '11-11-11-11-11');
+      jest.spyOn(crypto, 'randomUUID').mockImplementation(() => mockedUUID);
 
       const response = await request(httpServer)
         .post('/auth/registration-email-resending')
