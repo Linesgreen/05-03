@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any,@typescript-eslint/ban-types */
+// noinspection RedundantIfStatementJS
+
 import { Injectable } from '@nestjs/common';
 import {
   registerDecorator,
