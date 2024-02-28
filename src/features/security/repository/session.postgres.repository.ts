@@ -45,10 +45,37 @@ export class PostgresSessionRepository extends AbstractRepository<SessionPgDb> {
       [userId, tokenKey],
     );
     if (session.length === 0) return null;
-    console.log(Session.fromDbToObject(session[0]));
-    return Session.fromDbToObject(session[0]);
+    return Session.fromDbToInstance(session[0]);
+  }
+  /**
+   * @returns null или сессию
+   * @param deviceId
+   */
+  async getByDeviceId(deviceId: string): Promise<Session | null> {
+    const fieldToSelect = ['id', 'tokenKey', 'issuedDate', 'expiredDate', 'title', 'ip', 'deviceId', 'userId'];
+    const session = await this.getByFields('sessions', fieldToSelect, { deviceId: deviceId, active: true });
+    if (!session) return null;
+    return Session.fromDbToInstance(session[0]);
   }
 
+  async terminateSessionByTokenKey(tokenKey: string): Promise<void> {
+    const tableName = 'sessions';
+    await this.updateFields(tableName, 'tokenKey', tokenKey, { active: false });
+  }
+  async terminateSessionByDeviceIdAndUserId(deviceId: string, userId: number): Promise<void> {
+    await this.dataSource.query(
+      `
+        UPDATE public.sessions SET "active" = false WHERE "userId" = $1 AND "deviceId" = $2`,
+      [userId, deviceId],
+    );
+  }
+  async terminateOtherSession(userId: string, tokenKey: string): Promise<void> {
+    await this.dataSource.query(
+      `
+        UPDATE public.sessions SET "active" = false WHERE "userId" = $1 AND "tokenKey" != $2`,
+      [userId, tokenKey],
+    );
+  }
   async updateSessionFields(
     searchField: string,
     searchValue: string | number,

@@ -55,14 +55,48 @@ export abstract class AbstractRepository<T> {
     fieldsToSelect: string[],
     fieldName: string,
     fieldValue: unknown,
-  ): Promise<T | null> {
+  ): Promise<T[] | null> {
     // columns = '"field1","field2","field3"'
     const columns = fieldsToSelect.map((field) => `"${field}"`).join(',');
-    const result = await this.dataSource.query(`SELECT ${columns} FROM public.${tableName} WHERE ${fieldName} = $1`, [
+
+    const result = await this.dataSource.query(`SELECT ${columns} FROM public.${tableName} WHERE "${fieldName}" = $1`, [
       fieldValue,
     ]);
     if (result.length === 0) return null;
-    return result[0];
+    return result;
+  }
+  /**
+   * Получает запись из таблицы по нескольким полям.
+   * @param tableName - Название таблицы, из которой будет получена запись.
+   * @param fieldsToSelect - Массив из полей для выборки.
+   * @param { "name": "John", "age": 30 } conditions - Условия для выборки записи по нескольким полям.
+   * @returns Promise<T | null> - Возвращает найденную запись или null, если запись не найдена.
+   */
+  async getByFields(
+    tableName: string,
+    fieldsToSelect: string[],
+    conditions: Record<string, unknown>,
+  ): Promise<T[] | null> {
+    // Формируем список полей для SELECT запроса
+    const columns = fieldsToSelect.map((field) => `"${field}"`).join(',');
+    // '"field1","field2","field3"'
+
+    // Формируем условия для WHERE запроса
+    const conditionsArray = Object.entries(conditions).map(([key, value], index) => {
+      return `"${key}" = $${index + 1}`;
+    });
+    // ['"name" = $1', '"age" = $2']
+
+    const conditionValues = Object.values(conditions);
+    //  ["John", 30]
+
+    // Строим SQL-запрос
+    const query = `SELECT ${columns} FROM public.${tableName} WHERE ${conditionsArray.join(' AND ')}`;
+    //  'SELECT "field1","field2","field3" FROM public.tableName WHERE "name" = $1 AND "age" = $2'
+
+    const result = await this.dataSource.query(query, conditionValues);
+    if (result.length === 0) return null;
+    return result;
   }
 
   /**

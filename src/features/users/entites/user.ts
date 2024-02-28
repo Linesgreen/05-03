@@ -2,7 +2,7 @@
 import { add } from 'date-fns';
 import { Exception } from 'handlebars';
 
-import { UserDbType } from '../types/input';
+import { UserCreateData } from '../types/input';
 import { UserOutputType, UserPgDb } from '../types/output';
 
 // noinspection RegExpRedundantEscape
@@ -23,8 +23,9 @@ export class EmailConfirmation {
 export class User {
   accountData: AccountData;
   emailConfirmation: EmailConfirmation;
-  id: number;
-  constructor(userData: UserDbType, passwordHash: string) {
+  id: number | null;
+  constructor(userData: UserCreateData, passwordHash: string) {
+    this.id = null;
     this.accountData = {
       login: userData.login,
       email: userData.email,
@@ -40,7 +41,7 @@ export class User {
     };
   }
   //TODo переименовать
-  static fromDbToObject(userData: UserPgDb): User {
+  static fromDbToInstance(userData: UserPgDb): User {
     const newUser = Object.create(User.prototype);
     newUser.id = userData.id;
     newUser.accountData = {

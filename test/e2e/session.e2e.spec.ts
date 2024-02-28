@@ -176,10 +176,12 @@ describe('session e2e test', () => {
         .set('User-agent', 'test1')
         .expect(200)
         .then((response) => {
+          console.log(response.body);
           const devise2 = response.body.find((e) => e['title'] === 'test2');
+          const devise1 = response.body.find((e) => e['title'] === 'test1');
           expect(response.body).toHaveLength(4);
-          expect(new Date(response.body[0].lastActiveDate).getTime()).toBeGreaterThan(
-            new Date(response.body[1].lastActiveDate).getTime(),
+          expect(new Date(devise1.lastActiveDate).getTime()).toBeGreaterThan(
+            new Date(devise2.lastActiveDate).getTime(),
           );
           devise2id = devise2.deviceId;
         });

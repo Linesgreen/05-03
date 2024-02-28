@@ -27,7 +27,7 @@ export class Session {
     this.deviceId = deviceId;
   }
 
-  static fromDbToObject(sessionDb: SessionPgDb): Session {
+  static fromDbToInstance(sessionDb: SessionPgDb): Session {
     const newSession = Object.create(Session.prototype);
     newSession.id = sessionDb.id;
     newSession.tokenKey = sessionDb.tokenKey;

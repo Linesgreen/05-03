@@ -12,7 +12,7 @@ export class CommentOwnerGuard implements CanActivate {
     const userId = request.user.id;
     const targetComment = await this.commentQueryRepository.getCommentById(commentId);
     if (!targetComment) throw new NotFoundException();
-    if (targetComment.commentatorInfo.userId !== userId) throw new ForbiddenException();
+    if (targetComment.commentatorInfo.userId != userId) throw new ForbiddenException();
     return true;
   }
 }

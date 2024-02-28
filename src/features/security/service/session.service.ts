@@ -8,7 +8,7 @@ export class SessionService {
   constructor(protected postgresSessionRepository: PostgresSessionRepository) {}
 
   async terminateCurrentSession(userId: string, tokenKey: string): Promise<void> {
-    await this.postgresSessionRepository.updateSessionFields('tokenKey', tokenKey, { active: false });
+    await this.postgresSessionRepository.terminateSessionByTokenKey(tokenKey);
     const chekResult = await this.postgresSessionRepository.chekSessionIsExist(Number(userId), tokenKey);
     if (chekResult) throw new HttpException('Session not terminated', 500);
   }

@@ -12,7 +12,6 @@ export class GetInformationAboutUserCase implements ICommandHandler<UserGetInfor
   constructor(private postgresUserQueryRepository: PostgresUserQueryRepository) {}
 
   async execute({ userId }: UserGetInformationAboutMeCommand): Promise<AboutMeType> {
-    console.log(userId);
     const user = await this.postgresUserQueryRepository.getUserById(userId);
     if (!user) throw new NotFoundException();
     const { email, login, id } = user;

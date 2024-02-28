@@ -7,9 +7,6 @@ import { configService } from '../settings/config.service';
 import { MailService } from './mail.service';
 const user = configService.getGmailUser();
 const pass = configService.getGmailPass();
-console.log('-------------------');
-console.log(user, pass);
-console.log('-------------------');
 @Module({
   imports: [
     MailerModule.forRoot({

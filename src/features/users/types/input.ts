@@ -18,7 +18,7 @@ export class UserCreateModel {
   email: string;
 }
 
-export type UserDbType = {
+export type UserCreateData = {
   login: string;
   password: string;
   email: string;

@@ -3,7 +3,7 @@ import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { LikeStatusType } from '../../../comments/types/comments/input';
-import { UserQueryRepository } from '../../../users/repositories/user.query.repository';
+import { PostgresUserQueryRepository } from '../../../users/repositories/postgres.user.query.repository';
 import { PostLikesQueryRepository } from '../../repositories/likes/post-likes.query.repository';
 import { PostLikesRepository } from '../../repositories/likes/post-likes.repository';
 import { PostLikesDocument } from '../../repositories/likes/post-likes.schema';
@@ -24,11 +24,11 @@ export class AddLikeToPostUseCase implements ICommandHandler<AddLikeToPostComman
     protected postLikesQueryRepository: PostLikesQueryRepository,
     protected postsRepository: PostsRepository,
     protected postLikesRepository: PostLikesRepository,
-    protected userRepository: UserQueryRepository,
+    protected postgresUserQueryRepository: PostgresUserQueryRepository,
   ) {}
 
   async execute({ postId, userId, likeStatus }: AddLikeToPostCommand): Promise<void> {
-    const user = await this.userRepository.getUserById(userId);
+    const user = await this.postgresUserQueryRepository.getUserById(userId);
     if (!user) throw new NotFoundException('user not found');
     const targetPost = await this.postsRepository.getPostbyId(postId);
 

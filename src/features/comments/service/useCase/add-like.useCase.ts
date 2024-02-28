@@ -1,7 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { UserQueryRepository } from '../../../users/repositories/user.query.repository';
+import { PostgresUserQueryRepository } from '../../../users/repositories/postgres.user.query.repository';
 import { CommentsQueryRepository } from '../../repositories/comments/comments.query.repository';
 import { CommentsRepository } from '../../repositories/comments/comments.repository';
 import { CommentsLikesDocument } from '../../repositories/likes/comment-like.schema';
@@ -24,11 +24,11 @@ export class AddLikeToCommentUseCase implements ICommandHandler<AddLikeToComment
     protected commentLikesQueryRepository: CommentsLikesQueryRepository,
     protected commentsRepository: CommentsRepository,
     protected commentsLikesRepository: CommentsLikesRepository,
-    protected userRepository: UserQueryRepository,
+    protected postgresUserQueryRepository: PostgresUserQueryRepository,
   ) {}
 
   async execute({ commentId, userId, likeStatus }: AddLikeToCommentCommand): Promise<void> {
-    const user = await this.userRepository.getUserById(userId);
+    const user = await this.postgresUserQueryRepository.getUserById(userId);
     if (!user) throw new NotFoundException('user not found');
     const targetComment = await this.commentsQueryRepository.getCommentById(commentId);
 

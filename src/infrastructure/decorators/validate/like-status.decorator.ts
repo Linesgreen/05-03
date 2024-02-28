@@ -26,7 +26,6 @@ export function LikeStatus(property?: any, validationOptions?: ValidationOptions
 @Injectable()
 export class LikeStatusConstraint implements ValidatorConstraintInterface {
   constructor() {}
-
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   validate(value: string, args: ValidationArguments): boolean {
     return value == 'None' || value == 'Like' || value == 'Dislike';

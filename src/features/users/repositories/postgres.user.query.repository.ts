@@ -24,6 +24,6 @@ export class PostgresUserQueryRepository {
     if (user.length === 0) return null;
     // Формируем объект пользователя с помощью метода fromDbToObject
     // Затем преобразуем его в DTO и возвращаем
-    return User.fromDbToObject(user[0]).toDto();
+    return User.fromDbToInstance(user[0]).toDto();
   }
 }

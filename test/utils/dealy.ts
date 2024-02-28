@@ -1,11 +1,4 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-export const delay1 = async (milliseconds: number): Promise<void> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve();
-    }, milliseconds);
-  });
-};
 
 //По умолчанию таймер принимает миллисекунды
 export const delay = async (time: number, unit: 'ms' | 's' | 'm' = 'ms', callback?: () => void): Promise<void> => {
@@ -21,7 +14,6 @@ export const delay = async (time: number, unit: 'ms' | 's' | 'm' = 'ms', callbac
 
   return new Promise<void>((resolve) => {
     setTimeout(() => {
-      console.log('Таймер завершился');
       if (callback) callback();
       resolve();
     }, mil);

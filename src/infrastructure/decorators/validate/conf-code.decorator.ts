@@ -34,7 +34,6 @@ export class ConfCodeIsValidConstraint implements ValidatorConstraintInterface {
     const userWithCode = await this.postgreUserRepository.findByConfCode(value);
 
     if (!userWithCode) return false;
-    console.log(!(userWithCode.emailConfirmation.expirationDate > new Date()));
     if (!(userWithCode.emailConfirmation.expirationDate > new Date())) return false;
     if (userWithCode.emailConfirmation.isConfirmed) return false;
 

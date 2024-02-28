@@ -32,12 +32,6 @@ export class PostUpdateType {
   @BlogIsExist()
   blogId: string;
 }
-export type PostSortData = {
-  sortBy?: string;
-  sortDirection?: 'asc' | 'desc';
-  pageNumber?: string;
-  pageSize?: string;
-};
 
 export class CommentCreateModel {
   @Trim()

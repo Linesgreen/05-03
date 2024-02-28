@@ -48,7 +48,6 @@ export class PostgresUserRepository extends AbstractRepository<UserPgDb> {
                      WHERE email = $1 OR login = $1) as exists`,
       [loginOrEmail],
     );
-    console.log(chekResult[0].exists);
     return chekResult[0].exists;
   }
 
@@ -65,7 +64,7 @@ export class PostgresUserRepository extends AbstractRepository<UserPgDb> {
       [logOrEmail],
     );
     if (user.length === 0) return null;
-    return User.fromDbToObject(user[0]);
+    return User.fromDbToInstance(user[0]);
   }
   /**
    * Получает пользователя по confirmation code
@@ -86,7 +85,28 @@ export class PostgresUserRepository extends AbstractRepository<UserPgDb> {
     const tableName = 'users';
     const foundedUser = await this.getByField(tableName, fieldsToSelect, 'confirmationCode', code);
     if (!foundedUser) return null;
-    return User.fromDbToObject(foundedUser[0]);
+    return User.fromDbToInstance(foundedUser[0]);
+  }
+  /**
+   * Получает пользователя из базы данных по его ID.
+   * @param {string} userId - ID пользователя для получения.
+   * @returns {User | null} Объект пользователя, если найден, или null, если не найден.
+   */
+  async findUserById(userId: string): Promise<User | null> {
+    const fieldsToSelect = [
+      'id',
+      'login',
+      'email',
+      'passwordHash',
+      'confirmationCode',
+      'expirationDate',
+      'createdAt',
+      'isConfirmed',
+    ];
+    const tableName = 'users';
+    const foundedUser = await this.getByField(tableName, fieldsToSelect, 'id', userId);
+    if (!foundedUser) return null;
+    return User.fromDbToInstance(foundedUser[0]);
   }
   /**
    * Обновляет указанные поля для пользователя в базе данных.

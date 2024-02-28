@@ -41,8 +41,9 @@ export class TestingController {
     await this.CommentLikesModel.deleteMany({});
     await this.PostLikesModel.deleteMany({});
     await this.SessionDbModel.deleteMany({});
-    await this.dataSource.query(`DELETE FROM public.users`);
-    await this.dataSource.query(`DELETE FROM public.sessions`);
+    await this.dataSource.query(`DELETE  FROM public.sessions CASCADE`);
+    await this.dataSource.query(`DELETE FROM public.users CASCADE`);
+
     return;
   }
 }

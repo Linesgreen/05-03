@@ -1,3 +1,4 @@
+import { SessionPostgresQueryRepository } from '../security/repository/session.postgres.query.repository';
 import { PostgresSessionRepository } from '../security/repository/session.postgres.repository';
 import { SessionQueryRepository } from '../security/repository/session.query.repository';
 import { SessionRepository } from '../security/repository/session.repository';
@@ -18,6 +19,7 @@ export const authProviders = [
   SessionService,
   SessionQueryRepository,
   PostgresSessionRepository,
+  SessionPostgresQueryRepository,
 ];
 export const authUseCases = [
   UserRegistrationUseCase,

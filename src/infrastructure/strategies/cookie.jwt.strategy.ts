@@ -22,7 +22,6 @@ export class CookieJwtStrategy extends PassportStrategy(Strategy, 'jwt-cookie') 
 
   async validate(payload: any) {
     const sessionId = await this.postgresSessionRepository.chekSessionIsExist(payload.userId, payload.tokenKey);
-    console.log(sessionId);
     if (!sessionId) throw new UnauthorizedException();
     return { id: payload.userId, tokenKey: payload.tokenKey, deviceId: payload.deviceId };
   }

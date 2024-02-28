@@ -21,7 +21,7 @@ import { UserService } from '../services/user.service';
 import { UserCreateModel } from '../types/input';
 import { UserOutputType } from '../types/output';
 
-@Controller('users')
+@Controller('sa/users')
 @UseGuards(AuthGuard)
 export class UserController {
   constructor(

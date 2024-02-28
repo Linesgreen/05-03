@@ -4,14 +4,14 @@ import { CookieJwtGuard } from '../../../infrastructure/guards/jwt-cookie.guard'
 import { CurrentSession } from '../../auth/decorators/userId-sessionKey.decorator';
 import { SessionOutputType } from '../../auth/types/output';
 import { SessionOwnerGuard } from '../guards/session-owner.guard';
-import { SessionQueryRepository } from '../repository/session.query.repository';
-import { SessionRepository } from '../repository/session.repository';
+import { SessionPostgresQueryRepository } from '../repository/session.postgres.query.repository';
+import { PostgresSessionRepository } from '../repository/session.postgres.repository';
 
 @Controller('security')
 export class SecurityController {
   constructor(
-    private sessionQueryRepository: SessionQueryRepository,
-    private sessionRepository: SessionRepository,
+    private sessionPostgresQueryRepository: SessionPostgresQueryRepository,
+    private postgresSessionRepository: PostgresSessionRepository,
   ) {} //protected authService: AuthService,
 
   @UseGuards(CookieJwtGuard)
@@ -20,7 +20,7 @@ export class SecurityController {
   async getSessions(
     @CurrentSession() { userId }: { userId: string; tokenKey: string },
   ): Promise<SessionOutputType[] | null> {
-    const sessions = await this.sessionQueryRepository.getUserSessions(userId);
+    const sessions = await this.sessionPostgresQueryRepository.getUserSessions(Number(userId));
     if (!sessions) throw new NotFoundException();
     return sessions;
   }
@@ -31,7 +31,7 @@ export class SecurityController {
     @CurrentSession() { userId }: { userId: string; tokenKey: string },
     @Param('id') deviceId: string,
   ): Promise<void> {
-    await this.sessionRepository.terminateCurrentSession(deviceId, userId);
+    await this.postgresSessionRepository.terminateSessionByDeviceIdAndUserId(deviceId, Number(userId));
   }
   @UseGuards(CookieJwtGuard)
   @Delete('devices')
@@ -39,6 +39,6 @@ export class SecurityController {
   async terminateOtherSession(
     @CurrentSession() { userId, tokenKey }: { userId: string; tokenKey: string },
   ): Promise<void> {
-    await this.sessionRepository.terminateOtherSession(userId, tokenKey);
+    await this.postgresSessionRepository.terminateOtherSession(userId, tokenKey);
   }
 }

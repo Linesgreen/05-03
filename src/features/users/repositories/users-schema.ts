@@ -3,7 +3,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { add } from 'date-fns';
 import { HydratedDocument } from 'mongoose';
 
-import { UserDbType } from '../types/input';
+import { UserCreateData } from '../types/input';
 import { UserOutputType } from '../types/output';
 
 // noinspection RegExpRedundantEscape
@@ -40,7 +40,7 @@ export class UserMongo {
   @Prop({ _id: false, required: true, type: EmailConfirmationSchema })
   emailConfirmation: EmailConfirmation;
 
-  constructor(userData: UserDbType, passwordHash: string) {
+  constructor(userData: UserCreateData, passwordHash: string) {
     this._id = crypto.randomUUID();
     this.accountData = {
       login: userData.login,
