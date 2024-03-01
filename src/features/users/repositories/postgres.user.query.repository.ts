@@ -27,7 +27,6 @@ export class PostgresUserQueryRepository {
     const searchEmailTerm = sortData.searchEmailTerm ?? '';
 
     const isText = await this.isTextColumn('users', sortData.sortBy);
-    console.log(isText);
     const sortByType = isText ? `LOWER("${sortData.sortBy}")` : `"${sortData.sortBy}"`;
     console.log(sortByType);
     const users = await this.dataSource.query(

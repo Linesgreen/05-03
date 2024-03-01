@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { MailerService } from '@nestjs-modules/mailer';
@@ -6,6 +7,7 @@ import * as mockdate from 'mockdate';
 import request from 'supertest';
 
 import { AppModule } from '../../src/app.module';
+import { RecoveryCodeIsValidConstraint } from '../../src/infrastructure/decorators/validate/password-recovery-code.decorator';
 import { appSettings } from '../../src/settings/aplly-app-setting';
 import { AuthTestManager } from '../common/authTestManager';
 
@@ -190,6 +192,39 @@ describe('Auth e2e test', () => {
     it('cant login user with incorrect pass | email', async () => {
       await authTestManager.login(userLoginData.email, '123456', 401);
       await authTestManager.login('ugaChagaUga@bebe.com', userLoginData.password, 401);
+    });
+  });
+
+  describe('password recovery', () => {
+    beforeAll(async () => {
+      jest.clearAllMocks();
+      mockdate.reset();
+    });
+    it('send new password recovery code', async () => {
+      await request(httpServer).post('/auth/password-recovery').send({ email: userLoginData.email }).expect(204);
+
+      expect(jestSpyEmail).toBeCalled();
+    });
+    it('should change user password', async () => {
+      //Мок на проверку jwt
+      jest
+        .spyOn(RecoveryCodeIsValidConstraint.prototype, 'validate')
+        .mockImplementation(async () => Promise.resolve(true));
+      //Мок на доставание емэйла из jwt
+      jest.spyOn(JwtService.prototype, 'decode').mockImplementation(() => ({ email: userLoginData.email }));
+
+      await request(httpServer)
+        .post('/auth/new-password')
+        .send({
+          newPassword: '111111',
+          recoveryCode: '123132',
+        })
+        .expect(204);
+    });
+    it('should login with new password', async () => {
+      const repsponse = await authTestManager.login(userLoginData.email, '111111', 200);
+      //regEx for JWT token [\w-]*\.[\w-]*\.[\w-]*/g
+      expect(repsponse.body.accessToken).toMatch(/^[\w-]*\.[\w-]*\.[\w-]*/);
     });
   });
 });

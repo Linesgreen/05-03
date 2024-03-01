@@ -20,11 +20,13 @@ export class ChangePasswordUseCase implements ICommandHandler<ChangePasswordComm
 
   async execute({ newPassword, recoveryCode }: ChangePasswordCommand): Promise<void> {
     const userEmail = this.getEmailFromJwt(recoveryCode);
+    console.log(userEmail);
     const newPasswordHash = await bcrypt.hash(newPassword, 12);
     await this.updatePasswordInDb(userEmail, newPasswordHash);
   }
 
   private getEmailFromJwt(jwt: string): string {
+    console.log(this.jwtService.decode(jwt));
     const { email } = this.jwtService.decode(jwt);
     return email;
   }

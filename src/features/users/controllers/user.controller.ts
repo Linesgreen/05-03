@@ -5,7 +5,6 @@ import { AuthGuard } from '../../../infrastructure/guards/auth-basic.guard';
 import { QueryPaginationResult } from '../../../infrastructure/types/query-sort.type';
 import { PaginationWithItems } from '../../common/types/output';
 import { PostgresUserQueryRepository } from '../repositories/postgres.user.query.repository';
-import { UserQueryRepository } from '../repositories/user.query.repository';
 import { UserService } from '../services/user.service';
 import { UserCreateModel } from '../types/input';
 import { UserOutputType } from '../types/output';
@@ -15,7 +14,6 @@ import { UserOutputType } from '../types/output';
 export class UserController {
   constructor(
     protected readonly userService: UserService,
-    protected readonly userQueryRepository: UserQueryRepository,
     protected readonly postsQueryRepository: PostgresUserQueryRepository,
   ) {}
   @Post('')

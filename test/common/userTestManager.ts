@@ -27,7 +27,7 @@ export class UserTestManager {
     const authData = adminData ?? this.adminData;
     const userCreateData = userData ?? this.userDefaultCreateData;
     return request(this.app.getHttpServer())
-      .post(`/users`)
+      .post(`/sa/users`)
       .auth(authData.login, authData.password)
       .send(userCreateData)
       .expect(status);

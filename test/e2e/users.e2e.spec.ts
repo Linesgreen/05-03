@@ -100,7 +100,7 @@ describe('Users e2e test', () => {
   //sortDirection=asc
   it('should return 9 users asc', async () => {
     const response = await request(httpServer)
-      .get('/users/?sortDirection=asc&sortBy=login')
+      .get('/sa/users/?sortDirection=asc&sortBy=login')
       .auth(adminAuth.login, adminAuth.password)
       .expect(200);
 
@@ -121,7 +121,7 @@ describe('Users e2e test', () => {
   //pageNumber=2
   it('should"nt return users on blank page', async () => {
     const response = await request(httpServer)
-      .get('/users/?sortDirection=asc&pageNumber=2')
+      .get('/sa/users/?sortDirection=asc&pageNumber=2')
       .auth(adminAuth.login, adminAuth.password)
       .expect(200);
 
@@ -135,7 +135,7 @@ describe('Users e2e test', () => {
   //pageSize=8
   it('should return 1 users on page number 2  asc', async () => {
     const response = await request(httpServer)
-      .get('/users/?sortDirection=asc&pageNumber=2&pageSize=8')
+      .get('/sa/users/?sortDirection=asc&pageNumber=2&pageSize=8')
       .auth(adminAuth.login, adminAuth.password)
       .expect(200);
 

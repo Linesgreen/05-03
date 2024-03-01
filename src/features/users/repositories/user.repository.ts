@@ -25,6 +25,7 @@ export class UserRepository {
       $or: [{ 'accountData.email': logOrEmail }, { 'accountData.login': logOrEmail }],
     });
   }
+
   async getUserById(userId: string): Promise<UsersDocument | null> {
     return this.UserModel.findById(userId);
   }
