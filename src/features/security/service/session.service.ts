@@ -12,4 +12,7 @@ export class SessionService {
     const chekResult = await this.postgresSessionRepository.chekSessionIsExist(Number(userId), tokenKey);
     if (chekResult) throw new HttpException('Session not terminated', 500);
   }
+  async terminateAllSession(userId: string): Promise<void> {
+    await this.postgresSessionRepository.terminateAllSessionByUserId(userId);
+  }
 }

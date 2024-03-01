@@ -39,6 +39,6 @@ export class QueryPaginationResult {
   searchNameTerm: string | null;
   sortBy: string;
   sortDirection: 'asc' | 'desc';
-  pageNumber: string;
-  pageSize: string;
+  pageNumber: number;
+  pageSize: number;
 }

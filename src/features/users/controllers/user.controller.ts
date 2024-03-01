@@ -1,21 +1,10 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpException,
-  HttpStatus,
-  Param,
-  Post,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, Query, UseGuards } from '@nestjs/common';
 
 import { QueryPaginationPipe } from '../../../infrastructure/decorators/transform/query-pagination.pipe';
 import { AuthGuard } from '../../../infrastructure/guards/auth-basic.guard';
 import { QueryPaginationResult } from '../../../infrastructure/types/query-sort.type';
 import { PaginationWithItems } from '../../common/types/output';
+import { PostgresUserQueryRepository } from '../repositories/postgres.user.query.repository';
 import { UserQueryRepository } from '../repositories/user.query.repository';
 import { UserService } from '../services/user.service';
 import { UserCreateModel } from '../types/input';
@@ -27,6 +16,7 @@ export class UserController {
   constructor(
     protected readonly userService: UserService,
     protected readonly userQueryRepository: UserQueryRepository,
+    protected readonly postsQueryRepository: PostgresUserQueryRepository,
   ) {}
   @Post('')
   @HttpCode(201)
@@ -37,13 +27,11 @@ export class UserController {
   async getAllUsers(
     @Query(QueryPaginationPipe) queryData: QueryPaginationResult,
   ): Promise<PaginationWithItems<UserOutputType>> {
-    return this.userQueryRepository.findAll(queryData);
+    return this.postsQueryRepository.getAll(queryData);
   }
   @Delete(':userId')
   @HttpCode(204)
   async deleteUser(@Param('userId') userId: string): Promise<void> {
-    const deleteResult = await this.userService.deleteUser(userId);
-    if (!deleteResult) throw new HttpException(`user do not exist`, HttpStatus.NOT_FOUND);
-    return;
+    return this.userService.deleteUser(userId);
   }
 }

@@ -62,6 +62,10 @@ export class PostgresSessionRepository extends AbstractRepository<SessionPgDb> {
     const tableName = 'sessions';
     await this.updateFields(tableName, 'tokenKey', tokenKey, { active: false });
   }
+  async terminateAllSessionByUserId(userId: string): Promise<void> {
+    const tableName = 'sessions';
+    await this.updateFields(tableName, 'userId', userId, { active: false });
+  }
   async terminateSessionByDeviceIdAndUserId(deviceId: string, userId: number): Promise<void> {
     await this.dataSource.query(
       `

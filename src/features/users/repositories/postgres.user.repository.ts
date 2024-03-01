@@ -42,13 +42,21 @@ export class PostgresUserRepository extends AbstractRepository<UserPgDb> {
    * @param loginOrEmail - Логин или email пользователя
    * @returns true, если пользователь существует, иначе false
    */
-  async chekUserIsExist(loginOrEmail: string): Promise<boolean> {
+  async chekUserIsExistByLoginOrEmail(loginOrEmail: string): Promise<boolean> {
     const chekResult = await this.dataSource.query(
       `SELECT EXISTS(SELECT id FROM public.users
-                     WHERE email = $1 OR login = $1) as exists`,
+                     WHERE (email = $1 OR login = $1) AND active = true) as exists`,
       [loginOrEmail],
     );
     return chekResult[0].exists;
+  }
+  /**
+   * Проверяет существование пользователя по логину или email
+   * @returns true, если пользователь существует, иначе false
+   * @param userId
+   */
+  async chekUserIsExistByUserId(userId: string): Promise<boolean> {
+    return this.checkIfExistsByFields('users', { id: userId, active: true });
   }
 
   /**
@@ -124,5 +132,9 @@ export class PostgresUserRepository extends AbstractRepository<UserPgDb> {
     const tableName = 'users';
     // Call the parent class method
     await this.updateFields(tableName, searchField, searchValue, fieldsToUpdate);
+  }
+  async deleteById(id: string): Promise<void> {
+    const tableName = 'users';
+    await this.updateFields(tableName, 'id', id, { active: false });
   }
 }

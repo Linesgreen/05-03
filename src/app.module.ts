@@ -83,7 +83,7 @@ const decorators = [
     ThrottlerModule.forRoot([
       {
         ttl: 10000,
-        limit: 99999999999999,
+        limit: 5,
       },
     ]),
   ],

@@ -1,17 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 
+import { SessionService } from '../../security/service/session.service';
 import { User } from '../entites/user';
 import { PostgresUserRepository } from '../repositories/postgres.user.repository';
-import { UserRepository } from '../repositories/user.repository';
 import { UserCreateModel } from '../types/input';
 import { UserOutputType } from '../types/output';
 
 @Injectable()
 export class UserService {
   constructor(
-    protected usersRepository: UserRepository,
     private postgresUsersRepository: PostgresUserRepository,
+    private sessionService: SessionService,
   ) {}
   async createUserToDto(userData: UserCreateModel): Promise<UserOutputType> {
     const newUserInDb = await this.createUser(userData);
@@ -32,7 +32,12 @@ export class UserService {
     return null;
   }
 
-  async deleteUser(userId: string): Promise<boolean> {
-    return this.usersRepository.deleteUserById(userId);
+  async deleteUser(userId: string): Promise<void> {
+    const chekUserIsExist = await this.postgresUsersRepository.chekUserIsExistByUserId(userId);
+    if (!chekUserIsExist) throw new HttpException(`user do not exist`, HttpStatus.NOT_FOUND);
+    //Деактивируем все сессии пользователя
+    await this.sessionService.terminateAllSession(userId);
+    //Отмечаем пользователя как удаленного
+    await this.postgresUsersRepository.deleteById(userId);
   }
 }

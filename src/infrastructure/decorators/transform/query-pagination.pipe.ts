@@ -27,8 +27,8 @@ export class QueryPaginationPipe implements PipeTransform<QueryPaginationType, P
       searchNameTerm: object?.searchNameTerm ?? null,
       sortBy: object?.sortBy ?? 'createdAt',
       sortDirection: object?.sortDirection === 'asc' ? 'asc' : 'desc',
-      pageNumber: object?.pageNumber ? `${object?.pageNumber}` : '1',
-      pageSize: object?.pageSize ? `${object?.pageSize}` : '10',
+      pageNumber: object?.pageNumber ? object?.pageNumber : 1,
+      pageSize: object?.pageSize ? object?.pageSize : 10,
     };
 
     return queryPaginationResult;

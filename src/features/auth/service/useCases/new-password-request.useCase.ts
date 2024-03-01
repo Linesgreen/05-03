@@ -26,7 +26,7 @@ export class NewPasswordRequestUseCase implements ICommandHandler<NewPasswordReq
   }
 
   private async chekUserIsExist(email: string): Promise<boolean> {
-    const result = await this.postgreeUserRepository.chekUserIsExist(email);
+    const result = await this.postgreeUserRepository.chekUserIsExistByLoginOrEmail(email);
     if (!result) {
       console.warn('User with email ' + email + ' not found');
       return false;

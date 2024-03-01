@@ -12,6 +12,7 @@ export class SessionOwnerGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const deviceId = request.params.id;
     const userId = request.user.id;
+    await this.chekIsUUID(deviceId);
     const targetSession: Session = await this.getSession(deviceId);
     return this.chekCredentials(targetSession, userId);
   }
@@ -23,5 +24,11 @@ export class SessionOwnerGuard implements CanActivate {
   async chekCredentials(session: Session, userId: string): Promise<boolean> {
     if (session.userId !== Number(userId)) throw new ForbiddenException();
     return true;
+  }
+  async chekIsUUID(id: string): Promise<void> {
+    if (id.match(/^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/)) {
+    } else {
+      throw new NotFoundException();
+    }
   }
 }

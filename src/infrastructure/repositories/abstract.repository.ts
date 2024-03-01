@@ -125,6 +125,6 @@ export abstract class AbstractRepository<T> {
     // values = ['userId123(searchField)', 'active', 'admin']
     const values: (string | unknown)[] = [searchValue, ...entries.map(([, value]) => value)];
 
-    await this.dataSource.query(`UPDATE public.${tableName} SET ${setFields} WHERE "${searchField}" = $1`, values);
+    await this.dataSource.query(`UPDATE public.${tableName} SET ${setFields} WHERE "${searchField}" = $1 `, values);
   }
 }
