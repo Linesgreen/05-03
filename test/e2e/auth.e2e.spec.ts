@@ -200,11 +200,17 @@ describe('Auth e2e test', () => {
       jest.clearAllMocks();
       mockdate.reset();
     });
+    it('shloudn"t send new password recovery code with incorrect email', async () => {
+      await request(httpServer).post('/auth/password-recovery').send({ email: '123@mail.ru' }).expect(204);
+
+      expect(jestSpyEmail).not.toBeCalled();
+    });
     it('send new password recovery code', async () => {
       await request(httpServer).post('/auth/password-recovery').send({ email: userLoginData.email }).expect(204);
 
       expect(jestSpyEmail).toBeCalled();
     });
+
     it('should change user password', async () => {
       //Мок на проверку jwt
       jest
