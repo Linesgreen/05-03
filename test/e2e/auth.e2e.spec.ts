@@ -233,4 +233,20 @@ describe('Auth e2e test', () => {
       expect(repsponse.body.accessToken).toMatch(/^[\w-]*\.[\w-]*\.[\w-]*/);
     });
   });
+  describe('about me', () => {
+    it('should"nt return user information (jwt token no valid)', async () => {
+      await request(httpServer).get('/auth/me').set('Authorization', `Bearer sdasd`).expect(401);
+    });
+    it('get about me', async () => {
+      const repsponse = await authTestManager.login(userLoginData.email, '111111', 200);
+
+      const aboutMeResponse = await request(httpServer)
+        .get('/auth/me')
+        .set('Authorization', `Bearer ${repsponse.body.accessToken}`)
+        .expect(200);
+      expect(aboutMeResponse.body.email).toEqual(userLoginData.email);
+      expect(aboutMeResponse.body.login).toEqual(userLoginData.login);
+      expect(aboutMeResponse.body.userId).toEqual(expect.any(String));
+    });
+  });
 });
