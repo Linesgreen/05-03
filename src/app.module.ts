@@ -14,6 +14,7 @@ import { AuthController } from './features/auth/controllers/auth.controller';
 import { GetInformationAboutUserCase } from './features/auth/service/useCases/user-get-information-about-me.useCase';
 import { blogsProviders, blogsUseCases } from './features/blogs';
 import { BlogsController } from './features/blogs/controllers/blogs.controller';
+import { SaBlogsController } from './features/blogs/controllers/sa.blogs.controller';
 import { BlogIsExistConstraint } from './features/blogs/decorators/blog-is-exist.decorator';
 import { Blog, BlogSchema } from './features/blogs/repositories/blogs-schema';
 import { commentProviders, commentUseCases } from './features/comments';
@@ -28,7 +29,7 @@ import { SecurityController } from './features/security/controllers/security.con
 import { SessionDb, SessionSchema } from './features/security/repository/seesion.schema';
 import { TestingController } from './features/testing/controllers/testing.controller';
 import { userProviders } from './features/users';
-import { UserController } from './features/users/controllers/user.controller';
+import { SaUserController } from './features/users/controllers/sa.user.controller';
 import { UserMongo, UserSchema } from './features/users/repositories/users-schema';
 import { QueryPaginationPipe } from './infrastructure/decorators/transform/query-pagination.pipe';
 import { ConfCodeIsValidConstraint } from './infrastructure/decorators/validate/conf-code.decorator';
@@ -89,8 +90,9 @@ const decorators = [
   ],
   controllers: [
     BlogsController,
+    SaBlogsController,
     PostsController,
-    UserController,
+    SaUserController,
     AuthController,
     TestingController,
     CommentsController,

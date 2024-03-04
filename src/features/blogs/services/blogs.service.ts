@@ -1,30 +1,32 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
-import { BlogsRepository } from '../repositories/blogs.repository';
-import { Blog, BlogsDocument } from '../repositories/blogs-schema';
+import { BlogPG } from '../entites/blogPG';
+import { PostgresBlogsRepository } from '../repositories/postgres.blogs.repository';
 import { BlogCreateModel } from '../types/input';
 import { OutputBlogType } from '../types/output';
 
 @Injectable()
 export class BlogsService {
-  constructor(protected blogsRepository: BlogsRepository) {}
+  constructor(protected postgresBlogsRepository: PostgresBlogsRepository) {}
 
   async createBlog(blogData: BlogCreateModel): Promise<OutputBlogType> {
-    const newBlog = new Blog(blogData.name, blogData.description, blogData.websiteUrl);
-
-    await this.blogsRepository.addBlog(newBlog);
+    const newBlog = new BlogPG(blogData.name, blogData.description, blogData.websiteUrl);
+    await this.postgresBlogsRepository.addBLog(newBlog);
     return newBlog.toDto();
   }
 
-  async updateBlog(newData: BlogCreateModel, blogId: string): Promise<boolean | null> {
-    const targetBlog: BlogsDocument | null = await this.blogsRepository.getBlogById(blogId);
-    if (!targetBlog) return null;
-    targetBlog.updateBlog(newData);
-    await this.blogsRepository.saveBlog(targetBlog);
-    return true;
+  async updateBlog(newData: BlogCreateModel, blogId: number): Promise<void> {
+    await this.isExistBlog(blogId);
+    await this.postgresBlogsRepository.updateBlog(blogId, newData);
   }
 
-  async deleteBlog(blogId: string): Promise<boolean> {
-    return this.blogsRepository.deleteBlog(blogId);
+  async deleteBlog(blogId: number): Promise<void> {
+    await this.isExistBlog(blogId);
+    await this.postgresBlogsRepository.deleteById(blogId);
+  }
+
+  private async isExistBlog(blogId: number): Promise<void> {
+    const chekBlogIsExist = this.postgresBlogsRepository.chekBlogIsExist(blogId);
+    if (!chekBlogIsExist) throw new NotFoundException();
   }
 }

@@ -17,19 +17,17 @@ import { CommandBus } from '@nestjs/cqrs';
 import { QueryPaginationPipe } from '../../../infrastructure/decorators/transform/query-pagination.pipe';
 import { AuthGuard } from '../../../infrastructure/guards/auth-basic.guard';
 import { QueryPaginationResult } from '../../../infrastructure/types/query-sort.type';
-import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { PaginationWithItems } from '../../common/types/output';
 import { PostService } from '../../posts/services/post.service';
-import { OutputPostType } from '../../posts/types/output';
 import { BlogsQueryRepository } from '../repositories/blogs.query.repository';
 import { PostgresBlogsQueryRepository } from '../repositories/postgres.blogs.query.repository';
 import { BlogsService } from '../services/blogs.service';
-import { GetPostForBlogCommand } from '../services/useCase/get-posts-for-blog.useCase';
-import { BlogCreateModel, PostToBlogCreateModel } from '../types/input';
+import { BlogCreateModel } from '../types/input';
 import { OutputBlogType } from '../types/output';
 
-@Controller('blogs')
-export class BlogsController {
+@UseGuards(AuthGuard)
+@Controller('/sa/blogs')
+export class SaBlogsController {
   constructor(
     protected readonly blogsQueryRepository: BlogsQueryRepository,
     protected readonly blogsService: BlogsService,
@@ -46,19 +44,18 @@ export class BlogsController {
   }
 
   @Get(':id')
+  //TODO узнать по поводу ParseIntPipe
   async getBlog(@Param('id', ParseIntPipe) id: number): Promise<OutputBlogType> {
-    console.log('123132');
     const targetBlog = await this.postgresBlogsQueryRepository.getBlogById(id);
     if (!targetBlog) throw new NotFoundException('Blog Not Found');
     return targetBlog;
   }
 
   @Post('')
-  @UseGuards(AuthGuard)
   async createBlog(@Body() blogCreateData: BlogCreateModel): Promise<OutputBlogType> {
     return this.blogsService.createBlog(blogCreateData);
   }
-
+  /*
   @Get(':blogId/posts')
   async getPostForBlog(
     @CurrentUser() userId: string,
@@ -67,7 +64,9 @@ export class BlogsController {
   ): Promise<PaginationWithItems<OutputPostType>> {
     return this.commandBus.execute(new GetPostForBlogCommand(userId, blogId, queryData));
   }
-
+  
+ */
+  /*
   @Post(':blogId/posts')
   @UseGuards(AuthGuard)
   async createPostToBlog(
@@ -79,6 +78,8 @@ export class BlogsController {
     return newPost;
   }
 
+
+ */
   @Put(':id')
   @UseGuards(AuthGuard)
   @HttpCode(204)

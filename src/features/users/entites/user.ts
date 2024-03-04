@@ -40,7 +40,6 @@ export class User {
       isConfirmed: false,
     };
   }
-  //TODo переименовать
   static fromDbToInstance(userData: UserPgDb): User {
     const newUser = Object.create(User.prototype);
     newUser.id = userData.id;

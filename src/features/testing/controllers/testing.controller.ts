@@ -43,6 +43,7 @@ export class TestingController {
     await this.SessionDbModel.deleteMany({});
     await this.dataSource.query(`DELETE  FROM public.sessions CASCADE`);
     await this.dataSource.query(`DELETE FROM public.users CASCADE`);
+    await this.dataSource.query(`DELETE FROM public.blogs CASCADE`);
 
     return;
   }

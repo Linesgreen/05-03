@@ -22,9 +22,7 @@ export class Blog {
   @Prop({ required: true })
   createdAt: string;
 
-  @Prop({
-    required: true,
-  })
+  @Prop({ required: true })
   isMembership: boolean;
   constructor(name: string, description: string, websiteUrl: string) {
     // eslint-disable-next-line no-underscore-dangle

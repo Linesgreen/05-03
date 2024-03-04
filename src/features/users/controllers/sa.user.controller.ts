@@ -11,7 +11,7 @@ import { UserOutputType } from '../types/output';
 
 @Controller('sa/users')
 @UseGuards(AuthGuard)
-export class UserController {
+export class SaUserController {
   constructor(
     protected readonly userService: UserService,
     protected readonly postsQueryRepository: PostgresUserQueryRepository,
