@@ -20,9 +20,10 @@ export class PostgresPostQueryRepository extends AbstractRepository<PostPgWithBl
       SELECT  p.id, title, "shortDescription", content, p."blogId", p."createdAt", "name" as "blogName"
       FROM public.posts p
       JOIN public.blogs b on p."blogId" = b."id"
-          WHERE p.id = ${postId}
+          WHERE p.id = ${postId} AND p."active" = true 
       `,
     );
+    if (!postWithBlogData[0]) return null;
     return this.postMap(postWithBlogData[0], { likesCount: 0, dislikesCount: 0, myStatus: 'None', newestLikes: [] });
   }
 
@@ -36,7 +37,6 @@ export class PostgresPostQueryRepository extends AbstractRepository<PostPgWithBl
        LIMIT ${sortData.pageSize} OFFSET ${(sortData.pageNumber - 1) * sortData.pageSize}
       `,
     );
-    console.log(posts);
     const allDtoPosts: OutputPostType[] = posts.map((post) =>
       this.postMap(post, { likesCount: 0, dislikesCount: 0, myStatus: 'None', newestLikes: [] }),
     );
@@ -44,6 +44,27 @@ export class PostgresPostQueryRepository extends AbstractRepository<PostPgWithBl
       SELECT COUNT(p.id) 
       FROM public.posts p
       WHERE   p."active" = true AND p."blogId" = ${blogId}
+    `);
+
+    return new PaginationWithItems(+sortData.pageNumber, +sortData.pageSize, Number(totalCount[0].count), allDtoPosts);
+  }
+  async getPosts(sortData: QueryPaginationResult): Promise<PaginationWithItems<OutputPostType>> {
+    const posts: PostPgWithBlogDataDb[] = await this.dataSource.query(
+      `SELECT  p.id, title, "shortDescription", content, p."blogId", p."createdAt", "name" as "blogName"
+       FROM public.posts p
+       JOIN public.blogs b on p."blogId" = b."id"
+       WHERE   p."active" = true 
+       ORDER BY "${sortData.sortBy}" ${sortData.sortDirection}
+       LIMIT ${sortData.pageSize} OFFSET ${(sortData.pageNumber - 1) * sortData.pageSize}
+      `,
+    );
+    const allDtoPosts: OutputPostType[] = posts.map((post) =>
+      this.postMap(post, { likesCount: 0, dislikesCount: 0, myStatus: 'None', newestLikes: [] }),
+    );
+    const totalCount = await this.dataSource.query(`
+      SELECT COUNT(p.id) 
+      FROM public.posts p
+      WHERE   p."active" = true
     `);
 
     return new PaginationWithItems(+sortData.pageNumber, +sortData.pageSize, Number(totalCount[0].count), allDtoPosts);

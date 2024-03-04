@@ -22,8 +22,8 @@ import { PaginationWithItems } from '../../common/types/output';
 import { PostService } from '../../posts/services/post.service';
 import { PostInBlogUpdateType } from '../../posts/types/input';
 import { OutputPostType } from '../../posts/types/output';
-import { BlogsQueryRepository } from '../repositories/blogs.query.repository';
 import { PostgresBlogsQueryRepository } from '../repositories/postgres.blogs.query.repository';
+import { PostgresBlogsRepository } from '../repositories/postgres.blogs.repository';
 import { BlogsService } from '../services/blogs.service';
 import { GetPostForBlogCommand } from '../services/useCase/get-posts-for-blog.useCase';
 import { BlogCreateModel, PostToBlogCreateModel } from '../types/input';
@@ -33,7 +33,7 @@ import { OutputBlogType } from '../types/output';
 @Controller('/sa/blogs')
 export class SaBlogsController {
   constructor(
-    protected readonly blogsQueryRepository: BlogsQueryRepository,
+    protected readonly postgresBlogsRepository: PostgresBlogsRepository,
     protected readonly blogsService: BlogsService,
     protected readonly postService: PostService,
     protected readonly postgresBlogsQueryRepository: PostgresBlogsQueryRepository,
@@ -92,9 +92,11 @@ export class SaBlogsController {
   @HttpCode(204)
   async updatePost(
     @Param('postId', ParseIntPipe) postId: number,
+    @Param('blogId', ParseIntPipe) blogId: number,
     @Body() postUpdateData: PostInBlogUpdateType,
   ): Promise<void> {
-    console.log(postId);
+    const blogIsExist = await this.postgresBlogsRepository.chekBlogIsExist(blogId);
+    if (!blogIsExist) throw new NotFoundException('Blog Not Found');
     await this.postService.updatePost(postUpdateData, postId);
   }
 
@@ -105,7 +107,13 @@ export class SaBlogsController {
     await this.blogsService.deleteBlog(id);
   }
   @Delete(':blogId/posts/:postId')
-  async deletePostForBlog(@Param('postId', ParseIntPipe) postId: number): Promise<void> {
+  @HttpCode(204)
+  async deletePostForBlog(
+    @Param('blogId', ParseIntPipe) blogId: number,
+    @Param('postId', ParseIntPipe) postId: number,
+  ): Promise<void> {
+    const blogIsExist = await this.postgresBlogsRepository.chekBlogIsExist(blogId);
+    if (!blogIsExist) throw new NotFoundException('Blog Not Found');
     return this.postService.deletePost(postId);
   }
 }

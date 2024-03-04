@@ -26,7 +26,7 @@ export class BlogsService {
   }
 
   private async isExistBlog(blogId: number): Promise<void> {
-    const chekBlogIsExist = this.postgresBlogsRepository.chekBlogIsExist(blogId);
+    const chekBlogIsExist = await this.postgresBlogsRepository.chekBlogIsExist(blogId);
     if (!chekBlogIsExist) throw new NotFoundException();
   }
 }

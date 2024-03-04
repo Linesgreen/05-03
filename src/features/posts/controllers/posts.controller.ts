@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, ParseIntPipe, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 
 import { QueryPaginationPipe } from '../../../infrastructure/decorators/transform/query-pagination.pipe';
@@ -33,7 +33,7 @@ export class PostsController {
   }
 
   @Get(':postId')
-  async getPost(@CurrentUser() userId: string, @Param('postId') postId: string): Promise<OutputPostType> {
+  async getPost(@CurrentUser() userId: string, @Param('postId', ParseIntPipe) postId: number): Promise<OutputPostType> {
     return this.commandBus.execute(new GetPostWithLikeStatusCommand(postId, userId));
   }
 

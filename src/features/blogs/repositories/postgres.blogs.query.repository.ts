@@ -23,12 +23,12 @@ export class PostgresBlogsQueryRepository extends AbstractRepository<BlogPgDb> {
   }
 
   async getAll(sortData: QueryPaginationResult): Promise<PaginationWithItems<OutputBlogType>> {
-    const serachLoginTerm = sortData.searchLoginTerm ?? '';
+    const searchNameTerm = sortData.searchNameTerm ?? '';
 
     const blogs = await this.dataSource.query(
       `SELECT id,"name","description", "websiteUrl", "createdAt", "isMembership"
        FROM public.blogs
-       WHERE (name ILIKE '%${serachLoginTerm}%') AND "active" = true
+       WHERE (name ILIKE '%${searchNameTerm}%') AND "active" = true
        ORDER BY "${sortData.sortBy}" ${sortData.sortDirection}
        LIMIT ${sortData.pageSize} OFFSET ${(sortData.pageNumber - 1) * sortData.pageSize}
       `,
@@ -36,7 +36,7 @@ export class PostgresBlogsQueryRepository extends AbstractRepository<BlogPgDb> {
 
     const allDtoBlogs: OutputBlogType[] = blogs.map((blog) => BlogPG.fromDbToInstance(blog).toDto());
     const totalCount = await this.dataSource.query(`
-      SELECT COUNT(id) FROM public.blogs WHERE  (name ILIKE '%${serachLoginTerm}%') AND "active" = true
+      SELECT COUNT(id) FROM public.blogs WHERE  (name ILIKE '%${searchNameTerm}%') AND "active" = true
     `);
 
     return new PaginationWithItems(+sortData.pageNumber, +sortData.pageSize, Number(totalCount[0].count), allDtoBlogs);
