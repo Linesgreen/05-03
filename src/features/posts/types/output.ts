@@ -18,3 +18,23 @@ export type OutputPostType = {
   createdAt: string;
   extendedLikesInfo: ExtendedLikesInfoOutputType;
 };
+
+//TODO что то думать с этим классом
+export class PostPgDb {
+  id: number;
+  title: string;
+  shortDescription: string;
+  content: string;
+  blogId: number;
+  createdAt: Date;
+}
+
+export class PostPgWithBlogDataDb {
+  id: number;
+  title: string;
+  shortDescription: string;
+  content: string;
+  blogId: number;
+  blogName: string;
+  createdAt: Date;
+}

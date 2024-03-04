@@ -9,7 +9,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
     const status = exception.getStatus();
-
+    //TODO копать тут
     if (status === HttpStatus.BAD_REQUEST) {
       const errorsResponse = {
         errorsMessages: [],

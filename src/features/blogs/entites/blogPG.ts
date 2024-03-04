@@ -1,11 +1,8 @@
 /* eslint-disable no-underscore-dangle */
-import { Schema } from '@nestjs/mongoose';
 import { Exception } from 'handlebars';
 
-import { BlogCreateModel } from '../types/input';
 import { BlogPgDb, OutputBlogType } from '../types/output';
 
-@Schema()
 export class BlogPG {
   id: number | null;
   name: string;
@@ -43,11 +40,5 @@ export class BlogPG {
       createdAt: this.createdAt.toISOString(),
       isMembership: this.isMembership,
     };
-  }
-
-  updateBlog(params: BlogCreateModel): void {
-    this.name = params.name;
-    this.description = params.description;
-    this.websiteUrl = params.websiteUrl;
   }
 }

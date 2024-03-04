@@ -33,6 +33,18 @@ export class PostUpdateType {
   blogId: string;
 }
 
+export class PostInBlogUpdateType {
+  @Trim()
+  @Length(1, 30)
+  title: string;
+  @Trim()
+  @Length(1, 30)
+  shortDescription: string;
+  @Trim()
+  @Length(1, 1000)
+  content: string;
+}
+
 export class CommentCreateModel {
   @Trim()
   @IsString()

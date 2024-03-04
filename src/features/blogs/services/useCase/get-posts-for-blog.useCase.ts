@@ -4,12 +4,10 @@ import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { QueryPaginationResult } from '../../../../infrastructure/types/query-sort.type';
-import { LikesToMapperManager } from '../../../../infrastructure/utils/likes-to-map-manager';
 import { PaginationWithItems } from '../../../common/types/output';
-import { PostLikesQueryRepository } from '../../../posts/repositories/likes/post-likes.query.repository';
-import { PostsRepository } from '../../../posts/repositories/post/posts.repository';
+import { PostgresPostQueryRepository } from '../../../posts/repositories/post/postgres.post.query.repository';
 import { OutputPostType } from '../../../posts/types/output';
-import { BlogsRepository } from '../../repositories/blogs.repository';
+import { PostgresBlogsRepository } from '../../repositories/postgres.blogs.repository';
 
 export class GetPostForBlogCommand {
   constructor(
@@ -22,10 +20,8 @@ export class GetPostForBlogCommand {
 @CommandHandler(GetPostForBlogCommand)
 export class GetPostForBlogUseCase implements ICommandHandler<GetPostForBlogCommand> {
   constructor(
-    protected postLikesQueryRepository: PostLikesQueryRepository,
-    protected postRepository: PostsRepository,
-    protected blogRepository: BlogsRepository,
-    protected likesToMapperManager: LikesToMapperManager,
+    protected postgresPostQueryRepository: PostgresPostQueryRepository,
+    protected postgresBlogsRepository: PostgresBlogsRepository,
   ) {}
 
   async execute(command: GetPostForBlogCommand): Promise<PaginationWithItems<OutputPostType>> {
@@ -33,28 +29,16 @@ export class GetPostForBlogUseCase implements ICommandHandler<GetPostForBlogComm
 
     await this.checkBlogExist(blogId);
 
-    const posts = await this.findPostsForBlog(blogId, sortData);
-
-    //if the user is not authorized, the like status is none
-    let likeStatuses = {};
-    if (userId) {
-      likeStatuses = await this.likesToMapperManager.getUserLikeStatuses(
-        posts,
-        this.postLikesQueryRepository,
-        userId,
-        'postId',
-      );
-    }
-    return this.likesToMapperManager.generateDto(posts, likeStatuses);
+    return this.findPostsForBlog(blogId, sortData);
   }
 
   private async checkBlogExist(blogId: string) {
-    const post = await this.blogRepository.getBlogById(blogId);
+    const post = await this.postgresBlogsRepository.chekBlogIsExist(Number(blogId));
     if (!post) throw new NotFoundException(`Post not found`);
   }
 
   private async findPostsForBlog(blogId: string, sortData: QueryPaginationResult) {
-    const posts = await this.postRepository.findByBlogId(blogId, sortData);
+    const posts = await this.postgresPostQueryRepository.getPostForBlog(Number(blogId), sortData);
     if (!posts?.items?.length) {
       throw new NotFoundException(`Posts not found`);
     }
