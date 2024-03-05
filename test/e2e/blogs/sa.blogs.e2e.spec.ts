@@ -5,9 +5,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import mongoose from 'mongoose';
 import request from 'supertest';
 
-import { AppModule } from '../../src/app.module';
-import { appSettings } from '../../src/settings/aplly-app-setting';
-import { BlogTestManager } from '../common/blogTestManager';
+import { AppModule } from '../../../src/app.module';
+import { appSettings } from '../../../src/settings/aplly-app-setting';
+import { BlogTestManager } from '../../common/blogTestManager';
 
 describe('Blogs e2e', () => {
   let app: INestApplication;
@@ -84,28 +84,37 @@ describe('Blogs e2e', () => {
     );
   });
   it('get 10( 12 total) blogs', async function () {
-    const blogsResponse = await request(httpServer).get('/blogs').expect(200);
+    const blogsResponse = await request(httpServer).get('/sa/blogs').auth('admin', 'qwerty').expect(200);
     expect(blogsResponse.body.items.length).toBe(10);
     expect(blogsResponse.body.totalCount).toBe(12);
     expect(blogsResponse.body.items[0]).toEqual(blogsInDb[11]);
     expect(blogsResponse.body.items[1]).toEqual(blogsInDb[10]);
   });
   it('get blog by id', async function () {
-    const blogsResponse = await request(httpServer).get(`/blogs/${blogsInDb[0].id}`).expect(200);
+    const blogsResponse = await request(httpServer)
+      .get(`/sa/blogs/${blogsInDb[0].id}`)
+      .auth('admin', 'qwerty')
+      .expect(200);
     expect(blogsResponse.body).toEqual(blogsInDb[0]);
   });
   it('get blog by id2', async function () {
-    const blogsResponse = await request(httpServer).get(`/blogs/${blogsInDb[1].id}`).expect(200);
+    const blogsResponse = await request(httpServer)
+      .get(`/sa/blogs/${blogsInDb[1].id}`)
+      .auth('admin', 'qwerty')
+      .expect(200);
     expect(blogsResponse.body).toEqual(blogsInDb[1]);
   });
   it('get blog by id (dont exist)', async function () {
-    await request(httpServer).get(`/blogs/123}`).expect(404);
+    await request(httpServer).get(`/sa/blogs/123`).auth(adminData.login, adminData.password).expect(404);
   });
   it('update blog 12', async function () {
     await blogTestManaget.updateBlog(blogs[0], blogsInDb[11].id, 204, adminData);
   });
   it('get blog by id', async function () {
-    const blogsResponse = await request(httpServer).get(`/blogs/${blogsInDb[11].id}`).expect(200);
+    const blogsResponse = await request(httpServer)
+      .get(`/sa/blogs/${blogsInDb[11].id}`)
+      .auth('admin', 'qwerty')
+      .expect(200);
     expect(blogsResponse.body.description).toEqual(blogsInDb[0].description);
     expect(blogsResponse.body.isMembership).toEqual(blogsInDb[0].isMembership);
     expect(blogsResponse.body.name).toEqual(blogsInDb[0].name);
@@ -117,32 +126,41 @@ describe('Blogs e2e', () => {
     });
   });
   it('blog 12 sould do not change', async function () {
-    const blogsResponse = await request(httpServer).get(`/blogs/${blogsInDb[11].id}`).expect(200);
+    const blogsResponse = await request(httpServer)
+      .get(`/sa/blogs/${blogsInDb[11].id}`)
+      .auth('admin', 'qwerty')
+      .expect(200);
     expect(blogsResponse.body.description).toEqual(blogsInDb[0].description);
     expect(blogsResponse.body.isMembership).toEqual(blogsInDb[0].isMembership);
     expect(blogsResponse.body.name).toEqual(blogsInDb[0].name);
   });
   it('try delete blog without pass', async function () {
-    await request(httpServer).delete(`/blogs/${blogsInDb[5].id}`).auth('admin', 'qwery').expect(401);
+    await request(httpServer).delete(`/sa/blogs/${blogsInDb[5].id}`).auth('admin', 'qwery').expect(401);
   });
   it('check that the blog is still in place', async function () {
-    const blogsResponse = await request(httpServer).get(`/blogs/${blogsInDb[5].id}`).expect(200);
+    const blogsResponse = await request(httpServer)
+      .get(`/sa/blogs/${blogsInDb[5].id}`)
+      .auth('admin', 'qwerty')
+      .expect(200);
     expect(blogsResponse.body.description).toEqual(blogsInDb[5].description);
     expect(blogsResponse.body.isMembership).toEqual(blogsInDb[5].isMembership);
     expect(blogsResponse.body.name).toEqual(blogsInDb[5].name);
   });
   it('delete blog 12', async function () {
-    await request(httpServer).delete(`/blogs/${blogsInDb[11].id}`).auth('admin', 'qwerty').expect(204);
+    await request(httpServer).delete(`/sa/blogs/${blogsInDb[11].id}`).auth('admin', 'qwerty').expect(204);
   });
   it('trying to delete a blog that does not exist', async function () {
-    await request(httpServer).delete(`/blogs/${blogsInDb[11].id}`).auth('admin', 'qwerty').expect(404);
+    await request(httpServer).delete(`/sa/blogs/${blogsInDb[11].id}`).auth('admin', 'qwerty').expect(404);
   });
 
   //--------------------Pagination tests ------------------
   it('get 10( 12 total) blogs', async function () {
     // sortDirection=asc
     // pageSize=5
-    const blogsResponse = await request(httpServer).get('/blogs?sortDirection=asc&pageSize=5').expect(200);
+    const blogsResponse = await request(httpServer)
+      .get('/sa/blogs?sortDirection=asc&pageSize=5')
+      .auth(adminData.login, adminData.password)
+      .expect(200);
     expect(blogsResponse.body.items.length).toBe(5);
     expect(blogsResponse.body.totalCount).toBe(11);
     expect(blogsResponse.body.pageSize).toBe(5);
@@ -153,10 +171,13 @@ describe('Blogs e2e', () => {
     expect(blogsResponse.body.items[3]).toEqual(blogsInDb[3]);
     expect(blogsResponse.body.items[4]).toEqual(blogsInDb[4]);
   });
-  it('get 10( 12 total) blogs', async function () {
+  it('get 10( 12 total) blogs x4', async function () {
     // sortDirection=desc
     // pageSize=5
-    const blogsResponse = await request(httpServer).get('/blogs?pageSize=5').expect(200);
+    const blogsResponse = await request(httpServer)
+      .get('/sa/blogs?pageSize=5')
+      .auth(adminData.login, adminData.password)
+      .expect(200);
     expect(blogsResponse.body.items.length).toBe(5);
     expect(blogsResponse.body.totalCount).toBe(11);
     expect(blogsResponse.body.pageSize).toBe(5);
@@ -167,11 +188,14 @@ describe('Blogs e2e', () => {
     expect(blogsResponse.body.items[3]).toEqual(blogsInDb[7]);
     expect(blogsResponse.body.items[4]).toEqual(blogsInDb[6]);
   });
-  it('get 10( 12 total) blogs', async function () {
+  it('get 10( 12 total) blogs x1', async function () {
     // sortDirection=asc
     // pageSize=5
     //pageNumber=2
-    const blogsResponse = await request(httpServer).get('/blogs?sortDirection=asc&pageNumber=2&pageSize=5').expect(200);
+    const blogsResponse = await request(httpServer)
+      .get('/sa/blogs?sortDirection=asc&pageNumber=2&pageSize=5')
+      .auth(adminData.login, adminData.password)
+      .expect(200);
     expect(blogsResponse.body.items.length).toBe(5);
     expect(blogsResponse.body.totalCount).toBe(11);
     expect(blogsResponse.body.pageSize).toBe(5);
@@ -182,10 +206,13 @@ describe('Blogs e2e', () => {
     expect(blogsResponse.body.items[3]).toEqual(blogsInDb[8]);
     expect(blogsResponse.body.items[4]).toEqual(blogsInDb[9]);
   });
-  it('get 10( 12 total) blogs', async function () {
+  it('get 10( 12 total) blogs x2', async function () {
     // sortDirection=asc
     // searchNameTerm=1
-    const blogsResponse = await request(httpServer).get('/blogs?searchNameTerm=1&sortDirection=asc').expect(200);
+    const blogsResponse = await request(httpServer)
+      .get('/sa/blogs?searchNameTerm=1&sortDirection=asc')
+      .auth('admin', 'qwerty')
+      .expect(200);
     expect(blogsResponse.body.items.length).toBe(3);
     expect(blogsResponse.body.totalCount).toBe(3);
     expect(blogsResponse.body.pageSize).toBe(10);
@@ -198,7 +225,7 @@ describe('Blogs e2e', () => {
   //--------------------POST TO BLOG TEST----------------
   it('create post', async function () {
     const postToResponse = await request(httpServer)
-      .post(`/blogs/${blogsInDb[0].id}/posts`)
+      .post(`/sa/blogs/${blogsInDb[0].id}/posts`)
       .auth(adminData.login, adminData.password)
       .send({
         title: 'teste1',
@@ -212,7 +239,7 @@ describe('Blogs e2e', () => {
   });
   it('create post 2', async function () {
     const postToResponse = await request(httpServer)
-      .post(`/blogs/${blogsInDb[0].id}/posts`)
+      .post(`/sa/blogs/${blogsInDb[0].id}/posts`)
       .auth(adminData.login, adminData.password)
       .send({
         title: 'teste2',
@@ -226,7 +253,7 @@ describe('Blogs e2e', () => {
   });
   it('try create post with not valid body', async function () {
     const postToResponse = await request(httpServer)
-      .post(`/blogs/${blogsInDb[0].id}/posts`)
+      .post(`/sa/blogs/${blogsInDb[0].id}/posts`)
       .auth(adminData.login, adminData.password)
       .send({
         title: '',
@@ -238,7 +265,7 @@ describe('Blogs e2e', () => {
   });
   it('try create post without authorization', async function () {
     await request(httpServer)
-      .post(`/blogs/${blogsInDb[0].id}/posts`)
+      .post(`/sa/blogs/${blogsInDb[0].id}/posts`)
       .auth('123', adminData.password)
       .send({
         title: '',
@@ -248,7 +275,10 @@ describe('Blogs e2e', () => {
       .expect(401);
   });
   it('get posts in blog', async function () {
-    const postInBlogResponse = await request(httpServer).get(`/blogs/${blogsInDb[0].id}/posts`).expect(200);
+    const postInBlogResponse = await request(httpServer)
+      .get(`/sa/blogs/${blogsInDb[0].id}/posts`)
+      .auth(adminData.login, adminData.password)
+      .expect(200);
     expect(postInBlogResponse.body.items.length).toBe(2);
   });
 });

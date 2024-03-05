@@ -33,7 +33,7 @@ export class BlogTestManager {
   ) {
     const authData = adminData ?? this.adminData;
     return request(this.app.getHttpServer())
-      .post('/blogs')
+      .post('/sa/blogs')
       .auth(authData.login, authData.password)
       .send(blogData)
       .expect(status);
@@ -47,7 +47,7 @@ export class BlogTestManager {
   ) {
     const authData = adminData ?? this.adminData;
     return request(this.app.getHttpServer())
-      .put(`/blogs/${blogId}`)
+      .put(`/sa/blogs/${blogId}`)
       .auth(authData.login, authData.password)
       .send(blogData)
       .expect(status);
