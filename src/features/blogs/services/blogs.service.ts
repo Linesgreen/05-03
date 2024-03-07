@@ -1,5 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
+import { Result, STATUSES_HTTP } from '../../../infrastructure/object-result/objcet-result';
 import { BlogPG } from '../entites/blogPG';
 import { PostgresBlogsRepository } from '../repositories/postgres.blogs.repository';
 import { BlogCreateModel } from '../types/input';
@@ -15,9 +16,16 @@ export class BlogsService {
     return newBlog.toDto();
   }
 
-  async updateBlog(newData: BlogCreateModel, blogId: number): Promise<void> {
-    await this.isExistBlog(blogId);
+  async updateBlog(newData: BlogCreateModel, blogId: number): Promise<Result<string>> {
+    const checkBlogIsExist = await this.isExistBlog(blogId);
+
+    if (!checkBlogIsExist) {
+      return Result.Err(STATUSES_HTTP.NOT_FOUND_404, 'blog not found');
+    }
+
     await this.postgresBlogsRepository.updateBlog(blogId, newData);
+
+    return Result.Ok('blog updated successfully');
   }
 
   async deleteBlog(blogId: number): Promise<void> {
@@ -25,8 +33,7 @@ export class BlogsService {
     await this.postgresBlogsRepository.deleteById(blogId);
   }
 
-  private async isExistBlog(blogId: number): Promise<void> {
-    const chekBlogIsExist = await this.postgresBlogsRepository.chekBlogIsExist(blogId);
-    if (!chekBlogIsExist) throw new NotFoundException();
+  private async isExistBlog(blogId: number): Promise<boolean> {
+    return this.postgresBlogsRepository.chekBlogIsExist(blogId);
   }
 }

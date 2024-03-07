@@ -16,6 +16,7 @@ import { CommandBus } from '@nestjs/cqrs';
 
 import { QueryPaginationPipe } from '../../../infrastructure/decorators/transform/query-pagination.pipe';
 import { AuthGuard } from '../../../infrastructure/guards/auth-basic.guard';
+import { ErrorResulter } from '../../../infrastructure/object-result/objcet-result';
 import { QueryPaginationResult } from '../../../infrastructure/types/query-sort.type';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { PaginationWithItems } from '../../common/types/output';
@@ -68,23 +69,25 @@ export class SaBlogsController {
   async createBlog(@Body() blogCreateData: BlogCreateModel): Promise<OutputBlogType> {
     return this.blogsService.createBlog(blogCreateData);
   }
-
+  //TODO узнать про result
   @Post(':blogId/posts')
   @UseGuards(AuthGuard)
   async createPostToBlog(
     @Param('blogId') blogId: string,
     @Body() postData: PostToBlogCreateModel,
   ): Promise<OutputPostType> {
-    const newPost: OutputPostType | null = await this.postService.createPost({ ...postData, blogId });
-    if (!newPost) throw new NotFoundException('Blog Not Exist');
-    return newPost;
+    const result = await this.postService.createPost({ ...postData, blogId });
+    if (!result.isFailure()) ErrorResulter.proccesError(result);
+    return result.value as OutputPostType;
   }
 
   @Put(':id')
   @UseGuards(AuthGuard)
   @HttpCode(204)
   async updateBlog(@Param('id', ParseIntPipe) id: number, @Body() blogUpdateType: BlogCreateModel): Promise<void> {
-    await this.blogsService.updateBlog(blogUpdateType, id);
+    const result = await this.blogsService.updateBlog(blogUpdateType, id);
+    if (result.isFailure()) ErrorResulter.proccesError(result);
+    return;
   }
 
   @Put(':blogId/posts/:postId')
