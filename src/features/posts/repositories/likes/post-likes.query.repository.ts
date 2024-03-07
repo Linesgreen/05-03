@@ -1,21 +1,26 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
-import { IPostLikesQueryRepository } from '../../../../infrastructure/types/interfaces/IPostLikesQueryRepository';
-import { NewestLikeType } from '../../types/likes/output';
-import { PostLikes, PostLikesDocument } from './post-likes.schema';
+import { AbstractRepository } from '../../../../infrastructure/repositories/abstract.repository';
+import { PostLikeFromDb } from '../../entites/like';
+import { NewestLikeType } from '../../entites/post';
+import { PostLikesDocument } from './post-likes.schema';
 
 @Injectable()
-export class PostLikesQueryRepository implements IPostLikesQueryRepository {
-  constructor(
-    @InjectModel(PostLikes.name)
-    private PostLikesModel: Model<PostLikesDocument>,
-  ) {}
-
-  async getLikeByUserId(postId: string, userId: string): Promise<PostLikesDocument | null> {
-    return this.PostLikesModel.findOne({ postId, userId });
+export class PostLikesQueryRepository extends AbstractRepository<PostLikeFromDb> {
+  private PostLikesModel: any;
+  constructor(@InjectDataSource() protected dataSource: DataSource) {
+    super(dataSource);
   }
+
+  async getLikeByUserId(postId: number, userId: number): Promise<PostLikeFromDb | null> {
+    const tableName = 'post_likes';
+    const fieldsToSelect = ['likeStatus', 'createdAt', 'postId', 'blogId', 'userId', 'id'];
+    const like = await this.getByFields(tableName, fieldsToSelect, { postId, userId });
+    return like ? like[0] : null;
+  }
+
   async getManyLikesByUserId(ids: string[], userId: string): Promise<PostLikesDocument[]> {
     return this.PostLikesModel.find({
       postId: { $in: ids },
@@ -29,6 +34,6 @@ export class PostLikesQueryRepository implements IPostLikesQueryRepository {
     })
       .sort({ createdAt: -1 })
       .limit(3);
-    return targetLikes?.map((like) => like.toDto()) ?? null;
+    return (targetLikes?.map((like) => like.toDto()) ?? null) as NewestLikeType[];
   }
 }

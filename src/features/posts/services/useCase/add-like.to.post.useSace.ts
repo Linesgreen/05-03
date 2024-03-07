@@ -3,17 +3,15 @@ import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { LikeStatusType } from '../../../comments/types/comments/input';
-import { PostgresUserQueryRepository } from '../../../users/repositories/postgres.user.query.repository';
+import { createPostLike, PostLikeFromDb } from '../../entites/like';
 import { PostLikesQueryRepository } from '../../repositories/likes/post-likes.query.repository';
 import { PostLikesRepository } from '../../repositories/likes/post-likes.repository';
-import { PostLikesDocument } from '../../repositories/likes/post-likes.schema';
-import { PostsDocument } from '../../repositories/post/post.schema';
-import { PostsRepository } from '../../repositories/post/posts.repository';
+import { PostgresPostQueryRepository } from '../../repositories/post/postgres.post.query.repository';
 
 export class AddLikeToPostCommand {
   constructor(
-    public postId: string,
-    public userId: string,
+    public postId: number,
+    public userId: number,
     public likeStatus: LikeStatusType,
   ) {}
 }
@@ -22,76 +20,37 @@ export class AddLikeToPostCommand {
 export class AddLikeToPostUseCase implements ICommandHandler<AddLikeToPostCommand> {
   constructor(
     protected postLikesQueryRepository: PostLikesQueryRepository,
-    protected postsRepository: PostsRepository,
     protected postLikesRepository: PostLikesRepository,
-    protected postgresUserQueryRepository: PostgresUserQueryRepository,
+    protected postgresPostQueryRepository: PostgresPostQueryRepository,
   ) {}
 
   async execute({ postId, userId, likeStatus }: AddLikeToPostCommand): Promise<void> {
-    const user = await this.postgresUserQueryRepository.getUserById(userId);
-    if (!user) throw new NotFoundException('user not found');
-    const targetPost = await this.postsRepository.getPostbyId(postId);
-
+    const targetPost = await this.postgresPostQueryRepository.getPostById(postId);
     if (!targetPost) throw new NotFoundException('post not found');
 
-    const userLike: PostLikesDocument | null = await this.postLikesQueryRepository.getLikeByUserId(postId, userId);
-
+    const userLike: PostLikeFromDb | null = await this.postLikesQueryRepository.getLikeByUserId(postId, userId);
+    const newLike: createPostLike = {
+      postId: postId,
+      blogId: Number(targetPost.blogId),
+      userId: userId,
+      likeStatus: likeStatus,
+      createdAt: new Date(),
+    };
     if (!userLike) {
-      await this.createLike(postId, targetPost.blogId, userId, user.login, likeStatus, targetPost);
-      await this.updateLastThreeLikesInPost(targetPost);
+      await this.createLike(newLike);
       return;
     }
 
     // If user's like status is already as expected, no further action needed
     if (likeStatus === userLike.likeStatus) return;
-
-    switch (likeStatus) {
-      case 'Dislike':
-      case 'Like':
-        userLike.likeStatus === 'None'
-          ? await this.updateLike(postId, likeStatus, userId)
-          : await this.switchLike(postId, likeStatus, userId);
-        await this.updateLastThreeLikesInPost(targetPost);
-        break;
-      case 'None':
-        await this.decreaseLike(postId, userLike.likeStatus, userId);
-        await this.updateLastThreeLikesInPost(targetPost);
-    }
+    await this.updateLike(postId, likeStatus, userId);
   }
 
-  private async createLike(
-    postId: string,
-    blogId: string,
-    userId: string,
-    login: string,
-    likeStatus: LikeStatusType,
-    targetPost: PostsDocument,
-  ): Promise<void> {
-    await this.postLikesRepository.createLike(postId, blogId, userId, login, likeStatus);
-    await this.postsRepository.updateLikesCount(postId, 'increment', likeStatus);
-    await this.updateLastThreeLikesInPost(targetPost);
+  private async createLike(newLike: createPostLike): Promise<void> {
+    await this.postLikesRepository.createLike(newLike);
   }
 
-  private async updateLike(postId: string, likeStatus: LikeStatusType, userId: string): Promise<void> {
-    await this.postsRepository.updateLikesCount(postId, 'increment', likeStatus);
+  private async updateLike(postId: number, likeStatus: LikeStatusType, userId: number): Promise<void> {
     await this.postLikesRepository.updateLikeStatus(postId, userId, likeStatus);
-  }
-
-  private async switchLike(commentId: string, likeStatus: LikeStatusType, userId: string): Promise<void> {
-    await this.postsRepository.updateLikesCount(commentId, 'increment', likeStatus);
-    await this.postsRepository.updateLikesCount(commentId, 'decrement', likeStatus === 'Like' ? 'Dislike' : 'Like');
-    await this.postLikesRepository.updateLikeStatus(commentId, userId, likeStatus);
-  }
-
-  private async decreaseLike(commentId: string, likeStatus: LikeStatusType, userId: string): Promise<void> {
-    await this.postsRepository.updateLikesCount(commentId, 'decrement', likeStatus);
-    await this.postLikesRepository.updateLikeStatus(commentId, userId, 'None');
-  }
-
-  private async updateLastThreeLikesInPost(targetPost: PostsDocument): Promise<void> {
-    const likesForPost = await this.postLikesQueryRepository.getLastThreeLikes(targetPost._id);
-    if (!likesForPost) return;
-    targetPost.extendedLikesInfo.newestLikes = likesForPost;
-    await this.postsRepository.savePost(targetPost);
   }
 }

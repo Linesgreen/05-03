@@ -127,4 +127,38 @@ export abstract class AbstractRepository<T> {
 
     await this.dataSource.query(`UPDATE public.${tableName} SET ${setFields} WHERE "${searchField}" = $1 `, values);
   }
+  /**
+   * Обновляет указанные поля для пользователя в базе данных по нескольким полям для поиска.
+   * @param tableName - имя таблицы
+   * @param searchFields - Объект с полями и их значениями для поиска пользователя.
+   * @param fieldsToUpdate - Объект с полями для обновления и их значениями.
+   * @returns Promise<void>
+   */
+  async updateFieldsOnMultySearch(
+    tableName: string,
+    searchFields: Record<string, unknown>,
+    fieldsToUpdate: Record<string, unknown>,
+  ): Promise<void> {
+    // Входные данные: { email: 'test@example.com', status: 'active', role: 'admin' }
+
+    // entriesSearch = [['email', 'test@example.com'], ['status', 'active'], ['role', 'admin']]
+    const entriesSearch: [string, unknown][] = Object.entries(searchFields);
+
+    // entriesUpdate: Массив с парами ключ-значение для обновления полей
+    const entriesUpdate: [string, unknown][] = Object.entries(fieldsToUpdate);
+
+    // setFields = '"status" = $3,"role" = $4'
+    const setFields: string = entriesUpdate.map(([key, value], index) => `"${key}" = $${index + 3}`).join(',');
+
+    // values = ['test@example.com', 'active', 'admin']
+    const values: (string | unknown)[] = [
+      ...entriesSearch.map(([, value]) => value),
+      ...entriesUpdate.map(([, value]) => value),
+    ];
+
+    // Составление SQL-запроса
+    const searchConditions = entriesSearch.map(([key], index) => `"${key}" = $${index + 1}`).join(' AND ');
+    // WHERE "email" = $1 AND "status" = $2 AND "role" = $3
+    await this.dataSource.query(`UPDATE public.${tableName} SET ${setFields} WHERE ${searchConditions}`, values);
+  }
 }

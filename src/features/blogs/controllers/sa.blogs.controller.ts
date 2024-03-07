@@ -77,7 +77,7 @@ export class SaBlogsController {
     @Body() postData: PostToBlogCreateModel,
   ): Promise<OutputPostType> {
     const result = await this.postService.createPost({ ...postData, blogId });
-    if (!result.isFailure()) ErrorResulter.proccesError(result);
+    if (result.isFailure()) ErrorResulter.proccesError(result);
     return result.value as OutputPostType;
   }
 

@@ -50,9 +50,9 @@ export class PostsController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(204)
   async addLike(
-    @Param('postId') postId: string,
+    @Param('postId', ParseIntPipe) postId: number,
     @Body() { likeStatus }: LikeCreateModel,
-    @CurrentUser() userId: string,
+    @CurrentUser(ParseIntPipe) userId: number,
   ): Promise<void> {
     await this.commandBus.execute(new AddLikeToPostCommand(postId, userId, likeStatus));
   }

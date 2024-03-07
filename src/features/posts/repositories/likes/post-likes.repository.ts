@@ -1,30 +1,27 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
+import { AbstractRepository } from '../../../../infrastructure/repositories/abstract.repository';
 import { LikeStatusType } from '../../../comments/types/comments/input';
-import { PostLikes, PostLikesDocument } from './post-likes.schema';
+import { createPostLike, PostLikeFromDb } from '../../entites/like';
 
 @Injectable()
-export class PostLikesRepository {
-  constructor(
-    @InjectModel(PostLikes.name)
-    private PostLikesModel: Model<PostLikesDocument>,
-  ) {}
-
-  async createLike(
-    postId: string,
-    blogId: string,
-    userId: string,
-    login: string,
-    likeStatus: LikeStatusType,
-  ): Promise<void> {
-    const newLike = new PostLikes(postId, blogId, userId, login, likeStatus);
-    const newLikeToDb = new this.PostLikesModel(newLike);
-    await newLikeToDb.save();
+export class PostLikesRepository extends AbstractRepository<PostLikeFromDb> {
+  private PostLikesModel: any;
+  constructor(@InjectDataSource() protected dataSource: DataSource) {
+    super(dataSource);
   }
 
-  async updateLikeStatus(postId: string, userId: string, likeStatus: LikeStatusType): Promise<void> {
-    await this.PostLikesModel.findOneAndUpdate({ postId, userId }, { likeStatus });
+  async createLike(newLike: createPostLike): Promise<void> {
+    const { postId, blogId, userId, likeStatus, createdAt } = newLike;
+    const tableName = 'post_likes';
+    const entity = { postId, blogId, userId, likeStatus, createdAt };
+    await this.add(tableName, entity);
+  }
+
+  async updateLikeStatus(postId: number, userId: number, likeStatus: LikeStatusType): Promise<void> {
+    const tableName = 'post_likes';
+    await this.updateFieldsOnMultySearch(tableName, { postId, userId }, { likeStatus });
   }
 }
