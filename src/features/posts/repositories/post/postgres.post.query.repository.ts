@@ -1,3 +1,5 @@
+// noinspection ES6ShorthandObjectProperty
+
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
@@ -14,17 +16,59 @@ export class PostgresPostQueryRepository extends AbstractRepository<PostPgWithBl
     super(dataSource);
   }
 
-  async getPostById(postId: number): Promise<OutputPostType | null> {
-    const postWithBlogData: PostPgWithBlogDataDb[] = await this.dataSource.query(
+  /**
+   * Получает информацию о посте по его идентификатору с дополнительной информацией о лайках.
+   * Если `userId` не передан, статус лайка будет 'None' по умолчанию.
+   * @param postId - Идентификатор поста.
+   * @param userId - (Опционально) Идентификатор пользователя для проверки статуса лайка.
+   * @returns Запись с информацией о посте и лайках или null, если пост не найден.
+   */
+  async getPostById(postId: number, userId?: number): Promise<OutputPostType | null> {
+    const postWithBlogData: OutputPostType[] = await this.dataSource.query(
       `
-      SELECT  p.id, title, "shortDescription", content, p."blogId", p."createdAt", "name" as "blogName"
-      FROM public.posts p
-      JOIN public.blogs b on p."blogId" = b."id"
-          WHERE p.id = ${postId} AND p."active" = true 
-      `,
+        WITH user_likes AS (
+            -- Получаем статус лайка данного пользователя к посту
+            SELECT "likeStatus"
+            FROM public.post_likes
+            WHERE "postId" = $1 AND "userId" = $2
+        )
+        SELECT
+            p.id, title, "shortDescription", content, p."blogId", p."createdAt", "name" as "blogName",
+            -- Формируем объект с информацией о лайках
+            json_build_object(
+                'likesCount', (SELECT COUNT(id) FROM public.post_likes WHERE "postId" = $1 AND "likeStatus" = 'Like'),
+                'dislikesCount', (SELECT COUNT(id) FROM public.post_likes WHERE "postId" = $1 AND "likeStatus" = 'Dislike'),
+                -- Если userId не указан, статус лайка будет 'None'
+                'myStatus', ${userId ? `(SELECT "likeStatus" FROM user_likes)` : `'None'`} 
+                'newestLikes', (
+                    -- Получаем информацию о последних лайках к посту
+                    SELECT json_agg(json_build_object(
+                        'addedAt', pl."createdAt",
+                        'userId', pl."userId",
+                        'login', u.login
+                    ))
+                    FROM (
+                        SELECT pl."createdAt", pl."userId"
+                        FROM public.post_likes pl
+                        WHERE pl."postId" = $1
+                        ORDER BY pl."createdAt" DESC
+                        LIMIT 3
+                    ) pl
+                    JOIN public.users u ON pl."userId" = u.id
+                )
+            ) as "extendedLikesInfo"
+        FROM public.posts p
+        JOIN public.blogs b on p."blogId" = b."id"
+        WHERE p.id = $1 AND p."active" = true
+        `,
+      [postId, userId],
     );
+
+    // Если пост не найден, возвращаем null
     if (!postWithBlogData[0]) return null;
-    return this.postMap(postWithBlogData[0], { likesCount: 0, dislikesCount: 0, myStatus: 'None', newestLikes: [] });
+
+    // Возвращаем информацию о найденном посте
+    return postWithBlogData[0];
   }
 
   async getPostForBlog(blogId: number, sortData: QueryPaginationResult): Promise<PaginationWithItems<OutputPostType>> {

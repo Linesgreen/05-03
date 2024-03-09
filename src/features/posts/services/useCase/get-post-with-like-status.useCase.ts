@@ -16,7 +16,7 @@ export class GetPostWithLikeStatusUseCase implements ICommandHandler<GetPostWith
   constructor(protected postgresPostQueryRepository: PostgresPostQueryRepository) {}
 
   async execute({ postId, userId }: GetPostWithLikeStatusCommand): Promise<OutputPostType> {
-    const post = await this.postgresPostQueryRepository.getPostById(postId);
+    const post = await this.postgresPostQueryRepository.getPostById(postId, Number(userId));
     if (!post) throw new NotFoundException();
     return post;
   }
