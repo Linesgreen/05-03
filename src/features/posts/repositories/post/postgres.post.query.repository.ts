@@ -26,41 +26,49 @@ export class PostgresPostQueryRepository extends AbstractRepository<PostPgWithBl
   async getPostById(postId: number, userId?: number): Promise<OutputPostType | null> {
     const postWithBlogData: OutputPostType[] = await this.dataSource.query(
       `
-        WITH user_likes AS (
-            -- Получаем статус лайка данного пользователя к посту
-            SELECT "likeStatus"
-            FROM public.post_likes
-            WHERE "postId" = $1 AND "userId" = $2
-        )
-        SELECT
-            p.id, title, "shortDescription", content, p."blogId", p."createdAt", "name" as "blogName",
-            -- Формируем объект с информацией о лайках
-            json_build_object(
-                'likesCount', (SELECT COUNT(id) FROM public.post_likes WHERE "postId" = $1 AND "likeStatus" = 'Like'),
-                'dislikesCount', (SELECT COUNT(id) FROM public.post_likes WHERE "postId" = $1 AND "likeStatus" = 'Dislike'),
-                -- Если userId не указан, статус лайка будет 'None'
-                'myStatus', ${userId ? `(SELECT "likeStatus" FROM user_likes)` : `'None'`} 
-                'newestLikes', (
-                    -- Получаем информацию о последних лайках к посту
-                    SELECT json_agg(json_build_object(
-                        'addedAt', pl."createdAt",
-                        'userId', pl."userId",
-                        'login', u.login
-                    ))
-                    FROM (
-                        SELECT pl."createdAt", pl."userId"
-                        FROM public.post_likes pl
-                        WHERE pl."postId" = $1
-                        ORDER BY pl."createdAt" DESC
-                        LIMIT 3
-                    ) pl
-                    JOIN public.users u ON pl."userId" = u.id
-                )
-            ) as "extendedLikesInfo"
-        FROM public.posts p
-        JOIN public.blogs b on p."blogId" = b."id"
-        WHERE p.id = $1 AND p."active" = true
-        `,
+          WITH user_likes AS (
+              SELECT "likeStatus"
+              FROM public.post_likes
+              WHERE "postId" = $1 AND "userId" = COALESCE($2, 0) -- Используем 0 или другое недопустимое значение для userId, если он не задан
+          ),
+               likes_info AS (
+                   SELECT
+                       COUNT(id) FILTER (WHERE "likeStatus" = 'Like') AS likesCount,
+                       COUNT(id) FILTER (WHERE "likeStatus" = 'Dislike') AS dislikesCount
+                   FROM public.post_likes
+                   WHERE "postId" = $1
+               ),
+               newest_likes AS (
+                   SELECT json_agg(json_build_object(
+                           'addedAt', pl."createdAt",
+                           'userId', pl."userId",
+                           'login', u.login
+                                   )) AS latest_likes
+                   FROM (
+                            SELECT pl."createdAt", pl."userId"
+                            FROM public.post_likes pl
+                            WHERE pl."postId" = $1
+                            ORDER BY pl."createdAt" DESC
+                            LIMIT 3
+                        ) pl
+                            JOIN public.users u ON pl."userId" = u.id
+               )
+          SELECT
+              p.id, title, "shortDescription", content, p."blogId", p."createdAt", "name" as "blogName",
+              json_build_object(
+                      'likesCount', li.likesCount,
+                      'dislikesCount', li.dislikesCount,
+                      'myStatus', COALESCE(ul."likeStatus", 'None'),
+                      'newestLikes', nl.latest_likes
+              ) as "extendedLikesInfo"
+          FROM public.posts p
+                   JOIN public.blogs b ON p."blogId" = b."id"
+                   CROSS JOIN likes_info li
+                   CROSS JOIN newest_likes nl
+                   LEFT JOIN user_likes ul ON true
+          WHERE p.id = $1 AND p."active" = true
+
+      `,
       [postId, userId],
     );
 
