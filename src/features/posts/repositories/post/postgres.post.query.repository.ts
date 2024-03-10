@@ -7,7 +7,6 @@ import { DataSource } from 'typeorm';
 import { AbstractRepository } from '../../../../infrastructure/repositories/abstract.repository';
 import { QueryPaginationResult } from '../../../../infrastructure/types/query-sort.type';
 import { PaginationWithItems } from '../../../common/types/output';
-import { LikesInfo } from '../../entites/post';
 import { OutputPostType, PostPgWithBlogDataDb } from '../../types/output';
 
 @Injectable()
@@ -33,20 +32,20 @@ export class PostgresPostQueryRepository extends AbstractRepository<PostPgWithBl
                   FROM public.post_likes
                   WHERE "postId" = $1 AND "userId" = COALESCE($2, 0) -- Если userId не задан, используем 0 как недопустимое значение
               ),
-              -- Создаем временную таблицу likes_info, где агрегируем количество лайков и дизлайков для поста.
+              -- Создаем временную таблицу likes_info, где считаем количество лайков и дизлайков
               likes_info AS (
                   SELECT
-                      COUNT(id) FILTER (WHERE "likeStatus" = 'Like') AS likesCount, -- Подсчет количества лайков
-                      COUNT(id) FILTER (WHERE "likeStatus" = 'Dislike') AS dislikesCount -- Подсчет количества дизлайков
+                      COUNT(id) FILTER (WHERE "likeStatus" = 'Like') AS likesCount,
+                      COUNT(id) FILTER (WHERE "likeStatus" = 'Dislike') AS dislikesCount
                   FROM public.post_likes
                   WHERE "postId" = $1
               ),
-              -- Подготавливаем информацию о последних трех лайках к посту в формате JSON.
+              -- Подготавливаем информацию о последних трех лайках к посту в JSON.
               newest_likes AS (
                   SELECT json_agg(json_build_object(
-                          'addedAt', pl."createdAt", -- Время добавления лайка
-                          'userId', pl."userId", -- ID пользователя, который поставил лайк
-                          'login', u.login -- Логин пользователя
+                          'addedAt', pl."createdAt",
+                          'userId', pl."userId", 
+                          'login', u.login 
                                   )) AS latest_likes
                   FROM (
                            SELECT pl."createdAt", pl."userId"
@@ -57,13 +56,13 @@ export class PostgresPostQueryRepository extends AbstractRepository<PostPgWithBl
                        ) pl
                            JOIN public.users u ON pl."userId" = u.id -- Соединяем с таблицей пользователей для получения логинов
               )
-          -- Основной запрос, который возвращает информацию о посте с расширенной информацией о лайках.
+          -- Основной запрос, который возвращает информацию о посте с  лайками.
           SELECT
               p.id, title, "shortDescription", content, p."blogId", p."createdAt", "name" as "blogName",
               json_build_object(
                       'likesCount', li.likesCount, -- Количество лайков
                       'dislikesCount', li.dislikesCount, -- Количество дизлайков
-                      'myStatus', COALESCE(ul."likeStatus", 'None'), -- Статус лайка текущего пользователя, 'None', если пользователь не указан
+                      'myStatus', COALESCE(ul."likeStatus", 'None'), 
                       'newestLikes', nl.latest_likes -- Информация о последних трех лайках
               ) as "extendedLikesInfo"
           FROM public.posts p
@@ -76,10 +75,8 @@ export class PostgresPostQueryRepository extends AbstractRepository<PostPgWithBl
       [postId, userId],
     );
 
-    // Если пост не найден, возвращаем null
     if (!postWithBlogData[0]) return null;
 
-    // Возвращаем информацию о найденном посте
     return postWithBlogData[0];
   }
 
@@ -88,96 +85,99 @@ export class PostgresPostQueryRepository extends AbstractRepository<PostPgWithBl
     sortData: QueryPaginationResult,
     userId?: number,
   ): Promise<PaginationWithItems<OutputPostType>> {
-    const offset = (sortData.pageNumber - 1) * sortData.pageSize;
-
     const posts: OutputPostType[] = await this.dataSource.query(
       `
-          WITH relevant_posts AS (
-              -- Выборка активных постов из указанного блога.
-              SELECT p."id"
-              FROM public.posts p
-              WHERE p."blogId" = $1 AND p."active" = true
-          ),
-               -- Шаг 2: Получение информации о количестве лайков и дизлайков для каждого поста.
-               likes_info AS (
-                   SELECT
-                       pl."postId",
-                       COUNT(id) FILTER (WHERE pl."likeStatus" = 'Like') AS likesCount,
-                       COUNT(id) FILTER (WHERE pl."likeStatus" = 'Dislike') AS dislikesCount
-                   FROM public.post_likes pl
-                   -- Фильтрация постов только по тем, что были ранее выбраны в relevant_posts
-                   WHERE pl."postId" IN (SELECT "id" FROM relevant_posts)
-                   GROUP BY pl."postId"
-               ),
-               -- Шаг 3: Определение статуса лайка текущего пользователя для каждого поста.
-               user_like_status AS (
-                   SELECT
-                       pl."postId",
-                       pl."likeStatus"
-                   FROM public.post_likes pl
-                   -- Фильтрация лайков только по тем, что были ранее выбраны в relevant_posts.
-                   WHERE pl."userId" = $3 AND pl."postId" IN (SELECT "id" FROM relevant_posts)
-               ),
-               -- Шаг 4: Получение информации о трех последних лайках для каждого поста.
-               latest_likes AS (
-                   SELECT
-                       sub."postId",
-                       -- Агрегирование JSON объектов для каждого поста с последними лайками.
-                       json_agg(
-                       -- Построение JSON объекта для каждого лайка
-                       json_build_object(
-                               'addedAt', sub."createdAt",
-                               'userId', sub."userId",
-                               'login', sub."login"
-                       ) ORDER BY sub."createdAt" DESC
-                               -- Фильтрация для ограничения до трех последних лайков
-                               ) FILTER (WHERE sub.rn <= 3) AS latestLikes
-                   FROM (
-                            -- Подзапрос для получения лайков, объединенного с информацией о пользователях.
-                            SELECT
-                                pl."postId",
-                                pl."createdAt",
-                                pl."userId",
-                                u."login",
-                                -- Нумерация строк по времени добавления для каждого поста
-                                ROW_NUMBER() OVER (
-                                    PARTITION BY pl."postId" ORDER BY pl."createdAt" DESC
-                                    ) AS rn
-                            FROM public.post_likes pl
-                                     INNER JOIN public.users u ON pl."userId" = u."id"
-                            -- Фильтрация лайков только по тем, что были ранее выбраны в relevant_posts.
-                            WHERE pl."likeStatus" = 'Like' AND pl."postId" IN (SELECT "id" FROM relevant_posts)
-                        ) AS sub -- Использование алиаса sub для подзапроса
-                   WHERE sub.rn <= 3  -- Фильтрация для ограничения до трех последних лайков
-                   GROUP BY sub."postId"
-               )
-          -- Основной запрос: Получение информации о постах с учетом лайков.
+          WITH filtered_posts AS (
+              -- Выборка активных постов из указанного блога с применением сортировки и пагинации.
+              SELECT
+                  posts."id", posts."title", posts."shortDescription", posts."content",
+                  posts."blogId", posts."createdAt", blogs."name" AS "blogName"
+              FROM
+                  public.posts posts
+                      JOIN public.blogs blogs ON posts."blogId" = blogs."id"
+              WHERE
+                  posts."blogId" = $1 AND posts."active" = true
+              ORDER BY
+                  posts."${sortData.sortBy}" ${sortData.sortDirection}
+              LIMIT
+                  $2 -- Количество постов на страницу (pageSize).
+                  OFFSET
+                  $2 * ($3 - 1) -- Вычисление смещения на основе номера страницы (pageNumber).
+          ), likes_counts AS (
+              -- Агрегация количества лайков и дизлайков по каждому посту.
+              SELECT
+                  post_likes."postId",
+                  COUNT(*) FILTER (WHERE post_likes."likeStatus" = 'Like') AS "likesCount",
+                  COUNT(*) FILTER (WHERE post_likes."likeStatus" = 'Dislike') AS "dislikesCount"
+              FROM
+                  public.post_likes post_likes
+              WHERE
+                  post_likes."postId" IN (SELECT "id" FROM filtered_posts)
+              GROUP BY
+                  post_likes."postId"
+          ), user_reaction AS (
+              -- Определение реакции (лайк/дизлайк) текущего пользователя на посты.
+              SELECT
+                  post_likes."postId",
+                  post_likes."likeStatus"
+              FROM
+                  public.post_likes post_likes
+              WHERE
+                  post_likes."userId" = $4 AND post_likes."postId" IN (SELECT "id" FROM filtered_posts)
+          ), latest_likers AS (
+              -- Выборка последних трех пользователей, поставивших лайк на каждый пост.
+              SELECT
+                  likes."postId",
+                  json_agg(
+                  json_build_object(
+                          'addedAt', likes."createdAt",
+                          'userId', likes."userId",
+                          'login', users."login"
+                  ) ORDER BY likes."createdAt" DESC
+                          ) FILTER (WHERE likes.rn <= 3) AS "newestLikes"
+              FROM (
+                       SELECT
+                           post_likes."postId", post_likes."createdAt", post_likes."userId",
+                           ROW_NUMBER() OVER (
+                               PARTITION BY post_likes."postId"
+                               ORDER BY post_likes."createdAt" DESC
+                               ) AS rn
+                       FROM
+                           public.post_likes post_likes
+                       WHERE
+                           post_likes."likeStatus" = 'Like' AND
+                           post_likes."postId" IN (SELECT "id" FROM filtered_posts)
+                   ) likes
+                       JOIN public.users users ON likes."userId" = users."id"
+              WHERE
+                  likes.rn <= 3
+              GROUP BY
+                  likes."postId"
+          )
+           -- Комбинирование данных из подзапросов для создания итоговой таблицы
           SELECT
-              p."id",
-              p."title",
-              p."shortDescription",
-              p."content",
-              p."blogId",
-              p."createdAt",
-              b."name" AS "blogName",
-              -- Обработка NULL значений с использованием COALESCE.
-              COALESCE(li.likesCount, 0) AS likesCount,
-              COALESCE(li.dislikesCount, 0) AS dislikesCount,
-              COALESCE(uls."likeStatus", 'None') AS myStatus,
-              COALESCE(ll.latestLikes, '[]'::json) AS latestLikes
-          FROM relevant_posts rp
-                   -- Объединение таблиц для получения информации о постах.
-                   INNER JOIN public.posts p ON rp."id" = p."id"
-                   INNER JOIN public.blogs b ON p."blogId" = b."id"
-                   LEFT JOIN likes_info li ON p."id" = li."postId"
-                   LEFT JOIN user_like_status uls ON p."id" = uls."postId"
-                   LEFT JOIN latest_likes ll ON p."id" = ll."postId"
-          ORDER BY p."${sortData.sortBy}" ${sortData.sortDirection}
-          LIMIT $2 OFFSET $4;
-
+              CAST(posts."id" AS VARCHAR) AS "id", -- Приводим id к строке
+              posts."title",
+              posts."shortDescription",
+              posts."content",
+              CAST(posts."blogId" AS VARCHAR) AS "blogId", -- Приводим blogId к строке
+              posts."createdAt",
+              posts."blogName",
+              -- аналог оператора не нулевого слияния либо первое значение либо второе 
+              COALESCE(likes_counts."likesCount", 0) AS "likesCount",
+              COALESCE(likes_counts."dislikesCount", 0) AS "dislikesCount",
+              COALESCE(user_reaction."likeStatus", 'None') AS "myStatus",
+              COALESCE(latest_likers."newestLikes", '[]'::json) AS "newestLikes"
+          FROM
+              filtered_posts posts
+                  LEFT JOIN likes_counts ON posts."id" = likes_counts."postId"
+                  LEFT JOIN user_reaction ON posts."id" = user_reaction."postId"
+                  LEFT JOIN latest_likers ON posts."id" = latest_likers."postId"
+          ORDER BY
+                  posts."${sortData.sortBy}" ${sortData.sortDirection};
 
       `,
-      [blogId, sortData.pageSize, userId, offset],
+      [blogId, sortData.pageSize, sortData.pageNumber, userId],
     );
 
     const allDtoPosts: OutputPostType[] = posts;
@@ -191,96 +191,98 @@ export class PostgresPostQueryRepository extends AbstractRepository<PostPgWithBl
     return new PaginationWithItems(+sortData.pageNumber, +sortData.pageSize, Number(totalCount[0].count), allDtoPosts);
   }
   async getPosts(sortData: QueryPaginationResult, userId?: number): Promise<PaginationWithItems<OutputPostType>> {
-    const offset = (sortData.pageNumber - 1) * sortData.pageSize;
-
     const posts: OutputPostType[] = await this.dataSource.query(
       `
-          WITH relevant_posts AS (
-              -- Выборка активных постов из указанного блога.
-              SELECT p."id"
-              FROM public.posts p
-              WHERE  p."active" = true
-          ),
-               -- Шаг 2: Получение информации о количестве лайков и дизлайков для каждого поста.
-               likes_info AS (
-                   SELECT
-                       pl."postId",
-                       COUNT(id) FILTER (WHERE pl."likeStatus" = 'Like') AS likesCount,
-                       COUNT(id) FILTER (WHERE pl."likeStatus" = 'Dislike') AS dislikesCount
-                   FROM public.post_likes pl
-                   -- Фильтрация постов только по тем, что были ранее выбраны в relevant_posts
-                   WHERE pl."postId" IN (SELECT "id" FROM relevant_posts)
-                   GROUP BY pl."postId"
-               ),
-               -- Шаг 3: Определение статуса лайка текущего пользователя для каждого поста.
-               user_like_status AS (
-                   SELECT
-                       pl."postId",
-                       pl."likeStatus"
-                   FROM public.post_likes pl
-                   -- Фильтрация лайков только по тем, что были ранее выбраны в relevant_posts.
-                   WHERE pl."userId" = $2 AND pl."postId" IN (SELECT "id" FROM relevant_posts)
-               ),
-               -- Шаг 4: Получение информации о трех последних лайках для каждого поста.
-               latest_likes AS (
-                   SELECT
-                       sub."postId",
-                       -- Агрегирование JSON объектов для каждого поста с последними лайками.
-                       json_agg(
-                           -- Построение JSON объекта для каждого лайка
-                       json_build_object(
-                               'addedAt', sub."createdAt",
-                               'userId', sub."userId",
-                               'login', sub."login"
-                       ) ORDER BY sub."createdAt" DESC
-                           -- Фильтрация для ограничения до трех последних лайков
-                               ) FILTER (WHERE sub.rn <= 3) AS latestLikes
-                   FROM (
-                            -- Подзапрос для получения лайков, объединенного с информацией о пользователях.
-                            SELECT
-                                pl."postId",
-                                pl."createdAt",
-                                pl."userId",
-                                u."login",
-                                -- Нумерация строк по времени добавления для каждого поста
-                                ROW_NUMBER() OVER (
-                                    PARTITION BY pl."postId" ORDER BY pl."createdAt" DESC
-                                    ) AS rn
-                            FROM public.post_likes pl
-                                     INNER JOIN public.users u ON pl."userId" = u."id"
-                            -- Фильтрация лайков только по тем, что были ранее выбраны в relevant_posts.
-                            WHERE pl."likeStatus" = 'Like' AND pl."postId" IN (SELECT "id" FROM relevant_posts)
-                        ) AS sub -- Использование алиаса sub для подзапроса
-                   WHERE sub.rn <= 3  -- Фильтрация для ограничения до трех последних лайков
-                   GROUP BY sub."postId"
-               )
-          -- Основной запрос: Получение информации о постах с учетом лайков.
+          WITH filtered_posts AS (
+              -- Выборка активных постов  с применением сортировки и пагинации.
+              SELECT
+                  posts."id", posts."title", posts."shortDescription", posts."content",
+                  posts."blogId", posts."createdAt", blogs."name" AS "blogName"
+              FROM
+                  public.posts posts
+                      JOIN public.blogs blogs ON posts."blogId" = blogs."id"
+              WHERE
+                 posts."active" = true
+              ORDER BY
+                  posts."${sortData.sortBy}" ${sortData.sortDirection}
+              LIMIT
+                  $1 -- Количество постов на страницу (pageSize).
+                  OFFSET
+                  $1 * ($2 - 1) -- Вычисление смещения на основе номера страницы (pageNumber).
+          ), likes_counts AS (
+              -- Агрегация количества лайков и дизлайков по каждому посту.
+              SELECT
+                  post_likes."postId",
+                  COUNT(*) FILTER (WHERE post_likes."likeStatus" = 'Like') AS "likesCount",
+                  COUNT(*) FILTER (WHERE post_likes."likeStatus" = 'Dislike') AS "dislikesCount"
+              FROM
+                  public.post_likes post_likes
+              WHERE
+                  post_likes."postId" IN (SELECT "id" FROM filtered_posts)
+              GROUP BY
+                  post_likes."postId"
+          ), user_reaction AS (
+              -- Определение реакции (лайк/дизлайк) текущего пользователя на посты.
+              SELECT
+                  post_likes."postId",
+                  post_likes."likeStatus"
+              FROM
+                  public.post_likes post_likes
+              WHERE
+                  post_likes."userId" = $3 AND post_likes."postId" IN (SELECT "id" FROM filtered_posts)
+          ), latest_likers AS (
+              -- Выборка последних трех пользователей, поставивших лайк на каждый пост.
+              SELECT
+                  likes."postId",
+                  json_agg(
+                  json_build_object(
+                          'addedAt', likes."createdAt",
+                          'userId', likes."userId",
+                          'login', users."login"
+                  ) ORDER BY likes."createdAt" DESC
+                          ) FILTER (WHERE likes.rn <= 3) AS "newestLikes"
+              FROM (
+                       SELECT
+                           post_likes."postId", post_likes."createdAt", post_likes."userId",
+                           ROW_NUMBER() OVER (
+                               PARTITION BY post_likes."postId"
+                               ORDER BY post_likes."createdAt" DESC
+                               ) AS rn
+                       FROM
+                           public.post_likes post_likes
+                       WHERE
+                           post_likes."likeStatus" = 'Like' AND
+                           post_likes."postId" IN (SELECT "id" FROM filtered_posts)
+                   ) likes
+                       JOIN public.users users ON likes."userId" = users."id"
+              WHERE
+                  likes.rn <= 3
+              GROUP BY
+                  likes."postId"
+          )
+          -- Комбинирование данных из подзапросов для создания итоговой таблицы
           SELECT
-              p."id",
-              p."title",
-              p."shortDescription",
-              p."content",
-              p."blogId",
-              p."createdAt",
-              b."name" AS "blogName",
-              -- Обработка NULL значений с использованием COALESCE.
-              COALESCE(li.likesCount, 0) AS likesCount,
-              COALESCE(li.dislikesCount, 0) AS dislikesCount,
-              COALESCE(uls."likeStatus", 'None') AS myStatus,
-              COALESCE(ll.latestLikes, '[]'::json) AS latestLikes
-          FROM relevant_posts rp
-                   -- Объединение таблиц для получения информации о постах.
-                   INNER JOIN public.posts p ON rp."id" = p."id"
-                   INNER JOIN public.blogs b ON p."blogId" = b."id"
-                   LEFT JOIN likes_info li ON p."id" = li."postId"
-                   LEFT JOIN user_like_status uls ON p."id" = uls."postId"
-                   LEFT JOIN latest_likes ll ON p."id" = ll."postId"
-          ORDER BY p."${sortData.sortBy}" ${sortData.sortDirection}
-          LIMIT $1 OFFSET $3;
-
-
+              CAST(posts."id" AS VARCHAR) AS "id", -- Приводим id к строке
+              posts."title",
+              posts."shortDescription",
+              posts."content",
+              CAST(posts."blogId" AS VARCHAR) AS "blogId", -- Приводим blogId к строке
+              posts."createdAt",
+              posts."blogName",
+              -- аналог оператора не нулевого слияния либо первое значение либо второе 
+              COALESCE(likes_counts."likesCount", 0) AS "likesCount",
+              COALESCE(likes_counts."dislikesCount", 0) AS "dislikesCount",
+              COALESCE(user_reaction."likeStatus", 'None') AS "myStatus",
+              COALESCE(latest_likers."newestLikes", '[]'::json) AS "newestLikes"
+          FROM
+              filtered_posts posts
+                  LEFT JOIN likes_counts ON posts."id" = likes_counts."postId"
+                  LEFT JOIN user_reaction ON posts."id" = user_reaction."postId"
+                  LEFT JOIN latest_likers ON posts."id" = latest_likers."postId"
+          ORDER BY
+              posts."${sortData.sortBy}" ${sortData.sortDirection};
       `,
-      [sortData.pageSize, userId, offset],
+      [sortData.pageSize, sortData.pageNumber, userId],
     );
 
     const allDtoPosts: OutputPostType[] = posts;
@@ -292,23 +294,5 @@ export class PostgresPostQueryRepository extends AbstractRepository<PostPgWithBl
     `);
 
     return new PaginationWithItems(+sortData.pageNumber, +sortData.pageSize, Number(totalCount[0].count), allDtoPosts);
-  }
-
-  private postMap(post: PostPgWithBlogDataDb, likesInfo: LikesInfo): OutputPostType {
-    return {
-      id: post.id.toString(),
-      title: post.title,
-      shortDescription: post.shortDescription,
-      content: post.content,
-      blogId: post.blogId.toString(),
-      blogName: post.blogName,
-      createdAt: post.createdAt.toISOString(),
-      extendedLikesInfo: {
-        likesCount: likesInfo.likesCount,
-        dislikesCount: likesInfo.dislikesCount,
-        myStatus: likesInfo.myStatus,
-        newestLikes: likesInfo.newestLikes,
-      },
-    };
   }
 }
