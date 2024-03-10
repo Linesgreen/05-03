@@ -23,7 +23,7 @@ export class GetAllPostsWithLikeStatusUseCase implements ICommandHandler<GetAllP
   async execute(command: GetAllPostsWithLikeStatusCommand): Promise<PaginationWithItems<OutputPostType>> {
     const { userId, sortData } = command;
 
-    const posts = await this.postgresPostQueryRepository.getPosts(sortData);
+    const posts = await this.postgresPostQueryRepository.getPosts(sortData, Number(userId));
     if (!posts?.items?.length) {
       throw new NotFoundException(`Posts not found`);
     }

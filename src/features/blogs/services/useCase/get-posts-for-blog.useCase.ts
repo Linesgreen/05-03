@@ -29,7 +29,7 @@ export class GetPostForBlogUseCase implements ICommandHandler<GetPostForBlogComm
 
     await this.checkBlogExist(blogId);
 
-    return this.findPostsForBlog(blogId, sortData);
+    return this.findPostsForBlog(blogId, sortData, userId);
   }
 
   private async checkBlogExist(blogId: string) {
@@ -37,8 +37,8 @@ export class GetPostForBlogUseCase implements ICommandHandler<GetPostForBlogComm
     if (!post) throw new NotFoundException(`Post not found`);
   }
 
-  private async findPostsForBlog(blogId: string, sortData: QueryPaginationResult) {
-    const posts = await this.postgresPostQueryRepository.getPostForBlog(Number(blogId), sortData);
+  private async findPostsForBlog(blogId: string, sortData: QueryPaginationResult, userId: string | null) {
+    const posts = await this.postgresPostQueryRepository.getPostForBlog(Number(blogId), sortData, Number(userId));
     if (!posts?.items?.length) {
       throw new NotFoundException(`Posts not found`);
     }

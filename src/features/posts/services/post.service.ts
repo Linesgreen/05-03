@@ -5,14 +5,12 @@ import { PostgresBlogsRepository } from '../../blogs/repositories/postgres.blogs
 import { PostCreate, PostPg } from '../entites/post';
 import { PostgresPostQueryRepository } from '../repositories/post/postgres.post.query.repository';
 import { PostgresPostRepository } from '../repositories/post/postgres.post.repository';
-import { PostsRepository } from '../repositories/post/posts.repository';
 import { PostCreateModel, PostInBlogUpdateType } from '../types/input';
 import { OutputPostType } from '../types/output';
 
 @Injectable()
 export class PostService {
   constructor(
-    protected postRepository: PostsRepository,
     protected postgresBlogsRepository: PostgresBlogsRepository,
     protected postgresPostRepository: PostgresPostRepository,
     protected postgresPostQueryRepository: PostgresPostQueryRepository,
