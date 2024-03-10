@@ -1,12 +1,10 @@
-import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { PostsQueryRepository } from '../../../posts/repositories/post/posts.query.repository';
-import { User } from '../../../users/entites/user';
-import { PostgresUserRepository } from '../../../users/repositories/postgres.user.repository';
-import { UserRepository } from '../../../users/repositories/user.repository';
-import { Comment } from '../../repositories/comments/comment.schema';
-import { CommentsRepository } from '../../repositories/comments/comments.repository';
+import { PostgresPostRepository } from '../../../posts/repositories/post/postgres.post.repository';
+import { CommentToPgDB } from '../../entites/commentPG';
+import { PostgresCommentsQueryRepository } from '../../repositories/comments/postgres.comments.query.repository';
+import { PostgresCommentsRepository } from '../../repositories/comments/postgres.comments.repository';
 import { OutputCommentType } from '../../types/comments/output';
 
 export class CreateCommentCommand {
@@ -20,21 +18,19 @@ export class CreateCommentCommand {
 @CommandHandler(CreateCommentCommand)
 export class CreateCommentUseCase implements ICommandHandler<CreateCommentCommand> {
   constructor(
-    protected postQueryRepository: PostsQueryRepository,
-    protected commentRepository: CommentsRepository,
-    protected userRepository: UserRepository,
-    protected postgresUserRepository: PostgresUserRepository,
+    protected postgresCommentsRepository: PostgresCommentsRepository,
+    protected postgresQueryRepository: PostgresCommentsQueryRepository,
+    protected postgresPostsRepository: PostgresPostRepository,
   ) {}
   async execute({ userId, postId, content }: CreateCommentCommand): Promise<OutputCommentType> {
-    const user: User | null = await this.postgresUserRepository.findUserById(userId);
-    if (!user) throw new InternalServerErrorException('user not found');
-    const userLogin = user.accountData.login;
+    const newCommentToDB = new CommentToPgDB({ userId, postId, content });
 
-    const targetPost = await this.postQueryRepository.findById(postId);
+    const targetPost = await this.postgresPostsRepository.chekPostIsExist(Number(postId));
     if (!targetPost) throw new NotFoundException();
 
-    const newComment = new Comment(postId, content, { userId, userLogin });
-    const newCommentInDB = await this.commentRepository.addComment(newComment);
-    return newCommentInDB.toDto();
+    const commentId = await this.postgresCommentsRepository.addComment(newCommentToDB);
+    const comment = await this.postgresQueryRepository.getCommentById(commentId);
+    if (!comment) throw new NotFoundException();
+    return comment;
   }
 }

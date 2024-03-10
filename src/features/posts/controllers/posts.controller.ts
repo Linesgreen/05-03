@@ -63,9 +63,8 @@ export class PostsController {
   async createCommentToPost(
     @CurrentUser() userId: string,
     @Param('postId') postId: string,
-    @Body() commentCreateData: CommentCreateModel,
+    @Body() { content }: CommentCreateModel,
   ): Promise<OutputCommentType> {
-    const content = commentCreateData.content;
     return this.commandBus.execute(new CreateCommentCommand(userId, postId, content));
   }
 }
