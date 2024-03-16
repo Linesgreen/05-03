@@ -9,7 +9,6 @@ import { AbstractRepository } from '../../../infrastructure/repositories/abstrac
 import { BlogPG } from '../entites/blogPG';
 import { BlogPgDb } from '../types/output';
 
-//TODO узнать
 @Injectable()
 export class PostgresBlogsRepository extends AbstractRepository<BlogPgDb> {
   constructor(@InjectDataSource() protected dataSource: DataSource) {

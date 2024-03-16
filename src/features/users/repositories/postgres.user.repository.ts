@@ -8,7 +8,7 @@ import { DataSource } from 'typeorm';
 import { AbstractRepository } from '../../../infrastructure/repositories/abstract.repository';
 import { User } from '../entites/user';
 import { UserPgDb } from '../types/output';
-//TODO узнать
+
 @Injectable()
 export class PostgresUserRepository extends AbstractRepository<UserPgDb> {
   constructor(@InjectDataSource() protected dataSource: DataSource) {

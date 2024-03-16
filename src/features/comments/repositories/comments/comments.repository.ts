@@ -33,7 +33,6 @@ export class CommentsRepository {
     queryData: QueryPaginationResult,
     postId: string,
   ): Promise<PaginationWithItems<CommentsDocument>> {
-    //TODO Подоставать нормально
     const filter: FilterQuery<Blog> = { postId };
     const sortFilter: FilterQuery<Blog> = { [queryData.sortBy]: queryData.sortDirection };
     const comments = await this.CommentModel.find(filter)

@@ -12,8 +12,9 @@ export class SecurityController {
   constructor(
     private sessionPostgresQueryRepository: SessionPostgresQueryRepository,
     private postgresSessionRepository: PostgresSessionRepository,
-  ) {} //protected authService: AuthService,
+  ) {}
 
+  //TODO яперенести обращения в репозиторий из сервисов
   @UseGuards(CookieJwtGuard)
   @Get('devices')
   @HttpCode(200)
@@ -24,6 +25,7 @@ export class SecurityController {
     if (!sessions) throw new NotFoundException();
     return sessions;
   }
+
   @UseGuards(CookieJwtGuard, SessionOwnerGuard)
   @Delete('devices/:id')
   @HttpCode(204)
@@ -33,6 +35,7 @@ export class SecurityController {
   ): Promise<void> {
     await this.postgresSessionRepository.terminateSessionByDeviceIdAndUserId(deviceId, Number(userId));
   }
+
   @UseGuards(CookieJwtGuard)
   @Delete('devices')
   @HttpCode(204)

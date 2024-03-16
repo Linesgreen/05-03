@@ -1,30 +1,35 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
+import { AbstractRepository } from '../../../../infrastructure/repositories/abstract.repository';
+import { PostLikeWithLoginFromDb } from '../../../posts/entites/like';
+import { createCommentLike } from '../../entites/comment-like';
 import { LikeStatusType } from '../../types/comments/input';
-import { CommentLikes, CommentsLikesDocument } from './comment-like.schema';
 
 @Injectable()
-export class CommentsLikesRepository {
-  constructor(
-    @InjectModel(CommentLikes.name)
-    private CommentLieksModel: Model<CommentsLikesDocument>,
-  ) {}
-
-  async createLike(
-    commentId: string,
-    postId: string,
-    userId: string,
-    login: string,
-    likeStatus: LikeStatusType,
-  ): Promise<void> {
-    const newLike = new CommentLikes(commentId, userId, login, likeStatus, postId);
-    const newLikeToDb = new this.CommentLieksModel(newLike);
-    await newLikeToDb.save();
+export class CommentsLikesRepository extends AbstractRepository<PostLikeWithLoginFromDb> {
+  private CommentLieksModel: any;
+  constructor(@InjectDataSource() protected dataSource: DataSource) {
+    super(dataSource);
   }
 
-  async updateLikeStatus(commentId: string, userId: string, likeStatus: LikeStatusType): Promise<void> {
-    await this.CommentLieksModel.findOneAndUpdate({ commentId, userId }, { likeStatus });
+  async createLike(
+    // commentId: string,
+    // postId: string,
+    // userId: string,
+    // login: string,
+    // likeStatus: LikeStatusType,
+    newLike: createCommentLike,
+  ): Promise<void> {
+    const { userId, likeStatus, commentId, createdAt, postId } = newLike;
+    const tableName = 'comments_likes';
+    const entity = { userId, likeStatus, commentId, createdAt, postId };
+    await this.add(tableName, entity);
+  }
+
+  async updateLikeStatus(commentId: number, userId: number, likeStatus: LikeStatusType): Promise<void> {
+    const tableName = 'comments_likes';
+    await this.updateFieldsOnMultySearch(tableName, { commentId, userId }, { likeStatus });
   }
 }

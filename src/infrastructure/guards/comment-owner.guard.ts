@@ -1,11 +1,11 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 
-import { CommentsQueryRepository } from '../../features/comments/repositories/comments/comments.query.repository';
+import { PostgresCommentsQueryRepository } from '../../features/comments/repositories/comments/postgres.comments.query.repository';
 // Custom guard
 // https://docs.nestjs.com/guards
 @Injectable()
 export class CommentOwnerGuard implements CanActivate {
-  constructor(private commentQueryRepository: CommentsQueryRepository) {}
+  constructor(private commentQueryRepository: PostgresCommentsQueryRepository) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const commentId = request.params.commentId;

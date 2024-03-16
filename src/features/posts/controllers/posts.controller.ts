@@ -12,7 +12,7 @@ import { PaginationWithItems } from '../../common/types/output';
 import { PostService } from '../services/post.service';
 import { AddLikeToPostCommand } from '../services/useCase/add-like.to.post.useSace';
 import { GetAllPostsWithLikeStatusCommand } from '../services/useCase/get-all-post-with-likeStatus.useCase';
-import { GetCommentsToPostWithLikeStatusCommand } from '../services/useCase/get-comments-to-post-with-like-status.useCase';
+import { GetCommentsToPostWithLikeStatusCommand } from '../services/useCase/get-comments-for-post-use.case';
 import { GetPostWithLikeStatusCommand } from '../services/useCase/get-post-with-like-status.useCase';
 import { CommentCreateModel } from '../types/input';
 import { OutputPostType } from '../types/output';

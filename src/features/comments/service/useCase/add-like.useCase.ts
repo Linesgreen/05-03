@@ -1,10 +1,8 @@
 import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { PostgresUserQueryRepository } from '../../../users/repositories/postgres.user.query.repository';
-import { CommentsQueryRepository } from '../../repositories/comments/comments.query.repository';
-import { CommentsRepository } from '../../repositories/comments/comments.repository';
-import { CommentsLikesDocument } from '../../repositories/likes/comment-like.schema';
+import { CommentLike, createCommentLike } from '../../entites/comment-like';
+import { PostgresCommentsQueryRepository } from '../../repositories/comments/postgres.comments.query.repository';
 import { CommentsLikesRepository } from '../../repositories/likes/comments-likes.repository';
 import { CommentsLikesQueryRepository } from '../../repositories/likes/comments-likes-query.repository';
 import { LikeStatusType } from '../../types/comments/input';
@@ -20,68 +18,40 @@ export class AddLikeToCommentCommand {
 @CommandHandler(AddLikeToCommentCommand)
 export class AddLikeToCommentUseCase implements ICommandHandler<AddLikeToCommentCommand> {
   constructor(
-    protected commentsQueryRepository: CommentsQueryRepository,
+    protected postgresCommentsQueryRepository: PostgresCommentsQueryRepository,
     protected commentLikesQueryRepository: CommentsLikesQueryRepository,
-    protected commentsRepository: CommentsRepository,
     protected commentsLikesRepository: CommentsLikesRepository,
-    protected postgresUserQueryRepository: PostgresUserQueryRepository,
   ) {}
 
   async execute({ commentId, userId, likeStatus }: AddLikeToCommentCommand): Promise<void> {
-    const user = await this.postgresUserQueryRepository.getUserById(userId);
-    if (!user) throw new NotFoundException('user not found');
-    const targetComment = await this.commentsQueryRepository.getCommentById(commentId);
+    const postIdByComment = await this.postgresCommentsQueryRepository.getPostIdByCommentId(Number(commentId));
+    if (!postIdByComment) throw new NotFoundException();
 
-    if (!targetComment) throw new NotFoundException();
-    const userLike: CommentsLikesDocument | null = await this.commentLikesQueryRepository.getLikeByUserId(
-      commentId,
-      userId,
+    const userLike: CommentLike | null = await this.commentLikesQueryRepository.getLikeByUserId(
+      Number(commentId),
+      Number(userId),
     );
-
+    const newLike: createCommentLike = {
+      commentId: Number(commentId),
+      userId: Number(userId),
+      likeStatus: likeStatus,
+      postId: postIdByComment,
+      createdAt: new Date(),
+    };
     if (!userLike) {
-      await this.createLike(commentId, likeStatus, userId, user.login, user.login);
+      await this.createLike(newLike);
       return;
     }
-
     // If user's like status is already as expected, no further action needed
     if (likeStatus === userLike.likeStatus) return;
-
-    switch (likeStatus) {
-      case 'Dislike':
-      case 'Like':
-        userLike.likeStatus === 'None'
-          ? await this.updateLike(commentId, likeStatus, userId)
-          : await this.switchLike(commentId, likeStatus, userId);
-        break;
-      case 'None':
-        await this.decreaseLike(commentId, userLike.likeStatus, userId);
-    }
+    await this.updateLike(Number(commentId), likeStatus, Number(userId));
   }
 
-  private async createLike(
-    commentId: string,
-    likeStatus: LikeStatusType,
-    userId: string,
-    login: string,
-    postId: string,
-  ): Promise<void> {
-    await this.commentsLikesRepository.createLike(commentId, postId, userId, login, likeStatus);
-    await this.commentsRepository.updateLikesCount(commentId, 'increment', likeStatus);
+  private async createLike(newLike: createCommentLike): Promise<void> {
+    await this.commentsLikesRepository.createLike(newLike);
   }
 
-  private async updateLike(commentId: string, likeStatus: LikeStatusType, userId: string): Promise<void> {
-    await this.commentsRepository.updateLikesCount(commentId, 'increment', likeStatus);
+  private async updateLike(commentId: number, likeStatus: LikeStatusType, userId: number): Promise<void> {
     await this.commentsLikesRepository.updateLikeStatus(commentId, userId, likeStatus);
-  }
-
-  private async switchLike(commentId: string, likeStatus: LikeStatusType, userId: string): Promise<void> {
-    await this.commentsRepository.updateLikesCount(commentId, 'increment', likeStatus);
-    await this.commentsRepository.updateLikesCount(commentId, 'decrement', likeStatus === 'Like' ? 'Dislike' : 'Like');
-    await this.commentsLikesRepository.updateLikeStatus(commentId, userId, likeStatus);
-  }
-
-  private async decreaseLike(commentId: string, likeStatus: LikeStatusType, userId: string): Promise<void> {
-    await this.commentsRepository.updateLikesCount(commentId, 'decrement', likeStatus);
-    await this.commentsLikesRepository.updateLikeStatus(commentId, userId, 'None');
   }
 }

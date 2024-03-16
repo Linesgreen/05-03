@@ -9,7 +9,6 @@ import { AbstractRepository } from '../../../infrastructure/repositories/abstrac
 import { Session } from '../entites/session';
 import { SessionPgDb } from '../types/output';
 
-//TODO узнать
 @Injectable()
 export class PostgresSessionRepository extends AbstractRepository<SessionPgDb> {
   constructor(@InjectDataSource() protected dataSource: DataSource) {

@@ -10,7 +10,7 @@ export class AuthService {
     tokenKey: string,
     deviceId: string,
   ): Promise<{ token: string; refreshToken: string }> {
-    //TODO валидировать
+    //TODO валидировать и достать нормально env
     const tokenExpirationTime = process.env.TOKEN_EXP as string;
     const refreshTokenExpirationTime = process.env.REFRESH_TOKEN_EXP as string;
     const token = await this.createJwt({ userId }, tokenExpirationTime);

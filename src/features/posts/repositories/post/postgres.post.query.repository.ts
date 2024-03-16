@@ -80,121 +80,16 @@ export class PostgresPostQueryRepository extends AbstractRepository<PostPgWithBl
     return postWithBlogData[0];
   }
 
-  async getPostForBlog(
-    blogId: number,
+  async getPosts(
     sortData: QueryPaginationResult,
     userId?: number,
+    blogId?: number,
   ): Promise<PaginationWithItems<OutputPostType>> {
+    const blogCondition = blogId ? `AND posts."blogId" = ${blogId}` : '';
     const posts: OutputPostType[] = await this.dataSource.query(
       `
           WITH filtered_posts AS (
-              -- Выборка активных постов из указанного блога с применением сортировки и пагинации.
-              SELECT
-                  posts."id", posts."title", posts."shortDescription", posts."content",
-                  posts."blogId", posts."createdAt", blogs."name" AS "blogName"
-              FROM
-                  public.posts posts
-                      JOIN public.blogs blogs ON posts."blogId" = blogs."id"
-              WHERE
-                  posts."blogId" = $1 AND posts."active" = true
-              ORDER BY
-                  posts."${sortData.sortBy}" ${sortData.sortDirection}
-              LIMIT
-                  $2 -- Количество постов на страницу (pageSize).
-                  OFFSET
-                  $2 * ($3 - 1) -- Вычисление смещения на основе номера страницы (pageNumber).
-          ), likes_counts AS (
-              -- Агрегация количества лайков и дизлайков по каждому посту.
-              SELECT
-                  post_likes."postId",
-                  COUNT(*) FILTER (WHERE post_likes."likeStatus" = 'Like') AS "likesCount",
-                  COUNT(*) FILTER (WHERE post_likes."likeStatus" = 'Dislike') AS "dislikesCount"
-              FROM
-                  public.post_likes post_likes
-              WHERE
-                  post_likes."postId" IN (SELECT "id" FROM filtered_posts)
-              GROUP BY
-                  post_likes."postId"
-          ), user_reaction AS (
-              -- Определение реакции (лайк/дизлайк) текущего пользователя на посты.
-              SELECT
-                  post_likes."postId",
-                  post_likes."likeStatus"
-              FROM
-                  public.post_likes post_likes
-              WHERE
-                  post_likes."userId" = $4 AND post_likes."postId" IN (SELECT "id" FROM filtered_posts)
-          ), latest_likers AS (
-              -- Выборка последних трех пользователей, поставивших лайк на каждый пост.
-              SELECT
-                  likes."postId",
-                  json_agg(
-                  json_build_object(
-                          'addedAt', likes."createdAt",
-                          'userId', likes."userId",
-                          'login', users."login"
-                  ) ORDER BY likes."createdAt" DESC
-                          ) FILTER (WHERE likes.rn <= 3) AS "newestLikes"
-              FROM (
-                       SELECT
-                           post_likes."postId", post_likes."createdAt", post_likes."userId",
-                           ROW_NUMBER() OVER (
-                               PARTITION BY post_likes."postId"
-                               ORDER BY post_likes."createdAt" DESC
-                               ) AS rn
-                       FROM
-                           public.post_likes post_likes
-                       WHERE
-                           post_likes."likeStatus" = 'Like' AND
-                           post_likes."postId" IN (SELECT "id" FROM filtered_posts)
-                   ) likes
-                       JOIN public.users users ON likes."userId" = users."id"
-              WHERE
-                  likes.rn <= 3
-              GROUP BY
-                  likes."postId"
-          )
-           -- Комбинирование данных из подзапросов для создания итоговой таблицы
-          SELECT
-              CAST(posts."id" AS VARCHAR) AS "id", -- Приводим id к строке
-              posts."title",
-              posts."shortDescription",
-              posts."content",
-              CAST(posts."blogId" AS VARCHAR) AS "blogId", -- Приводим blogId к строке
-              posts."createdAt",
-              posts."blogName",
-              -- аналог оператора не нулевого слияния либо первое значение либо второе 
-              COALESCE(likes_counts."likesCount", 0) AS "likesCount",
-              COALESCE(likes_counts."dislikesCount", 0) AS "dislikesCount",
-              COALESCE(user_reaction."likeStatus", 'None') AS "myStatus",
-              COALESCE(latest_likers."newestLikes", '[]'::json) AS "newestLikes"
-          FROM
-              filtered_posts posts
-                  LEFT JOIN likes_counts ON posts."id" = likes_counts."postId"
-                  LEFT JOIN user_reaction ON posts."id" = user_reaction."postId"
-                  LEFT JOIN latest_likers ON posts."id" = latest_likers."postId"
-          ORDER BY
-                  posts."${sortData.sortBy}" ${sortData.sortDirection};
-
-      `,
-      [blogId, sortData.pageSize, sortData.pageNumber, userId],
-    );
-
-    const allDtoPosts: OutputPostType[] = posts;
-
-    const totalCount = await this.dataSource.query(`
-      SELECT COUNT(p.id) 
-      FROM public.posts p
-      WHERE   p."active" = true AND p."blogId" = ${blogId}
-    `);
-
-    return new PaginationWithItems(+sortData.pageNumber, +sortData.pageSize, Number(totalCount[0].count), allDtoPosts);
-  }
-  async getPosts(sortData: QueryPaginationResult, userId?: number): Promise<PaginationWithItems<OutputPostType>> {
-    const posts: OutputPostType[] = await this.dataSource.query(
-      `
-          WITH filtered_posts AS (
-              -- Выборка активных постов  с применением сортировки и пагинации.
+              -- Выборка активных постов с применением сортировки и пагинации.
               SELECT
                   posts."id", posts."title", posts."shortDescription", posts."content",
                   posts."blogId", posts."createdAt", blogs."name" AS "blogName"
@@ -203,6 +98,7 @@ export class PostgresPostQueryRepository extends AbstractRepository<PostPgWithBl
                       JOIN public.blogs blogs ON posts."blogId" = blogs."id"
               WHERE
                  posts."active" = true
+                 ${blogCondition}
               ORDER BY
                   posts."${sortData.sortBy}" ${sortData.sortDirection}
               LIMIT
@@ -237,7 +133,7 @@ export class PostgresPostQueryRepository extends AbstractRepository<PostPgWithBl
                   json_agg(
                   json_build_object(
                           'addedAt', likes."createdAt",
-                          'userId', likes."userId",
+                          'userId', CAST(likes."userId" AS VARCHAR),
                           'login', users."login"
                   ) ORDER BY likes."createdAt" DESC
                           ) FILTER (WHERE likes.rn <= 3) AS "newestLikes"
@@ -269,11 +165,12 @@ export class PostgresPostQueryRepository extends AbstractRepository<PostPgWithBl
               CAST(posts."blogId" AS VARCHAR) AS "blogId", -- Приводим blogId к строке
               posts."createdAt",
               posts."blogName",
-              -- аналог оператора не нулевого слияния либо первое значение либо второе 
-              COALESCE(likes_counts."likesCount", 0) AS "likesCount",
-              COALESCE(likes_counts."dislikesCount", 0) AS "dislikesCount",
-              COALESCE(user_reaction."likeStatus", 'None') AS "myStatus",
-              COALESCE(latest_likers."newestLikes", '[]'::json) AS "newestLikes"
+              json_build_object(
+                  'likesCount', COALESCE(likes_counts."likesCount", 0),
+                  'dislikesCount', COALESCE(likes_counts."dislikesCount", 0),
+                  'myStatus', COALESCE(user_reaction."likeStatus", 'None'),
+                  'newestLikes', COALESCE(latest_likers."newestLikes", '[]'::json)
+              ) AS "extendedLikesInfo"
           FROM
               filtered_posts posts
                   LEFT JOIN likes_counts ON posts."id" = likes_counts."postId"
@@ -287,10 +184,12 @@ export class PostgresPostQueryRepository extends AbstractRepository<PostPgWithBl
 
     const allDtoPosts: OutputPostType[] = posts;
 
+    const totalCountCondition = blogId ? `AND p."blogId" = ${blogId}` : '';
     const totalCount = await this.dataSource.query(`
         SELECT COUNT(p.id)
         FROM public.posts p
         WHERE   p."active" = true
+        ${totalCountCondition}
     `);
 
     return new PaginationWithItems(+sortData.pageNumber, +sortData.pageSize, Number(totalCount[0].count), allDtoPosts);

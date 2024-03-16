@@ -10,7 +10,6 @@ import { SessionOutputType } from '../../auth/types/output';
 import { Session } from '../entites/session';
 import { SessionPgDb } from '../types/output';
 
-//TODO узнать
 @Injectable()
 export class SessionPostgresQueryRepository extends AbstractRepository<SessionPgDb> {
   constructor(@InjectDataSource() protected dataSource: DataSource) {

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Put, UseGuards } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 
 import { CommentOwnerGuard } from '../../../infrastructure/guards/comment-owner.guard';
@@ -26,7 +26,10 @@ export class CommentsController {
   @Put(':commentId')
   @HttpCode(204)
   @UseGuards(JwtAuthGuard, CommentOwnerGuard)
-  async updateComment(@Param('commentId') commentId: string, @Body() { content }: CommentUpdateModel): Promise<void> {
+  async updateComment(
+    @Param('commentId', ParseIntPipe) commentId: number,
+    @Body() { content }: CommentUpdateModel,
+  ): Promise<void> {
     await this.commandBus.execute(new UpdateCommentCommand(commentId, content));
   }
 
@@ -44,7 +47,7 @@ export class CommentsController {
   @Delete(':commentId')
   @UseGuards(JwtAuthGuard, CommentOwnerGuard)
   @HttpCode(204)
-  async deleteComment(@Param('commentId') commentId: string): Promise<void> {
+  async deleteComment(@Param('commentId', ParseIntPipe) commentId: number): Promise<void> {
     await this.commandBus.execute(new DeleteCommentByIdCommand(commentId));
   }
 }

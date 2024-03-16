@@ -1,18 +1,20 @@
 import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { CommentsRepository } from '../../repositories/comments/comments.repository';
+import { PostgresCommentsRepository } from '../../repositories/comments/postgres.comments.repository';
 
 export class DeleteCommentByIdCommand {
-  constructor(public commentId: string) {}
+  constructor(public commentId: number) {}
 }
 
 @CommandHandler(DeleteCommentByIdCommand)
 export class DeleteCommentByIdUseCase implements ICommandHandler<DeleteCommentByIdCommand> {
-  constructor(protected commentsRepository: CommentsRepository) {}
+  constructor(protected commentsRepository: PostgresCommentsRepository) {}
 
   async execute({ commentId }: DeleteCommentByIdCommand): Promise<void> {
-    const deleteResult = await this.commentsRepository.deleteUserById(commentId);
-    if (!deleteResult) throw new NotFoundException();
+    const isExist = await this.commentsRepository.chekIsExist(commentId);
+    console.log(isExist);
+    if (!isExist) throw new NotFoundException();
+    await this.commentsRepository.deleteById(commentId);
   }
 }

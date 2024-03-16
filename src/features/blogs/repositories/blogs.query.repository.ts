@@ -13,7 +13,6 @@ export class BlogsQueryRepository {
     @InjectModel(Blog.name)
     private BlogModel: Model<BlogsDocument>,
   ) {}
-  //todo подаставать переменные нормально
   async findAll(sortData: QueryPaginationResult): Promise<PaginationWithItems<OutputBlogType>> {
     const filter: FilterQuery<Blog> = { name: { $regex: sortData.searchNameTerm ?? '', $options: 'i' } };
     const sortFilter: FilterQuery<Blog> = { [sortData.sortBy]: sortData.sortDirection };

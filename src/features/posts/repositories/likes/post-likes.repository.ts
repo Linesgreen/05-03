@@ -4,11 +4,10 @@ import { DataSource } from 'typeorm';
 
 import { AbstractRepository } from '../../../../infrastructure/repositories/abstract.repository';
 import { LikeStatusType } from '../../../comments/types/comments/input';
-import { createPostLike, PostLikeFromDb } from '../../entites/like';
+import { createPostLike, PostLikeWithLoginFromDb } from '../../entites/like';
 
 @Injectable()
-export class PostLikesRepository extends AbstractRepository<PostLikeFromDb> {
-  private PostLikesModel: any;
+export class PostLikesRepository extends AbstractRepository<PostLikeWithLoginFromDb> {
   constructor(@InjectDataSource() protected dataSource: DataSource) {
     super(dataSource);
   }

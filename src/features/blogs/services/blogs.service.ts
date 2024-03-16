@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { Result, STATUSES_HTTP } from '../../../infrastructure/object-result/objcet-result';
+import { ErrorStatus, Result } from '../../../infrastructure/object-result/objcet-result';
 import { BlogPG } from '../entites/blogPG';
 import { PostgresBlogsRepository } from '../repositories/postgres.blogs.repository';
 import { BlogCreateModel } from '../types/input';
@@ -20,7 +20,7 @@ export class BlogsService {
     const checkBlogIsExist = await this.isExistBlog(blogId);
 
     if (!checkBlogIsExist) {
-      return Result.Err(STATUSES_HTTP.NOT_FOUND_404, 'blog not found');
+      return Result.Err(ErrorStatus.NOT_FOUND, 'blog not found');
     }
 
     await this.postgresBlogsRepository.updateBlog(blogId, newData);

@@ -7,6 +7,7 @@ import { configService } from '../settings/config.service';
 import { MailService } from './mail.service';
 const user = configService.getGmailUser();
 const pass = configService.getGmailPass();
+//TODO вынести в env
 @Module({
   imports: [
     MailerModule.forRoot({

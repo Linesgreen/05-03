@@ -7,7 +7,7 @@ import { PostsRepository } from './repositories/post/posts.repository';
 import { PostService } from './services/post.service';
 import { AddLikeToPostUseCase } from './services/useCase/add-like.to.post.useSace';
 import { GetAllPostsWithLikeStatusUseCase } from './services/useCase/get-all-post-with-likeStatus.useCase';
-import { GetCommentsToPostWithLikeStatusUseCase } from './services/useCase/get-comments-to-post-with-like-status.useCase';
+import { GetCommentsForPostUseCase } from './services/useCase/get-comments-for-post-use.case';
 import { GetPostWithLikeStatusUseCase } from './services/useCase/get-post-with-like-status.useCase';
 
 export const postProviders = [
@@ -24,5 +24,5 @@ export const postsUseCases = [
   GetPostWithLikeStatusUseCase,
   AddLikeToPostUseCase,
   GetAllPostsWithLikeStatusUseCase,
-  GetCommentsToPostWithLikeStatusUseCase,
+  GetCommentsForPostUseCase,
 ];

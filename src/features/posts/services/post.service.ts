@@ -30,6 +30,7 @@ export class PostService {
     const postId: string = await this.postgresPostRepository.addPost(newPost);
     const targetPost = await this.postgresPostQueryRepository.getPostById(Number(postId));
     if (!targetPost) return Result.Err(404, 'Post Not Found');
+
     return Result.Ok(targetPost);
   }
 

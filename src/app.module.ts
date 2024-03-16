@@ -59,6 +59,12 @@ const decorators = [
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot([
+      {
+        ttl: 10000,
+        limit: 5,
+      },
+    ]),
     ConfigModule.forRoot({ isGlobal: true }),
     //Регистрируем для работы в postgres
     TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
@@ -81,12 +87,6 @@ const decorators = [
       secret: process.env.JWT_SECRET,
     }),
     MailModule,
-    ThrottlerModule.forRoot([
-      {
-        ttl: 10000,
-        limit: 5,
-      },
-    ]),
   ],
   controllers: [
     BlogsController,

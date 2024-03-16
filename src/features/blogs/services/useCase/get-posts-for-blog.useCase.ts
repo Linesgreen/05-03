@@ -34,11 +34,11 @@ export class GetPostForBlogUseCase implements ICommandHandler<GetPostForBlogComm
 
   private async checkBlogExist(blogId: string) {
     const post = await this.postgresBlogsRepository.chekBlogIsExist(Number(blogId));
-    if (!post) throw new NotFoundException(`Post not found`);
+    if (!post) throw new NotFoundException(`Blog ${blogId} not found`);
   }
 
   private async findPostsForBlog(blogId: string, sortData: QueryPaginationResult, userId: string | null) {
-    const posts = await this.postgresPostQueryRepository.getPostForBlog(Number(blogId), sortData, Number(userId));
+    const posts = await this.postgresPostQueryRepository.getPosts(sortData, Number(userId), Number(blogId));
     if (!posts?.items?.length) {
       throw new NotFoundException(`Posts not found`);
     }

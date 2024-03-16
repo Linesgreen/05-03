@@ -1,25 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
-import { ICommentsLikesQueryRepository } from '../../../../infrastructure/types/interfaces/ICommentsLikesQueryRepository';
-import { CommentLikes, CommentsLikesDocument } from './comment-like.schema';
+import { AbstractRepository } from '../../../../infrastructure/repositories/abstract.repository';
+import { PostLikeWithLoginFromDb } from '../../../posts/entites/like';
+import { CommentLike } from '../../entites/comment-like';
 
 @Injectable()
-export class CommentsLikesQueryRepository implements ICommentsLikesQueryRepository {
-  constructor(
-    @InjectModel(CommentLikes.name)
-    private CommentLieksModel: Model<CommentsLikesDocument>,
-  ) {}
-
-  async getLikeByUserId(commentId: string, userId: string): Promise<CommentsLikesDocument | null> {
-    return this.CommentLieksModel.findOne({ commentId, userId });
+export class CommentsLikesQueryRepository extends AbstractRepository<PostLikeWithLoginFromDb> {
+  constructor(@InjectDataSource() protected dataSource: DataSource) {
+    super(dataSource);
   }
 
-  async getManyLikesByUserId(ids: string[], userId: string): Promise<CommentsLikesDocument[]> {
-    return this.CommentLieksModel.find({
-      commentId: { $in: ids },
-      userId,
-    });
+  async getLikeByUserId(commentId: number, userId: number): Promise<CommentLike | null> {
+    const tableName = 'comments_likes';
+    const fieldsToSelect = ['likeStatus', 'createdAt', 'commentId', 'postId', 'userId', 'id'];
+    const like = await this.getByFields(tableName, fieldsToSelect, { commentId, userId });
+    return like ? like[0] : null;
   }
 }
