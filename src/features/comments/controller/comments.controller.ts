@@ -3,6 +3,7 @@ import { CommandBus } from '@nestjs/cqrs';
 
 import { CommentOwnerGuard } from '../../../infrastructure/guards/comment-owner.guard';
 import { JwtAuthGuard } from '../../../infrastructure/guards/jwt-auth.guard';
+import { ErrorResulter } from '../../../infrastructure/object-result/objcet-result';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { AddLikeToCommentCommand } from '../service/useCase/add-like.useCase';
 import { DeleteCommentByIdCommand } from '../service/useCase/delte-comment-byId.useCase';
@@ -15,13 +16,15 @@ import { OutputCommentType } from '../types/comments/output';
 export class CommentsController {
   constructor(private commandBus: CommandBus) {}
 
+  //TODO нужен ли командбас при гет запросе
   @Get(':commentId')
   async getCommentById(
     @CurrentUser() userId: number | null,
     @Param('commentId', ParseIntPipe) commentId: number,
   ): Promise<OutputCommentType> {
-    console.log(commentId, userId);
-    return this.commandBus.execute(new GetCommentByIdCommand(commentId, userId));
+    const result = await this.commandBus.execute(new GetCommentByIdCommand(commentId, userId));
+    if (result.isFailure()) ErrorResulter.proccesError(result);
+    return result.value;
   }
 
   @Put(':commentId')
@@ -49,6 +52,7 @@ export class CommentsController {
   @UseGuards(JwtAuthGuard, CommentOwnerGuard)
   @HttpCode(204)
   async deleteComment(@Param('commentId', ParseIntPipe) commentId: number): Promise<void> {
-    await this.commandBus.execute(new DeleteCommentByIdCommand(commentId));
+    const result = await this.commandBus.execute(new DeleteCommentByIdCommand(commentId));
+    if (result.isFailure()) ErrorResulter.proccesError(result);
   }
 }
