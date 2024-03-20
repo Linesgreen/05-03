@@ -14,7 +14,6 @@ export class SecurityController {
     private postgresSessionRepository: PostgresSessionRepository,
   ) {}
 
-  //TODO яперенести обращения в репозиторий из сервисов
   @UseGuards(CookieJwtGuard)
   @Get('devices')
   @HttpCode(200)

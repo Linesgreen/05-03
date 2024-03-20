@@ -19,10 +19,11 @@ export class NewPasswordRequestUseCase implements ICommandHandler<NewPasswordReq
 
   async execute({ email }: NewPasswordRequestCommand): Promise<Result<string>> {
     const existResult = await this.chekUserIsExist(email);
-    if (!existResult) Result.Ok('user not found');
+    if (!existResult) return Result.Ok('user not found');
 
     const passwordRecoveryToken = await this.authService.createJwt({ email }, '3600');
-    return this.sendEmail(email, passwordRecoveryToken);
+    await this.sendEmail(email, passwordRecoveryToken);
+    return Result.Ok('email sended');
   }
 
   private async chekUserIsExist(email: string): Promise<boolean> {
@@ -34,7 +35,6 @@ export class NewPasswordRequestUseCase implements ICommandHandler<NewPasswordReq
     return true;
   }
 
-  //TODO про ошибку в error пришлось добавить as string
   private async sendEmail(email: string, passwordRecoveryToken: string): Promise<Result<string>> {
     try {
       await this.mailService.sendUserConfirmation(email, 'User', passwordRecoveryToken);

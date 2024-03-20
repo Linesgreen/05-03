@@ -2,8 +2,8 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 
-import { BlogCreateModel, PostToBlogCreateModel } from '../../src/features/blogs/types/input';
-import { PostCreateModel } from '../../src/features/posts/types/input';
+import { PostToBlogCreateModel } from '../../src/features/blogs/types/input';
+import { PostCreateModel } from '../../src/features/posts/entites/post';
 
 export class PostTestManager {
   public adminData: {
@@ -34,21 +34,21 @@ export class PostTestManager {
     // eslint-disable-next-line prettier/prettier
     const authData = adminData ?? this.adminData
     return request(this.app.getHttpServer())
-      .post(`/posts`)
+      .post(`/sa/blogs/${postData.blogId}/posts`)
       .auth(authData.login, authData.password)
       .send(postData)
       .expect(status);
   }
 
   async updatePost(
-    postData: BlogCreateModel,
+    postData: PostCreateModel,
     postId: string,
     status: number,
     adminData?: { login: string; password: string },
   ) {
     const authData = adminData ?? this.adminData;
     return request(this.app.getHttpServer())
-      .put(`/posts/${postId}`)
+      .put(`/sa/blogs/${postData.blogId}/posts/${postId}`)
       .auth(authData.login, authData.password)
       .send(postData)
       .expect(status);
@@ -62,9 +62,9 @@ export class PostTestManager {
     const authData = adminData ?? this.adminData;
     const postCreateData = postData ?? this.basicPostToBlogData;
     return request(this.app.getHttpServer())
-      .post(`/blogs/${blogId}/posts`)
+      .post(`/sa/blogs/${blogId}/posts`)
       .auth(authData.login, authData.password)
-      .send(postCreateData)
+      .send({ ...postCreateData, blogId })
       .expect(status);
   }
 }

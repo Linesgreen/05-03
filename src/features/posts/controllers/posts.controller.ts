@@ -9,7 +9,6 @@ import { CreateCommentCommand } from '../../comments/service/useCase/create-comm
 import { LikeCreateModel } from '../../comments/types/comments/input';
 import { OutputCommentType } from '../../comments/types/comments/output';
 import { PaginationWithItems } from '../../common/types/output';
-import { PostService } from '../services/post.service';
 import { AddLikeToPostCommand } from '../services/useCase/add-like.to.post.useSace';
 import { GetAllPostsWithLikeStatusCommand } from '../services/useCase/get-all-post-with-likeStatus.useCase';
 import { GetCommentsToPostWithLikeStatusCommand } from '../services/useCase/get-comments-for-post-use.case';
@@ -19,10 +18,7 @@ import { OutputPostType } from '../types/output';
 
 @Controller('posts')
 export class PostsController {
-  constructor(
-    protected readonly postService: PostService,
-    private commandBus: CommandBus,
-  ) {}
+  constructor(private commandBus: CommandBus) {}
 
   @Get('/')
   async getAllPosts(
@@ -54,7 +50,7 @@ export class PostsController {
     @Body() { likeStatus }: LikeCreateModel,
     @CurrentUser(ParseIntPipe) userId: number,
   ): Promise<void> {
-    await this.commandBus.execute(new AddLikeToPostCommand(postId, userId, likeStatus));
+    return this.commandBus.execute(new AddLikeToPostCommand(postId, userId, likeStatus));
   }
 
   @Post(':postId/comments')

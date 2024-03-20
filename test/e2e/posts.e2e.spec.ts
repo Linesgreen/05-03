@@ -87,10 +87,10 @@ describe('Posts e2e', () => {
       title: `qweqweqweqwe`,
       shortDescription: `qewqweqewqew`,
       content: `qweewqweqeqw`,
-      blogId: `123`,
+      blogId: 123,
     };
 
-    await postTestManager.createPost(incorrectPostData, 400);
+    await postTestManager.createPost(incorrectPostData, 404);
   });
 
   it("shouldn't create post without authorization", async function () {
@@ -169,7 +169,10 @@ describe('Posts e2e', () => {
   });
 
   it('try delete blog without pass', async function () {
-    await request(httpServer).delete(`/posts/${postsInDb[1].id}`).auth('admin', 'qwery').expect(401);
+    await request(httpServer)
+      .delete(`/sa/blogs/${postsInDb[1].blogId}/posts/${postsInDb[1].id}`)
+      .auth('admin', 'qwery')
+      .expect(401);
   });
 
   //Check to see what hasn't been deleted.
@@ -181,11 +184,17 @@ describe('Posts e2e', () => {
   });
 
   it('delete blog 9', async function () {
-    await request(httpServer).delete(`/posts/${postsInDb[8].id}`).auth('admin', 'qwerty').expect(204);
+    await request(httpServer)
+      .delete(`/sa/blogs/${postsInDb[8].blogId}/posts/${postsInDb[8].id}`)
+      .auth('admin', 'qwerty')
+      .expect(204);
   });
 
   it('trying to delete a blog that does not exist', async function () {
-    await request(httpServer).delete(`/posts/${postsInDb[8].id}`).auth('admin', 'qwerty').expect(404);
+    await request(httpServer)
+      .delete(`/sa/blogs/${postsInDb[8].blogId}/posts/${postsInDb[8].id}`)
+      .auth('admin', 'qwerty')
+      .expect(404);
   });
 
   //---------------------pagination tests-------------------------

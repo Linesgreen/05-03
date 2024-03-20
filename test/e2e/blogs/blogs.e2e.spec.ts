@@ -8,6 +8,7 @@ import request from 'supertest';
 import { AppModule } from '../../../src/app.module';
 import { appSettings } from '../../../src/settings/aplly-app-setting';
 import { BlogTestManager } from '../../common/blogTestManager';
+import { delay } from '../../utils/dealy';
 
 describe('Blogs e2e', () => {
   let app: INestApplication;
@@ -63,13 +64,17 @@ describe('Blogs e2e', () => {
     await blogTestManaget.createBlog(blogData, 401, { ...adminData, password: '1' });
     blogsInDb = await Promise.all(
       blogs.map(async (blog) => {
+        for (let i = 0; i < 5; i++) {
+          await delay(10);
+          i++;
+        }
         const bebra = await blogTestManaget.createBlog(blog, 201);
         return bebra.body;
       }),
     );
   });
   it('get 10( 12 total) blogs x1', async function () {
-    const blogsResponse = await request(httpServer).get('/blogs').expect(200);
+    const blogsResponse = await request(httpServer).get('/blogs?sortBy=id').expect(200);
     expect(blogsResponse.body.items.length).toBe(10);
     expect(blogsResponse.body.totalCount).toBe(12);
     expect(blogsResponse.body.items[0]).toEqual(blogsInDb[11]);
@@ -91,7 +96,7 @@ describe('Blogs e2e', () => {
   it('get 10( 12 total) blogs x2', async function () {
     // sortDirection=asc
     // pageSize=5
-    const blogsResponse = await request(httpServer).get('/blogs?sortDirection=asc&pageSize=5').expect(200);
+    const blogsResponse = await request(httpServer).get('/blogs?sortDirection=asc&pageSize=5?sortBy=id').expect(200);
     expect(blogsResponse.body.items.length).toBe(5);
     expect(blogsResponse.body.totalCount).toBe(12);
     expect(blogsResponse.body.pageSize).toBe(5);
@@ -107,7 +112,9 @@ describe('Blogs e2e', () => {
     // sortDirection=asc
     // pageSize=5
     //pageNumber=2
-    const blogsResponse = await request(httpServer).get('/blogs?sortDirection=asc&pageNumber=2&pageSize=5').expect(200);
+    const blogsResponse = await request(httpServer)
+      .get('/blogs?sortDirection=asc&pageNumber=2&pageSize=5?sortBy=id')
+      .expect(200);
     expect(blogsResponse.body.items.length).toBe(5);
     expect(blogsResponse.body.totalCount).toBe(12);
     expect(blogsResponse.body.pageSize).toBe(5);
@@ -121,7 +128,9 @@ describe('Blogs e2e', () => {
   it('get 10( 12 total) blogs x6', async function () {
     // sortDirection=asc
     // searchNameTerm=1
-    const blogsResponse = await request(httpServer).get('/blogs?searchNameTerm=1&sortDirection=asc').expect(200);
+    const blogsResponse = await request(httpServer)
+      .get('/blogs?searchNameTerm=1&sortDirection=asc?sortBy=id')
+      .expect(200);
     expect(blogsResponse.body.items.length).toBe(4);
     expect(blogsResponse.body.totalCount).toBe(4);
     expect(blogsResponse.body.pageSize).toBe(10);

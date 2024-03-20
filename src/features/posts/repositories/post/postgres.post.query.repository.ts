@@ -88,7 +88,6 @@ export class PostgresPostQueryRepository extends AbstractRepository<PostPgWithBl
     userId: number | null,
     blogId?: number,
   ): Promise<PaginationWithItems<OutputPostType>> {
-    console.log(sortData);
     const blogCondition = blogId ? `AND posts."blogId" = ${blogId}` : '';
     const posts: OutputPostType[] = await this.dataSource.query(
       `

@@ -1,4 +1,6 @@
 // noinspection JSUnresolvedReference
+// noinspection DuplicatedCode
+
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ThrottlerGuard } from '@nestjs/throttler';
@@ -33,7 +35,7 @@ describe('Users e2e test', () => {
   let app: INestApplication;
   let httpServer;
   let postTestManager: PostTestManager;
-  let blogTetsManager: BlogTestManager;
+  let blogTestManager: BlogTestManager;
   let authTestManager: AuthTestManager;
   let commentTestManager: CommentTestManager;
   let userTestManager: UserTestManager;
@@ -54,7 +56,7 @@ describe('Users e2e test', () => {
     httpServer = app.getHttpServer();
 
     postTestManager = new PostTestManager(app);
-    blogTetsManager = new BlogTestManager(app);
+    blogTestManager = new BlogTestManager(app);
     authTestManager = new AuthTestManager(app);
     commentTestManager = new CommentTestManager(app);
     userTestManager = new UserTestManager(app);
@@ -68,7 +70,7 @@ describe('Users e2e test', () => {
     const tokenspair2 = await authTestManager.getTokens(user2CreateData.email, user2CreateData.password);
     token2 = tokenspair2.token;
 
-    const response = await blogTetsManager.createBlog();
+    const response = await blogTestManager.createBlog();
     blogId = response.body.id;
 
     const postResponse = await postTestManager.createPostToBlog(null, blogId);
@@ -210,32 +212,24 @@ describe('Users e2e test', () => {
       password: '4qwerty',
       email: '4linesreen@mail.ru',
     };
-    let token3: string;
-    let token4: string;
-
-    let post1;
-    let post2;
-    let post3;
-    let post4;
-
-    let blogId;
+    let token3: string, token4: string, post1, post2, post3, post4, blogId;
 
     beforeAll(async () => {
       //Updates token
-      const tokenspair = await authTestManager.getTokens(userCreateData.email, userCreateData.password);
-      token = tokenspair.token;
-      const tokenspair2 = await authTestManager.getTokens(user2CreateData.email, user2CreateData.password);
-      token2 = tokenspair2.token;
+      const tokenPair = await authTestManager.getTokens(userCreateData.email, userCreateData.password);
+      token = tokenPair.token;
+      const tokenPair2 = await authTestManager.getTokens(user2CreateData.email, user2CreateData.password);
+      token2 = tokenPair2.token;
       //create two more users
       await userTestManager.createUser(201, user3CreateData);
       await userTestManager.createUser(201, user4CreateData);
       //get jwt tokens for them.
-      const tokenspair3 = await authTestManager.getTokens(user3CreateData.email, user3CreateData.password);
-      token3 = tokenspair3.token;
-      const tokenspair4 = await authTestManager.getTokens(user4CreateData.email, user4CreateData.password);
-      token4 = tokenspair4.token;
+      const tokenPair3 = await authTestManager.getTokens(user3CreateData.email, user3CreateData.password);
+      token3 = tokenPair3.token;
+      const tokenPair4 = await authTestManager.getTokens(user4CreateData.email, user4CreateData.password);
+      token4 = tokenPair4.token;
 
-      const response = await blogTetsManager.createBlog();
+      const response = await blogTestManager.createBlog();
       blogId = response.body.id;
 
       //create four posts to check for likes

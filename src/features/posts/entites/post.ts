@@ -1,23 +1,8 @@
-import { LikeStatusType } from '../../comments/types/comments/input';
-
-export class PostCreate {
+export class PostCreateModel {
   title: string;
   shortDescription: string;
   content: string;
   blogId: number;
-}
-
-export type NewestLikeType = {
-  addedAt: string;
-  userId: string;
-  login: string;
-};
-
-export class LikesInfo {
-  likesCount: number;
-  dislikesCount: number;
-  myStatus: LikeStatusType;
-  newestLikes: NewestLikeType[];
 }
 
 export class PostPg {
@@ -27,7 +12,7 @@ export class PostPg {
   content: string;
   blogId: number;
   createdAt: Date;
-  constructor(data: PostCreate) {
+  constructor(data: PostCreateModel) {
     this.id = null;
     this.title = data.title;
     this.shortDescription = data.shortDescription;
@@ -35,6 +20,4 @@ export class PostPg {
     this.blogId = data.blogId;
     this.createdAt = new Date();
   }
-
-  //TODO object result
 }

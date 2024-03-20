@@ -74,7 +74,7 @@ export class SaBlogsController {
   @Post(':blogId/posts')
   @UseGuards(AuthGuard)
   async createPostToBlog(
-    @Param('blogId') blogId: string,
+    @Param('blogId', ParseIntPipe) blogId: number,
     @Body() postData: PostToBlogCreateModel,
   ): Promise<OutputPostType> {
     const result = await this.postService.createPost({ ...postData, blogId });
@@ -91,7 +91,7 @@ export class SaBlogsController {
     return;
   }
 
-  //TODO узнать по поводу проверки тут
+  //TODO в сервис
   @Put(':blogId/posts/:postId')
   @UseGuards(AuthGuard)
   @HttpCode(204)

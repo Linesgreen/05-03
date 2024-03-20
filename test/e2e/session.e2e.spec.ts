@@ -177,7 +177,6 @@ describe('session e2e test', () => {
         .set('User-agent', 'test1')
         .expect(200)
         .then((response) => {
-          console.log(response.body);
           const devise2 = response.body.find((e) => e['title'] === 'test2');
           const devise1 = response.body.find((e) => e['title'] === 'test1');
           expect(response.body).toHaveLength(4);

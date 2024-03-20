@@ -81,7 +81,6 @@ export class PostgresCommentsQueryRepository extends AbstractRepository<PostPgWi
     postId: number,
     userId?: number,
   ): Promise<PaginationWithItems<OutputCommentType>> {
-    console.log(postId, userId, sortData.pageSize, sortData.pageNumber);
     const comment: OutputCommentType[] = await this.dataSource.query(
       `
           WITH filtered_comments AS (
@@ -129,7 +128,6 @@ export class PostgresCommentsQueryRepository extends AbstractRepository<PostPgWi
       `,
       [postId, userId, sortData.pageSize, sortData.pageNumber],
     );
-    console.log(sortData.pageSize, sortData.pageNumber);
     const dtoComments: OutputCommentType[] = comment;
 
     const totalCount = await this.dataSource.query(

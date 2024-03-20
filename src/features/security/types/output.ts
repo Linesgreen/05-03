@@ -1,4 +1,3 @@
-//TODO Что то думать с этим классом
 export class SessionPgDb {
   id: number;
   tokenKey: string;

@@ -1,4 +1,3 @@
-//TODO на классы
 export type OutputBlogType = {
   id: string;
   name: string;
@@ -8,7 +7,6 @@ export type OutputBlogType = {
   isMembership: boolean;
 };
 
-//TODO что то думать с этим классом
 export class BlogPgDb {
   id: number;
   name: string;

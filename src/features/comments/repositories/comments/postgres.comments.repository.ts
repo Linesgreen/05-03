@@ -9,14 +9,13 @@ import { AbstractRepository } from '../../../../infrastructure/repositories/abst
 import { BlogPgDb } from '../../../blogs/types/output';
 import { CommentToPgDB } from '../../entites/commentPG';
 
-//TODO узнать
 @Injectable()
 export class PostgresCommentsRepository extends AbstractRepository<BlogPgDb> {
   constructor(@InjectDataSource() protected dataSource: DataSource) {
     super(dataSource);
   }
 
-  //TODO узнать про то что возвращается комментарий
+  //TODO переделать флоу с возвратом айди а затем получением комментария по этому айди
   async addComment(newComment: CommentToPgDB): Promise<number> {
     const { userId, postId, content, createdAt } = newComment;
     const entity = { userId, postId, content, createdAt };

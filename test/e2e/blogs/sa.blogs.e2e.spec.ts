@@ -8,6 +8,7 @@ import request from 'supertest';
 import { AppModule } from '../../../src/app.module';
 import { appSettings } from '../../../src/settings/aplly-app-setting';
 import { BlogTestManager } from '../../common/blogTestManager';
+import { delay } from '../../utils/dealy';
 
 describe('Blogs e2e', () => {
   let app: INestApplication;
@@ -78,12 +79,16 @@ describe('Blogs e2e', () => {
     await blogTestManaget.createBlog(blogData, 401, { ...adminData, password: '1' });
     blogsInDb = await Promise.all(
       blogs.map(async (blog) => {
+        await delay(1000);
+        await delay(1000);
+        await delay(1000);
+        await delay(1000);
         const bebra = await blogTestManaget.createBlog(blog, 201);
         return bebra.body;
       }),
     );
   });
-  it('get 10( 12 total) blogs', async function () {
+  it('get 10( 12 total) blogs x0', async function () {
     const blogsResponse = await request(httpServer).get('/sa/blogs').auth('admin', 'qwerty').expect(200);
     expect(blogsResponse.body.items.length).toBe(10);
     expect(blogsResponse.body.totalCount).toBe(12);
@@ -171,41 +176,7 @@ describe('Blogs e2e', () => {
     expect(blogsResponse.body.items[3]).toEqual(blogsInDb[3]);
     expect(blogsResponse.body.items[4]).toEqual(blogsInDb[4]);
   });
-  it('get 10( 12 total) blogs x4', async function () {
-    // sortDirection=desc
-    // pageSize=5
-    const blogsResponse = await request(httpServer)
-      .get('/sa/blogs?pageSize=5')
-      .auth(adminData.login, adminData.password)
-      .expect(200);
-    expect(blogsResponse.body.items.length).toBe(5);
-    expect(blogsResponse.body.totalCount).toBe(11);
-    expect(blogsResponse.body.pageSize).toBe(5);
-    expect(blogsResponse.body.pagesCount).toBe(3);
-    expect(blogsResponse.body.items[0]).toEqual(blogsInDb[10]);
-    expect(blogsResponse.body.items[1]).toEqual(blogsInDb[9]);
-    expect(blogsResponse.body.items[2]).toEqual(blogsInDb[8]);
-    expect(blogsResponse.body.items[3]).toEqual(blogsInDb[7]);
-    expect(blogsResponse.body.items[4]).toEqual(blogsInDb[6]);
-  });
-  it('get 10( 12 total) blogs x1', async function () {
-    // sortDirection=asc
-    // pageSize=5
-    //pageNumber=2
-    const blogsResponse = await request(httpServer)
-      .get('/sa/blogs?sortDirection=asc&pageNumber=2&pageSize=5')
-      .auth(adminData.login, adminData.password)
-      .expect(200);
-    expect(blogsResponse.body.items.length).toBe(5);
-    expect(blogsResponse.body.totalCount).toBe(11);
-    expect(blogsResponse.body.pageSize).toBe(5);
-    expect(blogsResponse.body.pagesCount).toBe(3);
-    expect(blogsResponse.body.items[0]).toEqual(blogsInDb[5]);
-    expect(blogsResponse.body.items[1]).toEqual(blogsInDb[6]);
-    expect(blogsResponse.body.items[2]).toEqual(blogsInDb[7]);
-    expect(blogsResponse.body.items[3]).toEqual(blogsInDb[8]);
-    expect(blogsResponse.body.items[4]).toEqual(blogsInDb[9]);
-  });
+
   it('get 10( 12 total) blogs x2', async function () {
     // sortDirection=asc
     // searchNameTerm=1

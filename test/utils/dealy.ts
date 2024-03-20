@@ -19,6 +19,7 @@ export const delay = async (time: number, unit: 'ms' | 's' | 'm' = 'ms', callbac
     }, mil);
   });
 };
+/*
 //Примеры работы
 // Обратный вызов как анонимная функция
 delay(10, 's', () => {
@@ -40,3 +41,5 @@ const arrowCallback = () => {
 delay(3, 's', arrowCallback);
 // Работа по умолчанию с милисекундвми
 delay(3);
+
+ */

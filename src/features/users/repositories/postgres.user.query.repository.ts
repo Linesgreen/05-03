@@ -28,7 +28,6 @@ export class PostgresUserQueryRepository {
 
     const isText = await this.isTextColumn('users', sortData.sortBy);
     const sortByType = isText ? `LOWER("${sortData.sortBy}")` : `"${sortData.sortBy}"`;
-    console.log(sortByType);
     const users = await this.dataSource.query(
       `SELECT id, login, email, "passwordHash", "confirmationCode", "expirationDate","createdAt", "isConfirmed"
        FROM public.users

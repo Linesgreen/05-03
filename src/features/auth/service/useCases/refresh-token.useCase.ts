@@ -11,7 +11,7 @@ export class RefreshTokenCommand {
     public tokenKey: string,
   ) {}
 }
-//TODO интерфейс
+
 @CommandHandler(RefreshTokenCommand)
 export class RefreshTokenUseCase implements ICommandHandler<RefreshTokenCommand> {
   constructor(

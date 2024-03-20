@@ -4,7 +4,7 @@ export type UserOutputType = {
   email: string;
   createdAt: string;
 };
-//TODO Что то думать с этим классом
+
 export class UserPgDb {
   id: number;
   login: string;

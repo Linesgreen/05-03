@@ -24,7 +24,7 @@ export class PostgresBlogsQueryRepository extends AbstractRepository<BlogPgDb> {
 
   async getAll(sortData: QueryPaginationResult): Promise<PaginationWithItems<OutputBlogType>> {
     const searchNameTerm = sortData.searchNameTerm ?? '';
-    //TODO параметры добавить
+
     const blogs = await this.dataSource.query(
       `SELECT id,"name","description", "websiteUrl", "createdAt", "isMembership"
        FROM public.blogs

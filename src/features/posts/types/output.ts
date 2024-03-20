@@ -19,7 +19,6 @@ export type OutputPostType = {
   extendedLikesInfo: ExtendedLikesInfoOutputType;
 };
 
-//TODO что то думать с этим классом
 export class PostPgDb {
   id: number;
   title: string;

@@ -29,16 +29,16 @@ export class AddLikeToPostUseCase implements ICommandHandler<AddLikeToPostComman
     if (!targetPost) throw new NotFoundException('post not found');
 
     const userLike: PostLike | null = await this.postLikesQueryRepository.getLikeByUserId(postId, userId);
-    const newLike: createPostLike = {
-      postId: postId,
-      blogId: Number(targetPost.blogId),
-      userId: userId,
-      likeStatus: likeStatus,
-      createdAt: new Date(),
-    };
+
     if (!userLike) {
-      await this.createLike(newLike);
-      return;
+      const newLike: createPostLike = {
+        postId: postId,
+        blogId: Number(targetPost.blogId),
+        userId: userId,
+        likeStatus: likeStatus,
+        createdAt: new Date(),
+      };
+      return this.createLike(newLike);
     }
 
     // If user's like status is already as expected, no further action needed
