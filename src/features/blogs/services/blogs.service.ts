@@ -10,10 +10,10 @@ import { OutputBlogType } from '../types/output';
 export class BlogsService {
   constructor(protected postgresBlogsRepository: PostgresBlogsRepository) {}
 
-  async createBlog(blogData: BlogCreateModel): Promise<OutputBlogType> {
+  async createBlog(blogData: BlogCreateModel): Promise<Result<OutputBlogType>> {
     const newBlog = new BlogPG(blogData.name, blogData.description, blogData.websiteUrl);
     await this.postgresBlogsRepository.addBLog(newBlog);
-    return newBlog.toDto();
+    return Result.Ok(newBlog.toDto());
   }
 
   async updateBlog(newData: BlogCreateModel, blogId: number): Promise<Result<string>> {

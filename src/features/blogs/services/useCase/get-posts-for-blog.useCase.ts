@@ -11,8 +11,8 @@ import { PostgresBlogsRepository } from '../../repositories/postgres.blogs.repos
 
 export class GetPostForBlogCommand {
   constructor(
-    public userId: string | null,
-    public blogId: string,
+    public userId: number | null,
+    public blogId: number,
     public sortData: QueryPaginationResult,
   ) {}
 }
@@ -32,13 +32,13 @@ export class GetPostForBlogUseCase implements ICommandHandler<GetPostForBlogComm
     return this.findPostsForBlog(blogId, sortData, userId);
   }
 
-  private async checkBlogExist(blogId: string) {
-    const post = await this.postgresBlogsRepository.chekBlogIsExist(Number(blogId));
+  private async checkBlogExist(blogId: number) {
+    const post = await this.postgresBlogsRepository.chekBlogIsExist(blogId);
     if (!post) throw new NotFoundException(`Blog ${blogId} not found`);
   }
 
-  private async findPostsForBlog(blogId: string, sortData: QueryPaginationResult, userId: string | null) {
-    const posts = await this.postgresPostQueryRepository.getPosts(sortData, Number(userId), Number(blogId));
+  private async findPostsForBlog(blogId: number, sortData: QueryPaginationResult, userId: number | null) {
+    const posts = await this.postgresPostQueryRepository.getPosts(sortData, userId, blogId);
     if (!posts?.items?.length) {
       throw new NotFoundException(`Posts not found`);
     }

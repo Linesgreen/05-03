@@ -9,7 +9,7 @@ import { OutputCommentType } from '../../types/comments/output';
 
 export class CreateCommentCommand {
   constructor(
-    public userId: string,
+    public userId: number,
     public postId: number,
     public content: string,
   ) {}
@@ -29,7 +29,7 @@ export class CreateCommentUseCase implements ICommandHandler<CreateCommentComman
     if (!targetPost) throw new NotFoundException();
 
     const commentId = await this.postgresCommentsRepository.addComment(newCommentToDB);
-    const comment = await this.postgresQueryRepository.getCommentById(commentId);
+    const comment = await this.postgresQueryRepository.getCommentById(commentId, null);
     if (!comment) throw new NotFoundException();
     return comment;
   }

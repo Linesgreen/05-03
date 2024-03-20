@@ -16,7 +16,7 @@ export class PostgresCommentsQueryRepository extends AbstractRepository<PostPgWi
     super(dataSource);
   }
 
-  async getCommentById(commentId: number, userId?: number): Promise<OutputCommentType | null> {
+  async getCommentById(commentId: number, userId?: number | null): Promise<OutputCommentType | null> {
     const comment: OutputCommentType[] = await this.dataSource.query(
       `
           SELECT

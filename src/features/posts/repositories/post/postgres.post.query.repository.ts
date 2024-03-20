@@ -85,7 +85,7 @@ export class PostgresPostQueryRepository extends AbstractRepository<PostPgWithBl
 
   async getPosts(
     sortData: QueryPaginationResult,
-    userId?: number,
+    userId: number | null,
     blogId?: number,
   ): Promise<PaginationWithItems<OutputPostType>> {
     console.log(sortData);

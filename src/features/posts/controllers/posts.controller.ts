@@ -61,7 +61,7 @@ export class PostsController {
   @HttpCode(201)
   @UseGuards(JwtAuthGuard)
   async createCommentToPost(
-    @CurrentUser() userId: string,
+    @CurrentUser() userId: number,
     @Param('postId', ParseIntPipe) postId: number,
     @Body() { content }: CommentCreateModel,
   ): Promise<OutputCommentType> {

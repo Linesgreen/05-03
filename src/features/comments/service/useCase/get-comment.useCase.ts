@@ -6,8 +6,8 @@ import { OutputCommentType } from '../../types/comments/output';
 
 export class GetCommentByIdCommand {
   constructor(
-    public commentId: string,
-    public userId: string | null,
+    public commentId: number,
+    public userId: number | null,
   ) {}
 }
 
@@ -16,11 +16,7 @@ export class GetCommentByIdUseCase implements ICommandHandler<GetCommentByIdComm
   constructor(protected commentsRepository: PostgresCommentsQueryRepository) {}
 
   async execute({ commentId, userId }: GetCommentByIdCommand): Promise<OutputCommentType> {
-    console.log(userId);
-    const targetComment: OutputCommentType | null = await this.commentsRepository.getCommentById(
-      Number(commentId),
-      Number(userId),
-    );
+    const targetComment: OutputCommentType | null = await this.commentsRepository.getCommentById(commentId, userId);
     if (!targetComment) throw new NotFoundException(`Comment with id ${commentId} not found`);
     return targetComment;
   }

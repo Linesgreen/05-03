@@ -49,27 +49,28 @@ export class SaBlogsController {
   }
 
   @Get(':id')
-  //TODO узнать по поводу ParseIntPipe
   async getBlog(@Param('id', ParseIntPipe) id: number): Promise<OutputBlogType> {
     const targetBlog = await this.postgresBlogsQueryRepository.getBlogById(id);
     if (!targetBlog) throw new NotFoundException('Blog Not Found');
     return targetBlog;
   }
 
+  //TODO про object result тут тоже
   @Get(':blogId/posts')
   async getPostForBlog(
-    @CurrentUser() userId: string,
+    @CurrentUser() userId: number,
     @Query(QueryPaginationPipe) queryData: QueryPaginationResult,
-    @Param('blogId') blogId: string,
+    @Param('blogId', ParseIntPipe) blogId: number,
   ): Promise<PaginationWithItems<OutputPostType>> {
     return this.commandBus.execute(new GetPostForBlogCommand(userId, blogId, queryData));
   }
 
   @Post('')
   async createBlog(@Body() blogCreateData: BlogCreateModel): Promise<OutputBlogType> {
-    return this.blogsService.createBlog(blogCreateData);
+    const result = await this.blogsService.createBlog(blogCreateData);
+    return result.value;
   }
-  //TODO узнать про result
+
   @Post(':blogId/posts')
   @UseGuards(AuthGuard)
   async createPostToBlog(
@@ -90,6 +91,7 @@ export class SaBlogsController {
     return;
   }
 
+  //TODO узнать по поводу проверки тут
   @Put(':blogId/posts/:postId')
   @UseGuards(AuthGuard)
   @HttpCode(204)
@@ -100,7 +102,9 @@ export class SaBlogsController {
   ): Promise<void> {
     const blogIsExist = await this.postgresBlogsRepository.chekBlogIsExist(blogId);
     if (!blogIsExist) throw new NotFoundException('Blog Not Found');
-    await this.postService.updatePost(postUpdateData, postId);
+    const result = await this.postService.updatePost(postUpdateData, postId);
+    if (result.isFailure()) ErrorResulter.proccesError(result);
+    return;
   }
 
   @Delete(':id')
@@ -119,6 +123,8 @@ export class SaBlogsController {
   ): Promise<void> {
     const blogIsExist = await this.postgresBlogsRepository.chekBlogIsExist(blogId);
     if (!blogIsExist) throw new NotFoundException('Blog Not Found');
-    return this.postService.deletePost(postId);
+
+    const result = await this.postService.deletePost(postId);
+    if (result.isFailure()) ErrorResulter.proccesError(result);
   }
 }

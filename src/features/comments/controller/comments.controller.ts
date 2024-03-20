@@ -17,9 +17,10 @@ export class CommentsController {
 
   @Get(':commentId')
   async getCommentById(
-    @CurrentUser() userId: string,
-    @Param('commentId') commentId: string,
+    @CurrentUser() userId: number | null,
+    @Param('commentId', ParseIntPipe) commentId: number,
   ): Promise<OutputCommentType> {
+    console.log(commentId, userId);
     return this.commandBus.execute(new GetCommentByIdCommand(commentId, userId));
   }
 

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import { ErrorStatus, Result } from '../../../infrastructure/object-result/objcet-result';
 import { PostgresBlogsRepository } from '../../blogs/repositories/postgres.blogs.repository';
@@ -34,16 +34,16 @@ export class PostService {
     return Result.Ok(targetPost);
   }
 
-  async updatePost(params: PostInBlogUpdateType, postId: number): Promise<void> {
-    await this.postIsExist(postId);
-    await this.postgresPostRepository.updatePost(postId, params);
-  }
-  async deletePost(postId: number): Promise<void> {
-    await this.postIsExist(postId);
-    return this.postgresPostRepository.deleteById(postId);
-  }
-  private async postIsExist(postId: number): Promise<void> {
+  async updatePost(params: PostInBlogUpdateType, postId: number): Promise<Result<string>> {
     const postIsExist = await this.postgresPostRepository.chekPostIsExist(postId);
-    if (!postIsExist) throw new NotFoundException('Post Not Found');
+    if (!postIsExist) return Result.Err(ErrorStatus.NOT_FOUND, 'Post Not Found');
+    await this.postgresPostRepository.updatePost(postId, params);
+    return Result.Ok('Post updated');
+  }
+  async deletePost(postId: number): Promise<Result<string>> {
+    const postIsExist = await this.postgresPostRepository.chekPostIsExist(postId);
+    if (!postIsExist) return Result.Err(ErrorStatus.NOT_FOUND, 'Post Not Found');
+    await this.postgresPostRepository.deleteById(postId);
+    return Result.Ok('Post deleted');
   }
 }
