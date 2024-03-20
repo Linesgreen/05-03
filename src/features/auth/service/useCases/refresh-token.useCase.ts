@@ -1,6 +1,6 @@
-import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
+import { ErrorStatus, Result } from '../../../../infrastructure/object-result/objcet-result';
 import { Session } from '../../../security/entites/session';
 import { PostgresSessionRepository } from '../../../security/repository/session.postgres.repository';
 import { AuthService } from '../auth.service';
@@ -19,24 +19,34 @@ export class RefreshTokenUseCase implements ICommandHandler<RefreshTokenCommand>
     protected authService: AuthService,
   ) {}
 
-  async execute(command: RefreshTokenCommand): Promise<{ token: string; refreshToken: string }> {
+  async execute(command: RefreshTokenCommand): Promise<Result<{ token: string; refreshToken: string } | string>> {
     const { userId, tokenKey } = command;
+
     const session = await this.findSession(userId, tokenKey);
-    const newTokenKey = crypto.randomUUID();
+    if (!session) return Result.Err(ErrorStatus.NOT_FOUND, 'Session not found');
+
     const deviceId = session.deviceId;
+    const newTokenKey = crypto.randomUUID();
+
     await this.updateAndSaveSession(session, newTokenKey);
-    return this.authService.generateTokenPair(userId, newTokenKey, deviceId);
+    const { token, refreshToken } = await this.authService.generateTokenPair(userId, newTokenKey, deviceId);
+    return Result.Ok({ token, refreshToken });
   }
 
-  async findSession(userId: string, tokenKey: string): Promise<Session> {
+  async findSession(userId: string, tokenKey: string): Promise<Session | null> {
     const session = await this.postgresSessionRepository.getByUserIdAndTokenKey(Number(userId), tokenKey);
-    if (!session) throw new NotFoundException('Session not found');
+
+    if (!session) null;
+    //throw new NotFoundException('Session not found');
+
     return session;
   }
 
   async updateAndSaveSession(session: Session, newTokenKey: string): Promise<void> {
     session.updateSession(newTokenKey);
+
     const { id, issuedDate, expiredDate, tokenKey } = session;
+
     await this.postgresSessionRepository.updateSessionFields('id', id, { issuedDate, tokenKey, expiredDate });
   }
 }

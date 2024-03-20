@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
-import { Result } from '../../../infrastructure/object-result/objcet-result';
+import { ErrorStatus, Result } from '../../../infrastructure/object-result/objcet-result';
 import { PostgresBlogsRepository } from '../../blogs/repositories/postgres.blogs.repository';
 import { PostCreate, PostPg } from '../entites/post';
 import { PostgresPostQueryRepository } from '../repositories/post/postgres.post.query.repository';
@@ -23,13 +23,13 @@ export class PostService {
       blogId: Number(postData.blogId),
     };
     const targetBlog = await this.postgresBlogsRepository.chekBlogIsExist(Number(postData.blogId));
-    if (!targetBlog) return Result.Err(404, 'Blog Not Found');
+    if (!targetBlog) return Result.Err(ErrorStatus.NOT_FOUND, 'Blog Not Found');
 
     const newPost = new PostPg(postCreateData);
 
     const postId: string = await this.postgresPostRepository.addPost(newPost);
     const targetPost = await this.postgresPostQueryRepository.getPostById(Number(postId));
-    if (!targetPost) return Result.Err(404, 'Post Not Found');
+    if (!targetPost) return Result.Err(ErrorStatus.NOT_FOUND, 'Post Not Found');
 
     return Result.Ok(targetPost);
   }

@@ -20,13 +20,13 @@ export class PostgresCommentsQueryRepository extends AbstractRepository<PostPgWi
     const comment: OutputCommentType[] = await this.dataSource.query(
       `
           SELECT
-              c."id",
+              CAST( c."id" AS VARCHAR) AS "id",
               c."content",
               c."createdAt",
               row_to_json((
                   SELECT d FROM (
                                     SELECT
-                                        u.id AS "userId",
+                                        CAST( u."id" AS VARCHAR) AS "userId",
                                         u.login AS "userLogin"
                                 ) d
               )) AS "commentatorInfo",
@@ -34,7 +34,7 @@ export class PostgresCommentsQueryRepository extends AbstractRepository<PostPgWi
                       'likesCount', li.likesCount,
                       'dislikesCount', li.dislikesCount,
                       'myStatus', COALESCE(ul."likeStatus", 'None')
-              ) AS "extendedLikesInfo"
+              ) AS "likesInfo"
           FROM
               public.comments c
                   JOIN public.users u ON c."userId" = u.id,
@@ -85,8 +85,10 @@ export class PostgresCommentsQueryRepository extends AbstractRepository<PostPgWi
     const comment: OutputCommentType[] = await this.dataSource.query(
       `
           WITH filtered_comments AS (
-              SELECT id,"content","createdAt", "userId"
+              SELECT
+                  comments.id,"content",comments."createdAt", "userId", u.login
               FROM comments
+              JOIN public.users u on u.id = comments."userId"
               WHERE comments.active = true AND comments."postId" = $1
               ORDER BY comments."${sortData.sortBy}" ${sortData.sortDirection}
               LIMIT $3 OFFSET $3 * ($4 - 1)
@@ -95,7 +97,7 @@ export class PostgresCommentsQueryRepository extends AbstractRepository<PostPgWi
                    COUNT(*) FILTER (WHERE comments_likes."likeStatus" = 'Like') AS likesCount,
                    COUNT(*) FILTER (WHERE comments_likes."likeStatus" = 'Dislike') AS dislikesCount
             FROM comments_likes
-            WHERE "commentId" IN (SELECT "id" FROM filtered_comments)
+            WHERE "commentId" IN (SELECT id as "commentId" FROM filtered_comments)
             GROUP BY comments_likes."commentId"
           ), user_reaction AS (
               SELECT 
@@ -104,32 +106,30 @@ export class PostgresCommentsQueryRepository extends AbstractRepository<PostPgWi
               FROM 
                   comments_likes
               WHERE 
-                  comments_likes."userId" = $2 AND comments_likes."commentId" IN (SELECT id FROM filtered_comments)
-          ), commentator_info AS (
-            SELECT id as "userId", login as "userLogin"
-            FROM users
-            WHERE users.id = $2
+                  comments_likes."userId" = $2 AND comments_likes."commentId" IN (SELECT id as "commentId" FROM filtered_comments)
           )
-          SELECT 
-              id,"content",
+          SELECT
+              CAST("id" AS VARCHAR) AS "id",
+                 "content",
               json_build_object(
-                      'userId',commentator_info."userId",
-                      'userLogin',commentator_info."userLogin"
+                      'userId',CAST(filtered_comments."userId" AS VARCHAR),
+                      'userLogin',filtered_comments.login
               ) as "commentatorInfo", 
               "createdAt",
               json_build_object(
                    'likesCount', COALESCE(likes_counts.likesCount, 0),
                     'dislikesCount', COALESCE(likes_counts.dislikesCount, 0),
                     'myStatus', COALESCE(user_reaction."likeStatus", 'None')
-                                ) as likesInfo
+                                ) as "likesInfo"
           FROM filtered_comments
           LEFT JOIN likes_counts ON filtered_comments.id = likes_counts."commentId"
           LEFT JOIN user_reaction ON filtered_comments.id = user_reaction."commentId"
-          LEFT JOIN commentator_info ON filtered_comments."userId" = commentator_info."userId"
+          ORDER BY filtered_comments."${sortData.sortBy}" ${sortData.sortDirection}
+          
       `,
       [postId, userId, sortData.pageSize, sortData.pageNumber],
     );
-
+    console.log(sortData.pageSize, sortData.pageNumber);
     const dtoComments: OutputCommentType[] = comment;
 
     const totalCount = await this.dataSource.query(

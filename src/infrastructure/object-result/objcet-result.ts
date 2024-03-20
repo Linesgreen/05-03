@@ -1,19 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any,no-underscore-dangle,@typescript-eslint/member-ordering */
-import { NotFoundException } from '@nestjs/common';
+import { HttpException, NotFoundException } from '@nestjs/common';
 
 export enum ErrorStatus {
   // OK_200 = 200,
   // CREATED_201 = 201,
   //NO_CONTENT_204 = 204,
   //BAD_REQUEST_400 = 400,
-  NOT_FOUND = 404,
+  NOT_FOUND = 'NOT_FOUND',
   //UNAUTHORIZED_401 = 401,
   // FORBIDDEN_403 = 403,
-  //SERVER_ERROR_500 = 500,
+  SERVER_ERROR = 'SERVER_ERROR',
 }
 
-type HttpStatusKeys = keyof typeof ErrorStatus;
-export type HttpStatusType = (typeof ErrorStatus)[HttpStatusKeys];
+type ErrorStatusKeys = keyof typeof ErrorStatus;
+export type HttpStatusType = (typeof ErrorStatus)[ErrorStatusKeys];
 
 export class Result<T = void> {
   private constructor(
@@ -60,6 +60,9 @@ export class ErrorResulter {
     switch (error.err) {
       case ErrorStatus.NOT_FOUND:
         throw new NotFoundException(error.value);
+        break;
+      case 'SERVER_ERROR':
+        throw new HttpException(error.value as string, 500);
         break;
     }
   }

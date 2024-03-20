@@ -62,7 +62,7 @@ export class PostsController {
   @UseGuards(JwtAuthGuard)
   async createCommentToPost(
     @CurrentUser() userId: string,
-    @Param('postId') postId: string,
+    @Param('postId', ParseIntPipe) postId: number,
     @Body() { content }: CommentCreateModel,
   ): Promise<OutputCommentType> {
     return this.commandBus.execute(new CreateCommentCommand(userId, postId, content));

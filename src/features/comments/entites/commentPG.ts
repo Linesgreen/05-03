@@ -8,7 +8,7 @@ export class PostCreate {
 }
 
 export class CommentCreateData extends CommentCreateModel {
-  postId: string;
+  postId: number;
   userId: string;
 }
 
@@ -20,7 +20,7 @@ export class CommentToPgDB {
   createdAt: Date;
   constructor(data: CommentCreateData) {
     this.content = data.content;
-    this.postId = Number(data.postId);
+    this.postId = data.postId;
     this.userId = Number(data.userId);
     this.createdAt = new Date();
   }

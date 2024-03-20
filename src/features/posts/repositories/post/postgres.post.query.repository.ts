@@ -44,13 +44,13 @@ export class PostgresPostQueryRepository extends AbstractRepository<PostPgWithBl
               newest_likes AS (
                   SELECT json_agg(json_build_object(
                           'addedAt', pl."createdAt",
-                          'userId', pl."userId", 
+                          'userId', CAST(pl."userId" AS VARCHAR), 
                           'login', u.login 
                                   )) AS latest_likes
                   FROM (
                            SELECT pl."createdAt", pl."userId"
                            FROM public.post_likes pl
-                           WHERE pl."postId" = $1
+                           WHERE pl."postId" = $1 AND pl."likeStatus" = 'Like'
                            ORDER BY pl."createdAt" DESC -- Сортируем лайки по дате добавления
                            LIMIT 3 -- Ограничиваем количество лайков тремя
                        ) pl
@@ -58,12 +58,15 @@ export class PostgresPostQueryRepository extends AbstractRepository<PostPgWithBl
               )
           -- Основной запрос, который возвращает информацию о посте с  лайками.
           SELECT
-              p.id, title, "shortDescription", content, p."blogId", p."createdAt", "name" as "blogName",
+              CAST(p.id AS VARCHAR),
+              title, "shortDescription", content,
+              CAST(p."blogId" AS VARCHAR),
+              p."createdAt", "name" as "blogName",
               json_build_object(
                       'likesCount', li.likesCount, -- Количество лайков
                       'dislikesCount', li.dislikesCount, -- Количество дизлайков
                       'myStatus', COALESCE(ul."likeStatus", 'None'), 
-                      'newestLikes', nl.latest_likes -- Информация о последних трех лайках
+                      'newestLikes', COALESCE(nl.latest_likes, '[]'::json) -- Информация о последних трех лайках
               ) as "extendedLikesInfo"
           FROM public.posts p
                    JOIN public.blogs b ON p."blogId" = b."id" -- Соединение с таблицей блогов для получения имени блога
@@ -85,6 +88,7 @@ export class PostgresPostQueryRepository extends AbstractRepository<PostPgWithBl
     userId?: number,
     blogId?: number,
   ): Promise<PaginationWithItems<OutputPostType>> {
+    console.log(sortData);
     const blogCondition = blogId ? `AND posts."blogId" = ${blogId}` : '';
     const posts: OutputPostType[] = await this.dataSource.query(
       `
@@ -100,7 +104,7 @@ export class PostgresPostQueryRepository extends AbstractRepository<PostPgWithBl
                  posts."active" = true
                  ${blogCondition}
               ORDER BY
-                  posts."${sortData.sortBy}" ${sortData.sortDirection}
+                  "${sortData.sortBy}" ${sortData.sortDirection}
               LIMIT
                   $1 -- Количество постов на страницу (pageSize).
                   OFFSET
@@ -127,23 +131,20 @@ export class PostgresPostQueryRepository extends AbstractRepository<PostPgWithBl
               WHERE
                   post_likes."userId" = $3 AND post_likes."postId" IN (SELECT "id" FROM filtered_posts)
           ), latest_likers AS (
-              -- Выборка последних трех пользователей, поставивших лайк на каждый пост.
               SELECT
                   likes."postId",
                   json_agg(
-                  json_build_object(
-                          'addedAt', likes."createdAt",
-                          'userId', CAST(likes."userId" AS VARCHAR),
-                          'login', users."login"
-                  ) ORDER BY likes."createdAt" DESC
-                          ) FILTER (WHERE likes.rn <= 3) AS "newestLikes"
+                          json_build_object(
+                                  'addedAt', likes."createdAt",
+                                  'userId', CAST(likes."userId" AS VARCHAR),
+                                  'login', users."login"
+                          ) ORDER BY likes."createdAt" DESC
+                  ) AS "newestLikes"
               FROM (
                        SELECT
                            post_likes."postId", post_likes."createdAt", post_likes."userId",
-                           ROW_NUMBER() OVER (
-                               PARTITION BY post_likes."postId"
-                               ORDER BY post_likes."createdAt" DESC
-                               ) AS rn
+                           ROW_NUMBER() OVER(PARTITION BY post_likes."postId" ORDER BY post_likes."createdAt" DESC) as rn
+                       -- Применение оконной функции для присвоения номера каждой строке (rn) внутри группы, сформированной по postId.
                        FROM
                            public.post_likes post_likes
                        WHERE
@@ -151,10 +152,11 @@ export class PostgresPostQueryRepository extends AbstractRepository<PostPgWithBl
                            post_likes."postId" IN (SELECT "id" FROM filtered_posts)
                    ) likes
                        JOIN public.users users ON likes."userId" = users."id"
-              WHERE
-                  likes.rn <= 3
+              WHERE likes.rn <= 3
+              -- Фильтрация для выбора только строк, где номер (rn) не превышает 3
               GROUP BY
                   likes."postId"
+              
           )
           -- Комбинирование данных из подзапросов для создания итоговой таблицы
           SELECT
@@ -177,7 +179,7 @@ export class PostgresPostQueryRepository extends AbstractRepository<PostPgWithBl
                   LEFT JOIN user_reaction ON posts."id" = user_reaction."postId"
                   LEFT JOIN latest_likers ON posts."id" = latest_likers."postId"
           ORDER BY
-              posts."${sortData.sortBy}" ${sortData.sortDirection};
+              "${sortData.sortBy}" ${sortData.sortDirection};
       `,
       [sortData.pageSize, sortData.pageNumber, userId],
     );

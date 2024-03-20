@@ -107,7 +107,9 @@ export class SaBlogsController {
   @UseGuards(AuthGuard)
   @HttpCode(204)
   async deleteBlog(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    await this.blogsService.deleteBlog(id);
+    const result = await this.blogsService.deleteBlog(id);
+    if (result.isFailure()) ErrorResulter.proccesError(result);
+    return;
   }
   @Delete(':blogId/posts/:postId')
   @HttpCode(204)

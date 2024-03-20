@@ -1,16 +1,18 @@
 /* eslint-disable no-underscore-dangle */
-import { HttpException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
+import { ErrorStatus, Result } from '../../../infrastructure/object-result/objcet-result';
 import { PostgresSessionRepository } from '../repository/session.postgres.repository';
 
 @Injectable()
 export class SessionService {
   constructor(protected postgresSessionRepository: PostgresSessionRepository) {}
 
-  async terminateCurrentSession(userId: string, tokenKey: string): Promise<void> {
+  async terminateCurrentSession(userId: string, tokenKey: string): Promise<Result<string>> {
     await this.postgresSessionRepository.terminateSessionByTokenKey(tokenKey);
     const chekResult = await this.postgresSessionRepository.chekSessionIsExist(Number(userId), tokenKey);
-    if (chekResult) throw new HttpException('Session not terminated', 500);
+    if (chekResult) return Result.Err(ErrorStatus.SERVER_ERROR, 'Session not terminated');
+    return Result.Ok('Session terminated');
   }
   async terminateAllSession(userId: string): Promise<void> {
     await this.postgresSessionRepository.terminateAllSessionByUserId(userId);

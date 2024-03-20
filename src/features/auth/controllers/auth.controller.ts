@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Ip, Post, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Ip, ParseIntPipe, Post, Res, UseGuards } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { Response } from 'express';
@@ -6,6 +6,7 @@ import { Response } from 'express';
 import { JwtAuthGuard } from '../../../infrastructure/guards/jwt-auth.guard';
 import { CookieJwtGuard } from '../../../infrastructure/guards/jwt-cookie.guard';
 import { LocalAuthGuard } from '../../../infrastructure/guards/local-auth.guard';
+import { ErrorResulter } from '../../../infrastructure/object-result/objcet-result';
 import { SessionService } from '../../security/service/session.service';
 import { CurrentUser } from '../decorators/current-user.decorator';
 import { UserAgent } from '../decorators/user-agent-from-headers.decorator';
@@ -43,10 +44,11 @@ export class AuthController {
   async loginUser(
     @UserAgent() userAgent: string,
     @Ip() ip: string,
-    @CurrentUser() userId: string,
+    @CurrentUser(ParseIntPipe) userId: number,
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ accessToken: string }> {
-    const tokenPair = await this.commandBus.execute(new UserLoginCommand(userId, ip, userAgent));
+    const result = await this.commandBus.execute(new UserLoginCommand(userId, ip, userAgent));
+    const tokenPair = result.value;
     res.cookie('refreshToken', tokenPair.refreshToken, { httpOnly: true, secure: true });
     return { accessToken: tokenPair.token };
   }
@@ -69,7 +71,8 @@ export class AuthController {
   @Post('registration-email-resending')
   @HttpCode(204)
   async emailConfirmationResending(@Body() body: EmailResendingModel): Promise<void> {
-    await this.commandBus.execute(new EmailResendingCommand(body.email));
+    const result = await this.commandBus.execute(new EmailResendingCommand(body.email));
+    if (result.isFailure()) ErrorResulter.proccesError(result);
   }
 
   // Метод для обновления токенов
@@ -80,17 +83,22 @@ export class AuthController {
     @CurrentSession() { userId, tokenKey }: { userId: string; tokenKey: string },
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ accessToken: string }> {
-    const tokenPair = await this.commandBus.execute(new RefreshTokenCommand(userId, tokenKey));
+    const result = await this.commandBus.execute(new RefreshTokenCommand(userId, tokenKey));
+    if (result.isFailure()) ErrorResulter.proccesError(result);
+
+    const tokenPair = result.value;
+
     res.cookie('refreshToken', tokenPair.refreshToken, { httpOnly: true, secure: true });
     return { accessToken: tokenPair.token };
   }
 
   // Метод для получения информации о текущем пользователе
-  //TODo добавить проверку для типа AboutMeType
   @Get('me')
   @UseGuards(JwtAuthGuard)
   async getUserInformation(@CurrentUser() userId: string): Promise<AboutMeType> {
-    return this.commandBus.execute(new UserGetInformationAboutMeCommand(userId));
+    const result = await this.commandBus.execute(new UserGetInformationAboutMeCommand(userId));
+    if (result.isFailure()) ErrorResulter.proccesError(result);
+    return result.value;
   }
 
   // Метод для запроса восстановления пароля
@@ -98,7 +106,8 @@ export class AuthController {
   @Post('password-recovery')
   @HttpCode(204)
   async newPassword(@Body() { email }: EmailInBodyModel): Promise<void> {
-    await this.commandBus.execute(new NewPasswordRequestCommand(email));
+    const result = await this.commandBus.execute(new NewPasswordRequestCommand(email));
+    if (result.isFailure()) ErrorResulter.proccesError(result);
   }
 
   // Метод для установки нового пароля
@@ -113,6 +122,7 @@ export class AuthController {
   @Post('logout')
   @HttpCode(204)
   async logout(@CurrentSession() { userId, tokenKey }: { userId: string; tokenKey: string }): Promise<void> {
-    await this.sessionService.terminateCurrentSession(userId, tokenKey);
+    const result = await this.sessionService.terminateCurrentSession(userId, tokenKey);
+    if (result.isFailure()) ErrorResulter.proccesError(result);
   }
 }

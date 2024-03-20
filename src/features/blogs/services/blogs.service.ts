@@ -18,7 +18,6 @@ export class BlogsService {
 
   async updateBlog(newData: BlogCreateModel, blogId: number): Promise<Result<string>> {
     const checkBlogIsExist = await this.isExistBlog(blogId);
-
     if (!checkBlogIsExist) {
       return Result.Err(ErrorStatus.NOT_FOUND, 'blog not found');
     }
@@ -28,9 +27,13 @@ export class BlogsService {
     return Result.Ok('blog updated successfully');
   }
 
-  async deleteBlog(blogId: number): Promise<void> {
-    await this.isExistBlog(blogId);
+  async deleteBlog(blogId: number): Promise<Result<string>> {
+    const checkBlogIsExist = await this.isExistBlog(blogId);
+    if (!checkBlogIsExist) {
+      return Result.Err(ErrorStatus.NOT_FOUND, 'blog not found');
+    }
     await this.postgresBlogsRepository.deleteById(blogId);
+    return Result.Ok('blog deleted successfully');
   }
 
   private async isExistBlog(blogId: number): Promise<boolean> {

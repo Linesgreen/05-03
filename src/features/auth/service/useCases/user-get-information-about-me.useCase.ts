@@ -1,6 +1,6 @@
-import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
+import { ErrorStatus, Result } from '../../../../infrastructure/object-result/objcet-result';
 import { PostgresUserQueryRepository } from '../../../users/repositories/postgres.user.query.repository';
 import { AboutMeType } from '../../types/output';
 
@@ -11,10 +11,10 @@ export class UserGetInformationAboutMeCommand {
 export class GetInformationAboutUserCase implements ICommandHandler<UserGetInformationAboutMeCommand> {
   constructor(private postgresUserQueryRepository: PostgresUserQueryRepository) {}
 
-  async execute({ userId }: UserGetInformationAboutMeCommand): Promise<AboutMeType> {
+  async execute({ userId }: UserGetInformationAboutMeCommand): Promise<Result<AboutMeType | string>> {
     const user = await this.postgresUserQueryRepository.getUserById(userId);
-    if (!user) throw new NotFoundException();
+    if (!user) return Result.Err(ErrorStatus.NOT_FOUND, 'User not found');
     const { email, login, id } = user;
-    return { email, login, userId: id };
+    return Result.Ok({ email, login, userId: id });
   }
 }

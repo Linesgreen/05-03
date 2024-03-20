@@ -62,7 +62,7 @@ const decorators = [
     ThrottlerModule.forRoot([
       {
         ttl: 10000,
-        limit: 5,
+        limit: 10000,
       },
     ]),
     ConfigModule.forRoot({ isGlobal: true }),

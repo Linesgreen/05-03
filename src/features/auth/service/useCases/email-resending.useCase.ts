@@ -1,6 +1,6 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
+import { ErrorStatus, Result } from '../../../../infrastructure/object-result/objcet-result';
 import { MailService } from '../../../../mail/mail.service';
 import { User } from '../../../users/entites/user';
 import { PostgresUserRepository } from '../../../users/repositories/postgres.user.repository';
@@ -13,12 +13,12 @@ export class EmailResendingCommand {
 export class EmailResendingUseCase implements ICommandHandler<EmailResendingCommand> {
   constructor(
     protected mailService: MailService,
-    protected postgreeUserRepository: PostgresUserRepository,
+    protected postgresUserRepository: PostgresUserRepository,
   ) {}
 
-  async execute({ email }: EmailResendingCommand): Promise<void> {
-    const targetUser: User | null = await this.postgreeUserRepository.getByLoginOrEmail(email);
-    if (!targetUser) throw new HttpException('user not found', HttpStatus.NOT_FOUND);
+  async execute({ email }: EmailResendingCommand): Promise<Result<string>> {
+    const targetUser: User | null = await this.postgresUserRepository.getByLoginOrEmail(email);
+    if (!targetUser) return Result.Err(ErrorStatus.NOT_FOUND, 'user not found');
     // Обновляем код подтверждения и дату его протухания у пользователя
     targetUser.updateConfirmationCode();
 
@@ -28,6 +28,7 @@ export class EmailResendingUseCase implements ICommandHandler<EmailResendingComm
     // Обновляем поле и отправляем письмо с подтверждением
     await this.updateFields(email, confirmationCode, expirationDate);
     await this.mailService.sendUserConfirmation(email, login, confirmationCode);
+    return Result.Ok('email sended');
   }
 
   // Метод для получения информации для обновления полей
@@ -46,6 +47,6 @@ export class EmailResendingUseCase implements ICommandHandler<EmailResendingComm
       expirationDate,
     };
 
-    await this.postgreeUserRepository.updateUserFields('email', email, fieldToUpdate);
+    await this.postgresUserRepository.updateUserFields('email', email, fieldToUpdate);
   }
 }
