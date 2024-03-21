@@ -28,9 +28,13 @@ export class PostService {
     return Result.Ok(targetPost);
   }
 
-  async updatePost(params: PostInBlogUpdateType, postId: number): Promise<Result<string>> {
+  async updatePost(params: PostInBlogUpdateType, postId: number, blogId: number): Promise<Result<string>> {
     const postIsExist = await this.postgresPostRepository.chekPostIsExist(postId);
     if (!postIsExist) return Result.Err(ErrorStatus.NOT_FOUND, 'Post Not Found');
+
+    const blogIsExist = await this.postgresBlogsRepository.chekBlogIsExist(blogId);
+    if (!blogIsExist) return Result.Err(ErrorStatus.NOT_FOUND, 'Blog Not Found');
+
     await this.postgresPostRepository.updatePost(postId, params);
     return Result.Ok('Post updated');
   }

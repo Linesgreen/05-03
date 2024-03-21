@@ -14,14 +14,3 @@ export type OutputCommentType = {
     myStatus: LikeStatus;
   };
 };
-
-//TODO что то думать с этим классом
-export class CommentsPgDb {
-  id: number;
-  name: string;
-  description: string;
-  websiteUrl: string;
-  createdAt: Date;
-  isMembership: boolean;
-  active: boolean;
-}

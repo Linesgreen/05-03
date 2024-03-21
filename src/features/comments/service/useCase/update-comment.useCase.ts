@@ -10,7 +10,6 @@ export class UpdateCommentCommand {
   ) {}
 }
 
-//TODo переделать ( взять комент и поменять )
 @CommandHandler(UpdateCommentCommand)
 export class UpdateCommentUseCase implements ICommandHandler<UpdateCommentCommand> {
   constructor(protected commentsRepository: PostgresCommentsRepository) {}

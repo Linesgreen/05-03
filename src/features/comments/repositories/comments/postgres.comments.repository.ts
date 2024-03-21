@@ -15,7 +15,6 @@ export class PostgresCommentsRepository extends AbstractRepository<BlogPgDb> {
     super(dataSource);
   }
 
-  //TODO переделать флоу с возвратом айди а затем получением комментария по этому айди
   async addComment(newComment: CommentToPgDB): Promise<number> {
     const { userId, postId, content, createdAt } = newComment;
     const entity = { userId, postId, content, createdAt };

@@ -91,7 +91,6 @@ export class SaBlogsController {
     return;
   }
 
-  //TODO в сервис
   @Put(':blogId/posts/:postId')
   @UseGuards(AuthGuard)
   @HttpCode(204)
@@ -100,9 +99,7 @@ export class SaBlogsController {
     @Param('blogId', ParseIntPipe) blogId: number,
     @Body() postUpdateData: PostInBlogUpdateType,
   ): Promise<void> {
-    const blogIsExist = await this.postgresBlogsRepository.chekBlogIsExist(blogId);
-    if (!blogIsExist) throw new NotFoundException('Blog Not Found');
-    const result = await this.postService.updatePost(postUpdateData, postId);
+    const result = await this.postService.updatePost(postUpdateData, postId, blogId);
     if (result.isFailure()) ErrorResulter.proccesError(result);
     return;
   }

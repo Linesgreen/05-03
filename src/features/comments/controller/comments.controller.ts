@@ -27,7 +27,6 @@ export class CommentsController {
     return result.value;
   }
 
-  //TODO проверку добавить
   @Put(':commentId')
   @HttpCode(204)
   @UseGuards(JwtAuthGuard, CommentOwnerGuard)
@@ -39,16 +38,16 @@ export class CommentsController {
     if (result.isFailure()) ErrorResulter.proccesError(result);
   }
 
-  //TODO засунуть в ресалт
   @Put('/:commentId/like-status')
   @HttpCode(204)
   @UseGuards(JwtAuthGuard)
   async addLike(
-    @Param('commentId') commentId: string,
+    @Param('commentId', ParseIntPipe) commentId: number,
     @Body() { likeStatus }: LikeCreateModel,
-    @CurrentUser() userId: string,
+    @CurrentUser(ParseIntPipe) userId: number,
   ): Promise<void> {
-    await this.commandBus.execute(new AddLikeToCommentCommand(commentId, userId, likeStatus));
+    const result = await this.commandBus.execute(new AddLikeToCommentCommand(commentId, userId, likeStatus));
+    if (result.isFailure()) ErrorResulter.proccesError(result);
   }
 
   @Delete(':commentId')
