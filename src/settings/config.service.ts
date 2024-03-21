@@ -41,6 +41,14 @@ class ConfigService {
     const pass = this.getValue('GMAIL_PASS');
     return pass;
   }
+  public getTokenExp(): string {
+    const tokenExp = this.getValue('TOKEN_EXP');
+    return tokenExp;
+  }
+  public getRefreshTokenExp(): string {
+    const refreshTokenExp = this.getValue('REFRESH_TOKEN_EXP');
+    return refreshTokenExp;
+  }
   private getValue(key: string): string {
     const value = this.env[key];
     if (!value) {
@@ -60,6 +68,8 @@ const configService = new ConfigService(process.env).ensureValues([
   'PORT',
   'GMAIL_USER',
   'GMAIL_PASS',
+  'TOKEN_EXP',
+  'REFRESH_TOKEN_EXP',
 ]);
 
 export { configService };

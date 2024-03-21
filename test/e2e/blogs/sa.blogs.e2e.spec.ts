@@ -8,9 +8,8 @@ import request from 'supertest';
 import { AppModule } from '../../../src/app.module';
 import { appSettings } from '../../../src/settings/aplly-app-setting';
 import { BlogTestManager } from '../../common/blogTestManager';
-import { delay } from '../../utils/dealy';
 
-describe('Blogs e2e', () => {
+describe('sa Blogs e2e', () => {
   let app: INestApplication;
   let httpServer;
   //let mongoServer: MongoMemoryServer;
@@ -75,18 +74,14 @@ describe('Blogs e2e', () => {
     await blogTestManaget.createBlog(blogData, 401, { ...adminData, password: '1' });
     await blogTestManaget.createBlog(blogData, 401, { ...adminData, login: '1' });
   });
+
   it('create 12 blogs', async function () {
     await blogTestManaget.createBlog(blogData, 401, { ...adminData, password: '1' });
-    blogsInDb = await Promise.all(
-      blogs.map(async (blog) => {
-        await delay(1000);
-        await delay(1000);
-        await delay(1000);
-        await delay(1000);
-        const bebra = await blogTestManaget.createBlog(blog, 201);
-        return bebra.body;
-      }),
-    );
+    blogsInDb = [];
+    for (const blog of blogs) {
+      const bub = await blogTestManaget.createBlog(blog, 201);
+      blogsInDb.push(bub.body);
+    }
   });
   it('get 10( 12 total) blogs x0', async function () {
     const blogsResponse = await request(httpServer).get('/sa/blogs').auth('admin', 'qwerty').expect(200);

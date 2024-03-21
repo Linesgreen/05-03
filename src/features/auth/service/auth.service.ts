@@ -2,6 +2,8 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
+import { configService } from '../../../settings/config.service';
+
 @Injectable()
 export class AuthService {
   constructor(protected jwtService: JwtService) {}
@@ -10,9 +12,8 @@ export class AuthService {
     tokenKey: string,
     deviceId: string,
   ): Promise<{ token: string; refreshToken: string }> {
-    //TODO валидировать и достать нормально env
-    const tokenExpirationTime = process.env.TOKEN_EXP as string;
-    const refreshTokenExpirationTime = process.env.REFRESH_TOKEN_EXP as string;
+    const tokenExpirationTime = configService.getTokenExp();
+    const refreshTokenExpirationTime = configService.getRefreshTokenExp();
     const token = await this.createJwt({ userId }, tokenExpirationTime);
     const refreshToken = await this.createJwt({ userId, tokenKey, deviceId }, refreshTokenExpirationTime);
     return { token, refreshToken };
