@@ -1,6 +1,5 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { config } from 'dotenv';
-
 config();
 class ConfigService {
   constructor(private env: { [k: string]: string | undefined }) {}
