@@ -22,7 +22,7 @@ export class PostgresPostQueryRepository extends AbstractRepository<PostPgWithBl
    * @param userId - (Опционально) Идентификатор пользователя для проверки статуса лайка.
    * @returns Запись с информацией о посте и лайках или null, если пост не найден.
    */
-  async getPostById(postId: number, userId?: number): Promise<OutputPostType | null> {
+  async getPostById(postId: number, userId?: number | null): Promise<OutputPostType | null> {
     const postWithBlogData: OutputPostType[] = await this.dataSource.query(
       `
           WITH

@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type,no-underscore-dangle,@typescript-eslint/ban-ts-comment */
 // Набор необходимых импортов
-import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
+import { ErrorStatus, Result } from '../../../../infrastructure/object-result/objcet-result';
 import { QueryPaginationResult } from '../../../../infrastructure/types/query-sort.type';
 import { PostgresCommentsQueryRepository } from '../../../comments/repositories/comments/postgres.comments.query.repository';
 import { OutputCommentType } from '../../../comments/types/comments/output';
@@ -11,8 +11,8 @@ import { PostgresPostRepository } from '../../repositories/post/postgres.post.re
 
 export class GetCommentsToPostWithLikeStatusCommand {
   constructor(
-    public userId: string | null,
-    public postId: string,
+    public userId: number | null,
+    public postId: number,
     public sortData: QueryPaginationResult,
   ) {}
 }
@@ -24,26 +24,30 @@ export class GetCommentsForPostUseCase implements ICommandHandler<GetCommentsToP
     protected commentsQueryRepository: PostgresCommentsQueryRepository,
   ) {}
   // @ts-ignore
-  async execute(command: GetCommentsToPostWithLikeStatusCommand): Promise<PaginationWithItems<OutputCommentType>> {
+  async execute(
+    command: GetCommentsToPostWithLikeStatusCommand,
+  ): Promise<Result<PaginationWithItems<OutputCommentType> | string>> {
     const { userId, sortData, postId } = command;
 
-    await this.checkPostExist(postId);
+    const postIsExist = await this.checkPostExist(postId);
+    if (postIsExist) return Result.Err(ErrorStatus.NOT_FOUND, `Post with id ${postId} not found`);
     const comments = await this.findComments(postId, sortData, userId);
-    return comments;
+    if (!comments) return Result.Err(ErrorStatus.NOT_FOUND, `Comments not found`);
+    return Result.Ok(comments);
   }
 
-  private async checkPostExist(postId: string) {
-    const post = await this.postRepository.chekPostIsExist(Number(postId));
-    if (!post) throw new NotFoundException(`Post not found`);
+  private async checkPostExist(postId: number) {
+    const post = await this.postRepository.chekPostIsExist(postId);
+    if (!post) return null;
   }
 
-  private async findComments(postId: string, sortData: QueryPaginationResult, userId: string | null) {
+  private async findComments(postId: number, sortData: QueryPaginationResult, userId: number | null) {
     const comments: PaginationWithItems<OutputCommentType> = await this.commentsQueryRepository.getCommentsToPosts(
       sortData,
-      Number(postId),
-      Number(userId),
+      postId,
+      userId,
     );
-    if (comments.items.length === 0) throw new NotFoundException(`Comments not found`);
+    if (comments.items.length === 0) return null;
     return comments;
   }
 }

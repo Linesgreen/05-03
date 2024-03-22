@@ -1,6 +1,6 @@
-import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
+import { ErrorStatus, Result } from '../../../../infrastructure/object-result/objcet-result';
 import { PostgresPostRepository } from '../../../posts/repositories/post/postgres.post.repository';
 import { CommentToPgDB } from '../../entites/commentPG';
 import { PostgresCommentsQueryRepository } from '../../repositories/comments/postgres.comments.query.repository';
@@ -22,15 +22,15 @@ export class CreateCommentUseCase implements ICommandHandler<CreateCommentComman
     protected postgresQueryRepository: PostgresCommentsQueryRepository,
     protected postgresPostsRepository: PostgresPostRepository,
   ) {}
-  async execute({ userId, postId, content }: CreateCommentCommand): Promise<OutputCommentType> {
+  async execute({ userId, postId, content }: CreateCommentCommand): Promise<Result<string | OutputCommentType>> {
     const newCommentToDB = new CommentToPgDB({ userId, postId, content });
 
     const targetPost = await this.postgresPostsRepository.chekPostIsExist(Number(postId));
-    if (!targetPost) throw new NotFoundException();
+    if (!targetPost) return Result.Err(ErrorStatus.NOT_FOUND, `Post with id ${postId} not found`);
 
     const commentId = await this.postgresCommentsRepository.addComment(newCommentToDB);
     const comment = await this.postgresQueryRepository.getCommentById(commentId, null);
-    if (!comment) throw new NotFoundException();
-    return comment;
+    if (!comment) return Result.Err(ErrorStatus.NOT_FOUND, `Comment with id ${commentId} not found`);
+    return Result.Ok(comment);
   }
 }

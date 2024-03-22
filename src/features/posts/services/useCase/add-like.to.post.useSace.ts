@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
-import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
+import { ErrorStatus, Result } from '../../../../infrastructure/object-result/objcet-result';
 import { LikeStatusType } from '../../../comments/types/comments/input';
 import { createPostLike, PostLike } from '../../entites/like';
 import { PostLikesQueryRepository } from '../../repositories/likes/post-likes.query.repository';
@@ -24,9 +24,9 @@ export class AddLikeToPostUseCase implements ICommandHandler<AddLikeToPostComman
     protected postgresPostQueryRepository: PostgresPostQueryRepository,
   ) {}
 
-  async execute({ postId, userId, likeStatus }: AddLikeToPostCommand): Promise<void> {
+  async execute({ postId, userId, likeStatus }: AddLikeToPostCommand): Promise<Result<string>> {
     const targetPost = await this.postgresPostQueryRepository.getPostById(postId);
-    if (!targetPost) throw new NotFoundException('post not found');
+    if (!targetPost) return Result.Err(ErrorStatus.NOT_FOUND, 'post not found');
 
     const userLike: PostLike | null = await this.postLikesQueryRepository.getLikeByUserId(postId, userId);
 
@@ -38,12 +38,14 @@ export class AddLikeToPostUseCase implements ICommandHandler<AddLikeToPostComman
         likeStatus: likeStatus,
         createdAt: new Date(),
       };
-      return this.createLike(newLike);
+      await this.createLike(newLike);
+      return Result.Ok('Like created');
     }
 
     // If user's like status is already as expected, no further action needed
-    if (likeStatus === userLike.likeStatus) return;
+    if (likeStatus === userLike.likeStatus) return Result.Ok('Like status is do not changed');
     await this.updateLike(postId, likeStatus, userId);
+    return Result.Ok('Like updated');
   }
 
   private async createLike(newLike: createPostLike): Promise<void> {

@@ -79,7 +79,7 @@ export class PostgresCommentsQueryRepository extends AbstractRepository<PostPgWi
   async getCommentsToPosts(
     sortData: QueryPaginationResult,
     postId: number,
-    userId?: number,
+    userId: number | null,
   ): Promise<PaginationWithItems<OutputCommentType>> {
     const comment: OutputCommentType[] = await this.dataSource.query(
       `
