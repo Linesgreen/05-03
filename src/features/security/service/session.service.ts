@@ -17,4 +17,12 @@ export class SessionService {
   async terminateAllSession(userId: string): Promise<void> {
     await this.postgresSessionRepository.terminateAllSessionByUserId(userId);
   }
+  async terminateSessionByDeviceIdAndUserId(deviceId: string, userId: number): Promise<Result<string>> {
+    await this.postgresSessionRepository.terminateSessionByDeviceIdAndUserId(deviceId, userId);
+    return Result.Ok(`Session ${deviceId} terminated`);
+  }
+  async terminateOtherSession(userId: string, tokenKey: string): Promise<Result<string>> {
+    await this.postgresSessionRepository.terminateOtherSession(userId, tokenKey);
+    return Result.Ok(`other sessions terminated`);
+  }
 }

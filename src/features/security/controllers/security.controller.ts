@@ -1,17 +1,20 @@
 import { Controller, Delete, Get, HttpCode, NotFoundException, Param, UseGuards } from '@nestjs/common';
 
 import { CookieJwtGuard } from '../../../infrastructure/guards/jwt-cookie.guard';
+import { ErrorResulter } from '../../../infrastructure/object-result/objcet-result';
 import { CurrentSession } from '../../auth/decorators/userId-sessionKey.decorator';
 import { SessionOutputType } from '../../auth/types/output';
 import { SessionOwnerGuard } from '../guards/session-owner.guard';
 import { SessionPostgresQueryRepository } from '../repository/session.postgres.query.repository';
 import { PostgresSessionRepository } from '../repository/session.postgres.repository';
+import { SessionService } from '../service/session.service';
 
 @Controller('security')
 export class SecurityController {
   constructor(
     private sessionPostgresQueryRepository: SessionPostgresQueryRepository,
     private postgresSessionRepository: PostgresSessionRepository,
+    private sessionService: SessionService,
   ) {}
 
   @UseGuards(CookieJwtGuard)
@@ -32,7 +35,8 @@ export class SecurityController {
     @CurrentSession() { userId }: { userId: string; tokenKey: string },
     @Param('id') deviceId: string,
   ): Promise<void> {
-    await this.postgresSessionRepository.terminateSessionByDeviceIdAndUserId(deviceId, Number(userId));
+    const result = await this.sessionService.terminateSessionByDeviceIdAndUserId(deviceId, Number(userId));
+    if (result.isFailure()) ErrorResulter.proccesError(result);
   }
 
   @UseGuards(CookieJwtGuard)
@@ -41,6 +45,7 @@ export class SecurityController {
   async terminateOtherSession(
     @CurrentSession() { userId, tokenKey }: { userId: string; tokenKey: string },
   ): Promise<void> {
-    await this.postgresSessionRepository.terminateOtherSession(userId, tokenKey);
+    const result = await this.sessionService.terminateOtherSession(userId, tokenKey);
+    if (result.isFailure()) ErrorResulter.proccesError(result);
   }
 }
