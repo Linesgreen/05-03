@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, HttpCode, Param, Post, Query, UseGuards 
 
 import { QueryPaginationPipe } from '../../../infrastructure/decorators/transform/query-pagination.pipe';
 import { AuthGuard } from '../../../infrastructure/guards/auth-basic.guard';
+import { ErrorResulter } from '../../../infrastructure/object-result/objcet-result';
 import { QueryPaginationResult } from '../../../infrastructure/types/query-sort.type';
 import { PaginationWithItems } from '../../common/types/output';
 import { PostgresUserQueryRepository } from '../repositories/postgres.user.query.repository';
@@ -19,7 +20,9 @@ export class SaUserController {
   @Post('')
   @HttpCode(201)
   async createUser(@Body() userCreateData: UserCreateModel): Promise<UserOutputType> {
-    return this.userService.createUserToDto(userCreateData);
+    const result = await this.userService.createUserToDto(userCreateData);
+    if (result.isFailure()) ErrorResulter.proccesError(result);
+    return result.value;
   }
   @Get('')
   async getAllUsers(
@@ -30,6 +33,7 @@ export class SaUserController {
   @Delete(':userId')
   @HttpCode(204)
   async deleteUser(@Param('userId') userId: string): Promise<void> {
-    return this.userService.deleteUser(userId);
+    const result = await this.userService.deleteUser(userId);
+    if (result.isFailure()) ErrorResulter.proccesError(result);
   }
 }
