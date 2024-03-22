@@ -16,7 +16,6 @@ import { OutputCommentType } from '../types/comments/output';
 export class CommentsController {
   constructor(private commandBus: CommandBus) {}
 
-  //TODO нужен ли командбас при гет запросе
   @Get(':commentId')
   async getCommentById(
     @CurrentUser() userId: number | null,

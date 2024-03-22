@@ -55,7 +55,6 @@ export class SaBlogsController {
     return targetBlog;
   }
 
-  //TODO про object result тут тоже
   @Get(':blogId/posts')
   async getPostForBlog(
     @CurrentUser() userId: number,
