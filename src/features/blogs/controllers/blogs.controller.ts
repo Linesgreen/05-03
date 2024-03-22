@@ -30,13 +30,15 @@ export class BlogsController {
     if (!targetBlog) throw new NotFoundException('Blog Not Found');
     return targetBlog;
   }
-  //TODO узнать про objectResult туцт
+
   @Get(':blogId/posts')
   async getPostForBlog(
     @CurrentUser() userId: number,
     @Query(QueryPaginationPipe) queryData: QueryPaginationResult,
     @Param('blogId', ParseIntPipe) blogId: number,
   ): Promise<PaginationWithItems<OutputPostType>> {
-    return this.commandBus.execute(new GetPostForBlogCommand(userId, blogId, queryData));
+    const result = await this.commandBus.execute(new GetPostForBlogCommand(userId, blogId, queryData));
+    if (result.isFailure()) throw new NotFoundException('Posts Not Found');
+    return result.value;
   }
 }

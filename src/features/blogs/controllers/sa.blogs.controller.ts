@@ -62,7 +62,9 @@ export class SaBlogsController {
     @Query(QueryPaginationPipe) queryData: QueryPaginationResult,
     @Param('blogId', ParseIntPipe) blogId: number,
   ): Promise<PaginationWithItems<OutputPostType>> {
-    return this.commandBus.execute(new GetPostForBlogCommand(userId, blogId, queryData));
+    const result = await this.commandBus.execute(new GetPostForBlogCommand(userId, blogId, queryData));
+    if (result.isFailure()) throw new NotFoundException('Posts Not Found');
+    return result.value;
   }
 
   @Post('')
@@ -88,7 +90,6 @@ export class SaBlogsController {
   async updateBlog(@Param('id', ParseIntPipe) id: number, @Body() blogUpdateType: BlogCreateModel): Promise<void> {
     const result = await this.blogsService.updateBlog(blogUpdateType, id);
     if (result.isFailure()) ErrorResulter.proccesError(result);
-    return;
   }
 
   @Put(':blogId/posts/:postId')
@@ -101,7 +102,6 @@ export class SaBlogsController {
   ): Promise<void> {
     const result = await this.postService.updatePost(postUpdateData, postId, blogId);
     if (result.isFailure()) ErrorResulter.proccesError(result);
-    return;
   }
 
   @Delete(':id')
@@ -110,7 +110,6 @@ export class SaBlogsController {
   async deleteBlog(@Param('id', ParseIntPipe) id: number): Promise<void> {
     const result = await this.blogsService.deleteBlog(id);
     if (result.isFailure()) ErrorResulter.proccesError(result);
-    return;
   }
   @Delete(':blogId/posts/:postId')
   @HttpCode(204)
@@ -118,10 +117,7 @@ export class SaBlogsController {
     @Param('blogId', ParseIntPipe) blogId: number,
     @Param('postId', ParseIntPipe) postId: number,
   ): Promise<void> {
-    const blogIsExist = await this.postgresBlogsRepository.chekBlogIsExist(blogId);
-    if (!blogIsExist) throw new NotFoundException('Blog Not Found');
-
-    const result = await this.postService.deletePost(postId);
+    const result = await this.postService.deletePost(postId, blogId);
     if (result.isFailure()) ErrorResulter.proccesError(result);
   }
 }

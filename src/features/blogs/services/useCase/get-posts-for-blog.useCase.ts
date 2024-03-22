@@ -3,6 +3,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
+import { ErrorStatus, Result } from '../../../../infrastructure/object-result/objcet-result';
 import { QueryPaginationResult } from '../../../../infrastructure/types/query-sort.type';
 import { PaginationWithItems } from '../../../common/types/output';
 import { PostgresPostQueryRepository } from '../../../posts/repositories/post/postgres.post.query.repository';
@@ -24,12 +25,14 @@ export class GetPostForBlogUseCase implements ICommandHandler<GetPostForBlogComm
     protected postgresBlogsRepository: PostgresBlogsRepository,
   ) {}
 
-  async execute(command: GetPostForBlogCommand): Promise<PaginationWithItems<OutputPostType>> {
+  async execute(command: GetPostForBlogCommand): Promise<Result<string | PaginationWithItems<OutputPostType>>> {
     const { userId, sortData, blogId } = command;
 
     await this.checkBlogExist(blogId);
 
-    return this.findPostsForBlog(blogId, sortData, userId);
+    const posts = await this.findPostsForBlog(blogId, sortData, userId);
+    if (!posts) return Result.Err(ErrorStatus.NOT_FOUND, 'Posts not found');
+    return Result.Ok(posts);
   }
 
   private async checkBlogExist(blogId: number) {
@@ -40,7 +43,7 @@ export class GetPostForBlogUseCase implements ICommandHandler<GetPostForBlogComm
   private async findPostsForBlog(blogId: number, sortData: QueryPaginationResult, userId: number | null) {
     const posts = await this.postgresPostQueryRepository.getPosts(sortData, userId, blogId);
     if (!posts?.items?.length) {
-      throw new NotFoundException(`Posts not found`);
+      return null;
     }
     return posts;
   }

@@ -38,9 +38,12 @@ export class PostService {
     await this.postgresPostRepository.updatePost(postId, params);
     return Result.Ok('Post updated');
   }
-  async deletePost(postId: number): Promise<Result<string>> {
+  async deletePost(postId: number, blogId: number): Promise<Result<string>> {
+    const blogIsExist = await this.postgresBlogsRepository.chekBlogIsExist(blogId);
+    if (!blogIsExist) return Result.Err(ErrorStatus.NOT_FOUND, `Blog ${blogId} Not Found`);
+
     const postIsExist = await this.postgresPostRepository.chekPostIsExist(postId);
-    if (!postIsExist) return Result.Err(ErrorStatus.NOT_FOUND, 'Post Not Found');
+    if (!postIsExist) return Result.Err(ErrorStatus.NOT_FOUND, `Post ${postId} Not Found`);
     await this.postgresPostRepository.deleteById(postId);
     return Result.Ok('Post deleted');
   }
