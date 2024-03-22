@@ -48,6 +48,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ accessToken: string }> {
     const result = await this.commandBus.execute(new UserLoginCommand(userId, ip, userAgent));
+    if (result.isFailure()) ErrorResulter.proccesError(result);
     const tokenPair = result.value;
     res.cookie('refreshToken', tokenPair.refreshToken, { httpOnly: true, secure: true });
     return { accessToken: tokenPair.token };
@@ -57,14 +58,16 @@ export class AuthController {
   @Post('registration')
   @HttpCode(204)
   async userRegistration(@Body() registrationData: UserRegistrationModel): Promise<void> {
-    await this.commandBus.execute(new UserRegistrationCommand(registrationData));
+    const result = await this.commandBus.execute(new UserRegistrationCommand(registrationData));
+    if (result.isFailure()) ErrorResulter.proccesError(result);
   }
 
   // Метод для подтверждения регистрации по электронной почте
   @Post('registration-confirmation')
   @HttpCode(204)
   async userConfirmation(@Body() confirmationCode: ValidationCodeModel): Promise<void> {
-    await this.commandBus.execute(new ChangeUserConfirmationCommand(confirmationCode.code, true));
+    const result = await this.commandBus.execute(new ChangeUserConfirmationCommand(confirmationCode.code, true));
+    if (result.isFailure()) ErrorResulter.proccesError(result);
   }
 
   // Метод для повторной отправки письма с подтверждением
@@ -115,7 +118,8 @@ export class AuthController {
   @Post('new-password')
   @HttpCode(204)
   async newPasswordSet(@Body() { newPassword, recoveryCode }: RecoveryCodeModel): Promise<void> {
-    await this.commandBus.execute(new ChangePasswordCommand(newPassword, recoveryCode));
+    const result = await this.commandBus.execute(new ChangePasswordCommand(newPassword, recoveryCode));
+    if (result.isFailure()) ErrorResulter.proccesError(result);
   }
 
   @UseGuards(CookieJwtGuard)

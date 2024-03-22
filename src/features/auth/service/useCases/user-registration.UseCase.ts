@@ -1,5 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
+import { Result } from '../../../../infrastructure/object-result/objcet-result';
 import { MailService } from '../../../../mail/mail.service';
 import { User } from '../../../users/entites/user';
 import { UserService } from '../../../users/services/user.service';
@@ -16,10 +17,11 @@ export class UserRegistrationUseCase implements ICommandHandler<UserRegistration
     protected mailService: MailService,
   ) {}
 
-  async execute(command: UserRegistrationCommand): Promise<void> {
+  async execute(command: UserRegistrationCommand): Promise<Result<string>> {
     const { email, login } = command.userData;
     const newUser: User = await this.userService.createUser(command.userData);
     const confirmationCode = newUser.emailConfirmation.confirmationCode;
     await this.mailService.sendUserConfirmation(email, login, confirmationCode);
+    return Result.Ok('user registered successfully');
   }
 }
